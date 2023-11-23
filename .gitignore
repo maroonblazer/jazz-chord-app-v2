@@ -1,0 +1,7 @@
+node_modules/
+*.log
+.env
+.vscode/
+dist/
+.DS_Store
+*.csv
