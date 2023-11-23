@@ -1,0 +1,55 @@
+.container {
+  display: flex;
+  /* Add this line */
+  flex-direction: column;
+  /* Add this line */
+  align-items: flex-start;
+  /* Add this line */
+  /* margin-top: 100px; */
+}
+
+.button {
+  padding: 10px 20px;
+  font-size: 16px;
+}
+
+.text-field {
+  margin-top: 20px;
+  /* padding: 10px; */
+  font-size: 16px;
+  width: 300px;
+  outline: none;
+  border: none;
+  box-shadow: none;
+  text-align: left;
+}
+
+.elapsed-time {
+  margin-top: 20px;
+  font-size: 16px;
+  text-align: left;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* Style the table so that the data for each column is center-aligned under each column heading */
+table {
+  border-collapse: collapse;
+  width: 35%;
+}
+
+th,
+td {
+  font-family: 'Noto Sans', sans-serif;
+  text-align: center;
+  padding: 8px;
+}
+
+tr:nth-child(even) {
+  background-color: #f2f2f2;
+}
+
+table th:first-child,
+table td:first-child {
+  width: 500px;
+  /* Adjust this value as needed */
+}
