@@ -1,7 +1,7 @@
+const maxIterations = 10; // Maximum number of iterations for a session
     let cpsAndTimes = []; // Array to store CPs and their solve times
     let isSessionRunning = false;
     let sessionCount = 0; // Variable to store the session count
-    const maxIterations = 10; // Maximum number of iterations for a session
 
     // Get the button, text field, and elapsed time elements
     const sessionButton = document.getElementById('sessionButton');
@@ -104,33 +104,46 @@
           });
           resultsHTML += '</table>';
           document.getElementById('resultsContainer').innerHTML = resultsHTML;
-          // Convert session data to CSV and create a download link 
-          const csvContent = convertArrayToCSV(cpsAndTimes);
-          console.log(csvContent);
 
-          // Rewrite the below code to use a Blob instead of a data URI 
-          const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });    
-
-          // Create a link for downloading the CSV file
-          // Get current date and time
-          let now = new Date();
-
-          // Format date and time as 'YYYY-MM-DD_HH-MM'
-          let dateTime = now.getFullYear() + '-' +
-            ('0' + (now.getMonth() + 1)).slice(-2) + '-' +
-            ('0' + now.getDate()).slice(-2) + '_' +
-            ('0' + now.getHours()).slice(-2) + '-' +
-            ('0' + now.getMinutes()).slice(-2);
-
-          // Create a link for downloading the CSV file
-          let link = document.createElement('a');
-          link.href = URL.createObjectURL(blob);
-          link.setAttribute('download', 'zig-zag-log_' + dateTime + '.csv');
-          document.body.appendChild(link);
-          link.click();
-          document.body.removeChild(link);
+          // // Code to send the session data to the server goes here
+          fetch('http://localhost:3000/append-session-data', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ data: cpsAndTimes })
+          })
+            .then(response => response.text())
+            .then(result => console.log(result))
+            .catch(error => console.log('Error', error));
         }
-      sessionButton.blur();
+        sessionButton.blur(); // Remove focus from the button
+        
+          // REMOVE: Convert session data to CSV and create a download link 
+          // const csvContent = convertArrayToCSV(cpsAndTimes);
+          // console.log(csvContent);
+
+          // // Rewrite the below code to use a Blob instead of a data URI 
+          // const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });    
+
+          // // Create a link for downloading the CSV file
+          // // Get current date and time
+          // let now = new Date();
+
+          // // Format date and time as 'YYYY-MM-DD_HH-MM'
+          // let dateTime = now.getFullYear() + '-' +
+          //   ('0' + (now.getMonth() + 1)).slice(-2) + '-' +
+          //   ('0' + now.getDate()).slice(-2) + '_' +
+          //   ('0' + now.getHours()).slice(-2) + '-' +
+          //   ('0' + now.getMinutes()).slice(-2);
+
+          // // Create a link for downloading the CSV file
+          // let link = document.createElement('a');
+          // link.href = URL.createObjectURL(blob);
+          // link.setAttribute('download', 'zig-zag-log_' + dateTime + '.csv');
+          // document.body.appendChild(link);
+          // link.click();
+          // document.body.removeChild(link);
     }
 
     // Function to handle the button click event
