@@ -1,3 +1,4 @@
+const path = require('path');
 const express = require('express');
 const fs = require('fs');
 const cors = require('cors');
@@ -9,9 +10,15 @@ app.use(express.json()); // for parsing application/json
 
 const PORT = 3000;
 
+app.use(express.static(path.join(__dirname, 'public')));
+
 // Define routes here
 app.listen(PORT, () => {
   console.log(`Server listening on port ${PORT}`);
+});
+
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, 'index.html'));
 });
 
 // Write an endpoint to handle data from the client
@@ -24,6 +31,7 @@ app.post('/append-session-data', (req, res) => {
       res.status(500).send('Error writing to file');
       return;
     }
+    console.log('Data written to file');
     res.send('Data written to file');
   });
 });

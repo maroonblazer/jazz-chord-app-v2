@@ -1,7 +1,7 @@
+const maxIterations = 10; // Maximum number of iterations for a session
     let cpsAndTimes = []; // Array to store CPs and their solve times
     let isSessionRunning = false;
     let sessionCount = 0; // Variable to store the session count
-    const maxIterations = 10; // Maximum number of iterations for a session
 
     // Get the button, text field, and elapsed time elements
     const sessionButton = document.getElementById('sessionButton');
