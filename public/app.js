@@ -1,4 +1,4 @@
-const maxIterations = 2; // Maximum number of iterations for a session
+const maxIterations = 10; // Maximum number of iterations for a session
 let cpsAndTimes = []; // Array to store CPs and their solve times
 let isSessionRunning = false;
 let sessionCount = 0; // Variable to store the session count
@@ -138,7 +138,7 @@ function handleSessionButtonClick() {
     document.removeEventListener('keydown', handleSpacebarEvent);
     // Create and display a table of CPs and their solve times
     let resultsHTML =
-      '<table><tr><th>CP</th><th>Key</th><th>Quality</th><th>Time (seconds)</th></tr>';
+      '<table class="myTable"><tr><th>CP</th><th>Key</th><th>Quality</th><th>Time (seconds)</th></tr>';
     cpsAndTimes.forEach(item => {
       resultsHTML += `<tr><td>${item.cp}</td><td>${item.key}</td><td>${item.quality}</td><td>${item.time}</td></tr>`;
     });
