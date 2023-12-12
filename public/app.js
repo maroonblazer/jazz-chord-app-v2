@@ -169,6 +169,7 @@ function handleStartButtonClick() {
     startTimer();
     startButton.dataset.cp = cpData.cp;
     startButton.dataset.key = cpData.key; // Store the CP and its key in the dataset
+    startButton.dataset.quality = cpData.type;
   } else if (startButton.textContent === 'Stop') {
     startButton.textContent = 'Start';
     stopTimer();
