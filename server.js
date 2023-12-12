@@ -24,8 +24,10 @@ app.get('/', (req, res) => {
 // Write an endpoint to handle data from the client
 app.post('/append-session-data', (req, res) => {
   const { data } = req.body; //Assuming data is an array of objects
-  const csvData = data.map(obj => `${obj.cp},${obj.key},${obj.time}`).join('\n');
-  fs.appendFile('session-data.csv', csvData + '\n', (err) => {
+  const csvData = data
+    .map(obj => `${obj.cp},${obj.key},${obj.quality},${obj.time}`)
+    .join('\n');
+  fs.appendFile('session-data.csv', csvData + '\n', err => {
     if (err) {
       console.log(err);
       res.status(500).send('Error writing to file');
