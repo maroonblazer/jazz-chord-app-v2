@@ -1,3 +1,4 @@
+// START THE SERVER WITH `node server.js`
 const path = require('path');
 const express = require('express');
 const fs = require('fs');

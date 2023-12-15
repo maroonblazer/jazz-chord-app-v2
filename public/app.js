@@ -1,4 +1,4 @@
-const maxIterations = 10; // Maximum number of iterations for a session
+const maxIterations = 2; // Maximum number of iterations for a session
 let cpsAndTimes = []; // Array to store CPs and their solve times
 let isSessionRunning = false;
 let sessionCount = 0; // Variable to store the session count
@@ -63,7 +63,8 @@ function selectStringAndRootWithKey() {
   chordsToForget.push(chosenString + ' ' + chosenRoot);
 
   // Randomly choose between Major and Minor
-  const majorOrMinor = Math.random() < 0.5 ? 'Major' : 'Minor';
+  // const majorOrMinor = Math.random() < 0.5 ? 'Major' : 'Minor';
+  const majorOrMinor = 'Minor';
 
   return {
     cp: chosenString + ' ' + chosenRoot,
@@ -122,11 +123,13 @@ function handleSessionButtonClick() {
     sessionButton.textContent = 'Begin Session';
     // Code to end a session goes here
     console.log('Session ended!');
-    // Don't display the CP and its key after the session ends
+    // Don't display the CP,  its key and the fretboard...? after the session ends
 
     // Set the text field and elapsed time to empty strings
     textField.value = '';
     elapsedTime.textContent = '';
+    const fretboard = document.getElementById('fretboardSVG');
+    fretboard.style.display = 'none';
 
     // hide the text field and elapsed time elements
     textField.style.display = 'none';
@@ -160,10 +163,14 @@ function handleSessionButtonClick() {
   sessionButton.blur(); // Remove focus from the button
 }
 
-// Function to handle the button click event
+// Function to handle the Start button click event
 function handleStartButtonClick() {
   if (startButton.textContent === 'Start') {
     const cpData = selectStringAndRootWithKey();
+
+    const fretboard = document.getElementById('fretboardSVG');
+    fretboard.style.display = 'none';
+
     startButton.textContent = 'Stop';
     textField.value = cpData.cp + '  ' + cpData.key + '  ' + cpData.type;
     startTimer();
@@ -187,6 +194,11 @@ function handleStartButtonClick() {
       time: elapsedTimeInSeconds,
       quality: quality,
     });
+
+    // Display the svg of the guitar fretboard
+    const fretboard = document.getElementById('fretboardSVG');
+    fretboard.style.display = 'block';
+
     sessionCount++;
     if (sessionCount >= maxIterations) {
       handleSessionButtonClick();

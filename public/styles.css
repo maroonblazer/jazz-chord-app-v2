@@ -68,3 +68,7 @@ table td:first-child {
 .myTable tr th:first-child {
   width: 200px; /* or any width you want */
 }
+
+#fretboardSVG {
+  display: none;
+}
