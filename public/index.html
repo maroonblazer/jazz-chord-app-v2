@@ -2,20 +2,92 @@
 
 <!DOCTYPE html>
 <html>
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width">
-<link rel="stylesheet" href="styles.css">
-  <title>Button Toggle</title>
-</head>
-<body>
-  <div class="container">
-    <button id="sessionButton" class="button">Begin Session</button>
-    <button id="startButton" class="button">Start</button>
-    <input id="textField" class="text-field" type="text" readonly>
-    <div id="elapsedTime" class="elapsed-time"></div>
-    <div id="resultsContainer"></div>
-  </div>
-  <script src="app.js"></script>
-</body>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width" />
+    <link rel="stylesheet" href="styles.css" />
+    <title>Button Toggle</title>
+  </head>
+  <body>
+    <div class="main">
+      <div class="button-container">
+        <button id="sessionButton" class="button">Begin Session</button>
+        <button id="startButton" class="button">Start</button>
+      </div>
+      <input id="textField" class="text-field" type="text" readonly />
+      <div id="elapsedTime" class="elapsed-time"></div>
+      <div id="resultsContainer"></div>
+    </div>
+
+    <svg
+      id="fretboardSVG"
+      width="120"
+      height="200"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <!-- Fretboard -->
+      <g id="fretboard-base">
+        <rect
+          x="10"
+          y="10"
+          width="100"
+          height="180"
+          fill="white"
+          stroke="black"
+          stroke-width="2"
+        />
+
+        <!-- Frets: 5 frets, evenly spaced -->
+        <line
+          x1="10"
+          y1="46"
+          x2="110"
+          y2="46"
+          stroke="black"
+          stroke-width="2"
+        />
+        <line
+          x1="10"
+          y1="82"
+          x2="110"
+          y2="82"
+          stroke="black"
+          stroke-width="2"
+        />
+        <line
+          x1="10"
+          y1="118"
+          x2="110"
+          y2="118"
+          stroke="black"
+          stroke-width="2"
+        />
+        <line
+          x1="10"
+          y1="154"
+          x2="110"
+          y2="154"
+          stroke="black"
+          stroke-width="2"
+        />
+
+        <!-- Strings: 6 strings, evenly spaced -->
+        <line x1="25" y1="10" x2="25" y2="190" stroke="gray" stroke-width="1" />
+        <line x1="40" y1="10" x2="40" y2="190" stroke="gray" stroke-width="1" />
+        <line x1="55" y1="10" x2="55" y2="190" stroke="gray" stroke-width="1" />
+        <line x1="70" y1="10" x2="70" y2="190" stroke="gray" stroke-width="1" />
+        <line x1="85" y1="10" x2="85" y2="190" stroke="gray" stroke-width="1" />
+        <line
+          x1="100"
+          y1="10"
+          x2="100"
+          y2="190"
+          stroke="gray"
+          stroke-width="1"
+        />
+      </g>
+    </svg>
+
+    <script src="app.js"></script>
+  </body>
 </html>

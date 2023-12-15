@@ -1,4 +1,4 @@
-.container {
+.main {
   display: flex;
   /* Add this line */
   flex-direction: column;
@@ -9,6 +9,12 @@
 }
 
 .button {
+  padding: 10px 20px;
+  font-size: 16px;
+}
+
+#sessionButton {
+  margin: 20px;
   padding: 10px 20px;
   font-size: 16px;
 }
@@ -42,6 +48,7 @@ td {
   font-family: 'Noto Sans', sans-serif;
   text-align: center;
   padding: 8px;
+  color: blue;
 }
 
 tr:nth-child(even) {
@@ -52,4 +59,16 @@ table th:first-child,
 table td:first-child {
   width: 500px;
   /* Adjust this value as needed */
+}
+
+.myTable tr td:first-child {
+  width: 200px;
+}
+
+.myTable tr th:first-child {
+  width: 200px; /* or any width you want */
+}
+
+#fretboardSVG {
+  display: none;
 }
