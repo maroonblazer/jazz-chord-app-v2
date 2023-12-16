@@ -1,12 +1,12 @@
 const maxIterations = 2; // Maximum number of iterations for a session
-let cpsAndTimes = []; // Array to store CPs and their solve times
+let cpsAndTimes = []; // Array to store CPs and their solve times; we'll use these to create a table of results and send to the server to write out to the csv file.
 let isSessionRunning = false;
 let sessionCount = 0; // Variable to store the session count
 
 // Get the button, text field, and elapsed time elements
 const sessionButton = document.getElementById('sessionButton');
 const startButton = document.getElementById('startButton');
-startButton.disabled = true; // disable the Start button
+// startButton.disabled = true; // disable the Start button
 const textField = document.getElementById('textField');
 const elapsedTime = document.getElementById('elapsedTime');
 
@@ -199,10 +199,10 @@ function handleStartButtonClick() {
     const fretboard = document.getElementById('fretboardSVG');
     fretboard.style.display = 'block';
 
-    sessionCount++;
-    if (sessionCount >= maxIterations) {
-      handleSessionButtonClick();
-    }
+    // sessionCount++;
+    // if (sessionCount >= maxIterations) {
+    //   handleSessionButtonClick();
+    // }
     // add a short delay before allowing the next iteration to start
     startButton.disabled = true;
     setTimeout(() => {
@@ -222,7 +222,7 @@ function convertArrayToCSV(array) {
 }
 
 // Attach the handleSessionButtonClick function to the button click event
-sessionButton.addEventListener('click', handleSessionButtonClick);
+// sessionButton.addEventListener('click', handleSessionButtonClick);
 
 // Attach the handleButtonClick function to the button click event
 startButton.addEventListener('click', handleStartButtonClick);
