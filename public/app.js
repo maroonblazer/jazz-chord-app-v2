@@ -1,7 +1,7 @@
-const maxIterations = 2; // Maximum number of iterations for a session
+const maxIterations = 3; // Maximum number of iterations for a session
 let cpsAndTimes = []; // Array to store CPs and their solve times; we'll use these to create a table of results and send to the server to write out to the csv file.
 let isSessionRunning = false;
-let sessionCount = 0; // Variable to store the session count
+let iterationCount = 0; // Variable to store the session count
 
 // Get the button, text field, and elapsed time elements
 const sessionButton = document.getElementById('sessionButton');
@@ -13,6 +13,25 @@ const elapsedTime = document.getElementById('elapsedTime');
 let timerId; // Variable to store the timer ID
 let startTime; // Variable to store the start time
 let chordsToForget = []; // Queue to store the last two strings
+// let fretboardContainer;
+
+// use an element from the sprite sheet
+// select the div container that will hold the svg image
+const fretboardContainer = document.getElementById('fretboardContainer');
+
+// Fetch the svg file from the server
+// fetch('svgs/fretboard-base.svg')
+//   .then(response => response.text())
+//   .then(data => {
+//     fretboardContainer = document.getElementById('fretboardContainer');
+//     fretboardContainer.innerHTML = data;
+//   })
+//   .catch(error => console.log('Error', error));
+
+// THIS WORKS
+// fretboardContainer.innerHTML = `<svg class="ss1-r1-minor">
+// <use xlink:href="#ss1-r1-minor"></use>
+// </svg>`;
 
 // Function to choose a string at random from an array
 function chooseRandomString(strings) {
@@ -137,7 +156,7 @@ function handleSessionButtonClick() {
 
     startButton.disabled = true; // disable the Start button
     isSessionRunning = false;
-    sessionCount = 0; // Reset the session count
+    iterationCount = 0; // Reset the session count
     document.removeEventListener('keydown', handleSpacebarEvent);
     // Create and display a table of CPs and their solve times
     let resultsHTML =
@@ -165,20 +184,36 @@ function handleSessionButtonClick() {
 
 // Function to handle the Start button click event
 function handleStartButtonClick() {
-  if (startButton.textContent === 'Start') {
+  if (startButton.textContent === 'Start' && iterationCount < maxIterations) {
+    // clear the results container
+    document.getElementById('resultsContainer').innerHTML = '';
+    // clear the fretboard svg container
+    fretboardContainer.innerHTML = '';
+
     const cpData = selectStringAndRootWithKey();
 
-    const fretboard = document.getElementById('fretboardSVG');
-    fretboard.style.display = 'none';
+    // const fretboard = document.getElementById('fretboardSVG');
+    // fretboard.style.display = 'none';
+    textField.style.display = 'block';
+    elapsedTime.style.display = 'block';
+    textField.value = cpData.cp + '  ' + cpData.key + '  ' + cpData.type;
 
     startButton.textContent = 'Stop';
-    textField.value = cpData.cp + '  ' + cpData.key + '  ' + cpData.type;
     startTimer();
     startButton.dataset.cp = cpData.cp;
     startButton.dataset.key = cpData.key; // Store the CP and its key in the dataset
     startButton.dataset.quality = cpData.type;
-  } else if (startButton.textContent === 'Stop') {
-    startButton.textContent = 'Start';
+    iterationCount++;
+    console.log('Iteration count:', iterationCount);
+  } else if (
+    startButton.textContent === 'Stop' &&
+    iterationCount <= maxIterations
+  ) {
+    if (iterationCount === maxIterations) {
+      startButton.textContent = 'See Results';
+    } else {
+      startButton.textContent = 'Start';
+    }
     stopTimer();
     const currentTime = new Date().getTime();
     const elapsedTimeInMilliseconds = currentTime - startTime;
@@ -196,19 +231,72 @@ function handleStartButtonClick() {
     });
 
     // Display the svg of the guitar fretboard
-    const fretboard = document.getElementById('fretboardSVG');
-    fretboard.style.display = 'block';
+    fretboardContainer.style.display = 'block';
 
-    // sessionCount++;
-    // if (sessionCount >= maxIterations) {
-    //   handleSessionButtonClick();
+    // Overlay the fingering on the fretboard
+    fretboardContainer.innerHTML = `<svg class="ss1-r1-minor">
+    // <use xlink:href="#ss1-r1-minor"></use>
+    // </svg>`;
+
+    // iterationCount++;
+    // if (iterationCount >= maxIterations) {
+    // handleSessionButtonClick();
     // }
     // add a short delay before allowing the next iteration to start
     startButton.disabled = true;
     setTimeout(() => {
       startButton.disabled = false;
     }, 50);
+  } else {
+    console.log('Max iterations reached!', iterationCount);
+    startButton.textContent = 'See Results';
+    endSessionAndDisplayAndStoreResultsOnServer();
+    cpsAndTimes = []; // Reset the array so that the results don't get appended to the previous session's results
+    document.addEventListener('keydown', handleSpacebarEvent);
   }
+}
+
+function endSessionAndDisplayAndStoreResultsOnServer() {
+  console.log('Iteration count:', iterationCount);
+  // Set the text field and elapsed time to empty strings
+  document.removeEventListener('keydown', handleSpacebarEvent); //why is this here? To prevent the user from starting a new session by pressing the spacebar before we display and store the results.
+
+  textField.value = '';
+  elapsedTime.textContent = '';
+  // const fretboard = document.getElementById('fretboardSVG');
+  // fretboard.style.display = 'none';
+
+  // hide the text field and elapsed time elements
+  textField.style.display = 'none';
+  elapsedTime.style.display = 'none';
+
+  // hide the fretboard svg container
+  fretboardContainer.innerHTML = '';
+
+  isSessionRunning = false;
+  iterationCount = 0; // Reset the session count
+
+  // Create and display a table of CPs and their solve times
+  let resultsHTML =
+    '<table class="myTable"><tr><th>CP</th><th>Key</th><th>Quality</th><th>Time (seconds)</th></tr>';
+  cpsAndTimes.forEach(item => {
+    resultsHTML += `<tr><td>${item.cp}</td><td>${item.key}</td><td>${item.quality}</td><td>${item.time}</td></tr>`;
+  });
+  resultsHTML += '</table>';
+  document.getElementById('resultsContainer').innerHTML = resultsHTML;
+
+  // // Code to send the session data to the server goes here
+  fetch('http://localhost:3000/append-session-data', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ data: cpsAndTimes }),
+  })
+    .then(response => response.text())
+    .then(result => console.log(result))
+    .catch(error => console.log('Error', error));
+  startButton.textContent = 'Start';
 }
 
 // Function to convert data to CSV format
@@ -226,6 +314,7 @@ function convertArrayToCSV(array) {
 
 // Attach the handleButtonClick function to the button click event
 startButton.addEventListener('click', handleStartButtonClick);
+document.addEventListener('keydown', handleSpacebarEvent);
 
 // Make the "Begin Session" button listen for the Enter key press event
 document.addEventListener('keydown', event => {

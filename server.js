@@ -28,13 +28,37 @@ app.post('/append-session-data', (req, res) => {
   const csvData = data
     .map(obj => `${obj.cp},${obj.key},${obj.quality},${obj.time}`)
     .join('\n');
-  fs.appendFile('session-data.csv', csvData + '\n', err => {
+
+  const filePath = path.join(__dirname, 'session-data.csv');
+
+  fs.access(filePath, fs.constants.F_OK, err => {
+    // If file does not exist, write the headers
     if (err) {
-      console.log(err);
-      res.status(500).send('Error writing to file');
-      return;
+      fs.writeFile(filePath, 'Problem,Key,Quality,Time\n', err => {
+        if (err) {
+          console.log(err);
+          res.status(500).send('Error writing to file');
+          return;
+        }
+
+        // Headers have been written, now append the data
+        appendData();
+      });
+    } else {
+      // File exists, append the data
+      appendData();
     }
-    console.log('Data written to file');
-    res.send('Data written to file');
   });
+
+  function appendData() {
+    fs.appendFile(filePath, csvData + '\n', err => {
+      if (err) {
+        console.log(err);
+        res.status(500).send('Error writing to file');
+        return;
+      }
+      console.log('Data written to file');
+      res.send('Data written to file');
+    });
+  }
 });

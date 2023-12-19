@@ -5,3 +5,6 @@ node_modules/
 dist/
 .DS_Store
 *.csv
+Major-and-Minor-Voicings-w_Extensions.zip
+out/
+public/svg-test.html

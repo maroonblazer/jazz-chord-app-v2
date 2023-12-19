@@ -30,18 +30,18 @@ async function runTest() {
   // Click the start button
   const startButton = await page.$('#startButton');
   if (startButton) {
-    for (let i = 0; i < 4; i++) {
+    for (let i = 0; i <= 20; i++) {
       // repeat 4 times
       await startButton.click();
-      console.log('Start button clicked');
-      await new Promise(r => setTimeout(r, 900));
+      console.log('Start button clicked', i);
+      await new Promise(r => setTimeout(r, 300));
     }
   } else {
     console.log("The #startButton wasn't found.");
   }
 
   // Close the browser after short delay
-  await new Promise(r => setTimeout(r, 500));
+  await new Promise(r => setTimeout(r, 10000));
   await browser.close();
 }
 
