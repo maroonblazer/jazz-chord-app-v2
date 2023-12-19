@@ -1,5 +1,5 @@
-<svg width="339" height="806" viewBox="0 0 339 806" fill="none" xmlns="http://www.w3.org/2000/svg">
-<g id="ss1-r4-minor">
+<svg width="331" height="806" viewBox="0 0 331 806" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="ss2-r3-major">
 <g id="fretboard-base">
 <g id="Frame 1">
 <g id="Strings">
@@ -20,9 +20,9 @@
 <line id="Fret 1" x1="3" y1="160.5" x2="323" y2="160.5" stroke="black" stroke-width="3"/>
 </g>
 </g>
-<circle id="Ellipse 1" cx="255" cy="378" r="24" fill="black"/>
-<circle id="Ellipse 3" cx="195" cy="235" r="24" fill="black"/>
-<circle id="Ellipse 4" cx="135" cy="235" r="24" fill="black"/>
-<circle id="Ellipse 2" cx="315" cy="378" r="24" fill="black"/>
+<circle id="Ellipse 1" cx="253" cy="506" r="24" fill="black"/>
+<circle id="Ellipse 3" cx="73" cy="378" r="24" fill="black"/>
+<circle id="Ellipse 4" cx="133" cy="506" r="24" fill="black"/>
+<circle id="Ellipse 2" cx="191" cy="378" r="24" fill="black"/>
 </g>
 </svg>

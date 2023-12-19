@@ -13,27 +13,10 @@ const elapsedTime = document.getElementById('elapsedTime');
 let timerId; // Variable to store the timer ID
 let startTime; // Variable to store the start time
 let chordsToForget = []; // Queue to store the last two strings
-// let fretboardContainer;
 
-// use an element from the sprite sheet
 // select the div container that will hold the svg image
 const fretboardContainer = document.getElementById('fretboardContainer');
 
-// Fetch the svg file from the server
-// fetch('svgs/fretboard-base.svg')
-//   .then(response => response.text())
-//   .then(data => {
-//     fretboardContainer = document.getElementById('fretboardContainer');
-//     fretboardContainer.innerHTML = data;
-//   })
-//   .catch(error => console.log('Error', error));
-
-// THIS WORKS
-// fretboardContainer.innerHTML = `<svg class="ss1-r1-minor">
-// <use xlink:href="#ss1-r1-minor"></use>
-// </svg>`;
-
-// Function to choose a string at random from an array
 function chooseRandomString(strings) {
   return strings[Math.floor(Math.random() * strings.length)];
 }
@@ -83,7 +66,7 @@ function selectStringAndRootWithKey() {
 
   // Randomly choose between Major and Minor
   // const majorOrMinor = Math.random() < 0.5 ? 'Major' : 'Minor';
-  const majorOrMinor = 'Minor';
+  const majorOrMinor = 'Major';
 
   return {
     cp: chosenString + ' ' + chosenRoot,
@@ -136,13 +119,11 @@ function handleSessionButtonClick() {
     // Code to start a session goes here
     console.log('Session started!');
     isSessionRunning = true;
-    startButton.disabled = false; // enable the Start button
+    startButton.disabled = false;
     document.addEventListener('keydown', handleSpacebarEvent);
   } else if (sessionButton.textContent === 'End') {
     sessionButton.textContent = 'Begin Session';
-    // Code to end a session goes here
     console.log('Session ended!');
-    // Don't display the CP,  its key and the fretboard...? after the session ends
 
     // Set the text field and elapsed time to empty strings
     textField.value = '';
@@ -154,10 +135,11 @@ function handleSessionButtonClick() {
     textField.style.display = 'none';
     elapsedTime.style.display = 'none';
 
-    startButton.disabled = true; // disable the Start button
+    startButton.disabled = true;
     isSessionRunning = false;
-    iterationCount = 0; // Reset the session count
+    iterationCount = 0;
     document.removeEventListener('keydown', handleSpacebarEvent);
+
     // Create and display a table of CPs and their solve times
     let resultsHTML =
       '<table class="myTable"><tr><th>CP</th><th>Key</th><th>Quality</th><th>Time (seconds)</th></tr>';
@@ -192,8 +174,6 @@ function handleStartButtonClick() {
 
     const cpData = selectStringAndRootWithKey();
 
-    // const fretboard = document.getElementById('fretboardSVG');
-    // fretboard.style.display = 'none';
     textField.style.display = 'block';
     elapsedTime.style.display = 'block';
     textField.value = cpData.cp + '  ' + cpData.key + '  ' + cpData.type;
@@ -230,18 +210,66 @@ function handleStartButtonClick() {
       quality: quality,
     });
 
-    // Display the svg of the guitar fretboard
     fretboardContainer.style.display = 'block';
 
-    // Overlay the fingering on the fretboard
-    fretboardContainer.innerHTML = `<svg class="ss1-r1-minor">
-    // <use xlink:href="#ss1-r1-minor"></use>
-    // </svg>`;
+    // Determine which cp and quality was chosen and display the appropriate svg
+    let cpAndQuality = cp + '-' + quality;
+    let svgClass = '';
+    switch (cpAndQuality) {
+      case 'SS1 R/1-Major':
+        svgClass = 'ss1-r1-major';
+        break;
+      case 'SS1 R/1-Minor':
+        svgClass = 'ss1-r1-minor';
+        break;
+      case 'SS1 R/2-Major':
+        svgClass = 'ss1-r2-major';
+        break;
+      case 'SS1 R/2-Minor':
+        svgClass = 'ss1-r2-minor';
+        break;
+      case 'SS1 R/3-Major':
+        svgClass = 'ss1-r3-major';
+        break;
+      case 'SS1 R/3-Minor':
+        svgClass = 'ss1-r3-minor';
+        break;
+      case 'SS1 R/4-Major':
+        svgClass = 'ss1-r4-major';
+        break;
+      case 'SS1 R/4-Minor':
+        svgClass = 'ss1-r4-minor';
+        break;
+      case 'SS2 R/2-Major':
+        svgClass = 'ss2-r2-major';
+        break;
+      case 'SS2 R/2-Minor':
+        svgClass = 'ss2-r2-minor';
+        break;
+      case 'SS2 R/3-Major':
+        svgClass = 'ss2-r3-major';
+        break;
+      case 'SS2 R/3-Minor':
+        svgClass = 'ss2-r3-minor';
+        break;
+      case 'SS2 R/4-Major':
+        svgClass = 'ss2-r4-major';
+        break;
+      case 'SS2 R/4-Minor':
+        svgClass = 'ss2-r4-minor';
+        break;
+      case 'SS2 R/5-Major':
+        svgClass = 'ss2-r5-major';
+        break;
+      case 'SS2 R/5-Minor':
+        svgClass = 'ss2-r5-minor';
+        break;
+    }
 
-    // iterationCount++;
-    // if (iterationCount >= maxIterations) {
-    // handleSessionButtonClick();
-    // }
+    fretboardContainer.innerHTML = `<svg class=${svgClass}>
+    <use xlink:href='#${svgClass}'></use>
+    </svg>`;
+
     // add a short delay before allowing the next iteration to start
     startButton.disabled = true;
     setTimeout(() => {
@@ -263,8 +291,6 @@ function endSessionAndDisplayAndStoreResultsOnServer() {
 
   textField.value = '';
   elapsedTime.textContent = '';
-  // const fretboard = document.getElementById('fretboardSVG');
-  // fretboard.style.display = 'none';
 
   // hide the text field and elapsed time elements
   textField.style.display = 'none';
@@ -308,9 +334,6 @@ function convertArrayToCSV(array) {
   });
   return csvContent;
 }
-
-// Attach the handleSessionButtonClick function to the button click event
-// sessionButton.addEventListener('click', handleSessionButtonClick);
 
 // Attach the handleButtonClick function to the button click event
 startButton.addEventListener('click', handleStartButtonClick);

@@ -20,11 +20,9 @@
 <line id="Fret 1" x1="3" y1="160.5" x2="323" y2="160.5" stroke="black" stroke-width="3"/>
 </g>
 </g>
-<g id="dots">
 <circle id="Ellipse 1" cx="193" cy="88" r="24" fill="black"/>
-<circle id="Ellipse 3" cx="133" cy="642" r="24" fill="black"/>
-<circle id="Ellipse 4" cx="73" cy="404" r="24" fill="black"/>
-<circle id="Ellipse 2" cx="253" cy="527" r="24" fill="black"/>
-</g>
+<circle id="Ellipse 3" cx="133" cy="621" r="24" fill="black"/>
+<circle id="Ellipse 4" cx="73" cy="378" r="24" fill="black"/>
+<circle id="Ellipse 2" cx="253" cy="506" r="24" fill="black"/>
 </g>
 </svg>

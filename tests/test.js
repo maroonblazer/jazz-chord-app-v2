@@ -30,7 +30,7 @@ async function runTest() {
   // Click the start button
   const startButton = await page.$('#startButton');
   if (startButton) {
-    for (let i = 0; i <= 20; i++) {
+    for (let i = 0; i <= 100; i++) {
       // repeat 4 times
       await startButton.click();
       console.log('Start button clicked', i);
