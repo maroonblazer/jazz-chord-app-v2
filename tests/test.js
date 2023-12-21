@@ -28,20 +28,35 @@ async function runTest() {
   );
 
   // Click the start button
+  // Click the start button
   const startButton = await page.$('#startButton');
-  if (startButton) {
-    for (let i = 0; i <= 100; i++) {
+  const svgElement = await page.$('svg'); // select the first SVG on the page
+
+  if (startButton && svgElement) {
+    const maxIterations = 20;
+    for (let i = 0; i <= maxIterations; i++) {
       // repeat 4 times
       await startButton.click();
       console.log('Start button clicked', i);
-      await new Promise(r => setTimeout(r, 300));
+      await new Promise(r => setTimeout(r, 500));
+
+      // Check if the SVG is being displayed at the correct time
+      const svgDisplay = await page.evaluate(
+        el => el.style.display,
+        svgElement
+      );
+      if (i < maxIterations && svgDisplay !== 'none') {
+        console.log('SVG is displayed at the correct time');
+      } else if (i === maxIterations && svgDisplay === 'none') {
+        console.log('SVG is not displayed at the correct time');
+      }
     }
   } else {
-    console.log("The #startButton wasn't found.");
+    console.log("The #startButton or the SVG wasn't found.");
   }
 
   // Close the browser after short delay
-  await new Promise(r => setTimeout(r, 10000));
+  await new Promise(r => setTimeout(r, 7000));
   await browser.close();
 }
 

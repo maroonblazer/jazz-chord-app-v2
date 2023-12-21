@@ -1,4 +1,4 @@
-const maxIterations = 3; // Maximum number of iterations for a session
+const maxIterations = 10; // Maximum number of iterations for a session
 let cpsAndTimes = []; // Array to store CPs and their solve times; we'll use these to create a table of results and send to the server to write out to the csv file.
 let isSessionRunning = false;
 let iterationCount = 0; // Variable to store the session count
@@ -65,8 +65,8 @@ function selectStringAndRootWithKey() {
   chordsToForget.push(chosenString + ' ' + chosenRoot);
 
   // Randomly choose between Major and Minor
-  // const majorOrMinor = Math.random() < 0.5 ? 'Major' : 'Minor';
-  const majorOrMinor = 'Major';
+  const majorOrMinor = Math.random() < 0.5 ? 'Major' : 'Minor';
+  // const majorOrMinor = 'Major';
 
   return {
     cp: chosenString + ' ' + chosenRoot,
@@ -202,15 +202,14 @@ function handleStartButtonClick() {
     const key = startButton.dataset.key;
     const quality = startButton.dataset.quality;
 
-    // Store the CP and its solve time in the array
+    // Store the CP, its solve time, and the current date and time in the array
     cpsAndTimes.push({
       cp: cp,
       key: key,
       time: elapsedTimeInSeconds,
       quality: quality,
+      date: new Date().toISOString(), // This will store the current date and time
     });
-
-    fretboardContainer.style.display = 'block';
 
     // Determine which cp and quality was chosen and display the appropriate svg
     let cpAndQuality = cp + '-' + quality;
@@ -266,9 +265,23 @@ function handleStartButtonClick() {
         break;
     }
 
-    fretboardContainer.innerHTML = `<svg class=${svgClass}>
-    <use xlink:href='#${svgClass}'></use>
-    </svg>`;
+    let otherSvgClass;
+
+    if (svgClass.endsWith('-major')) {
+      otherSvgClass = svgClass.replace('-major', '-minor');
+    } else if (svgClass.endsWith('-minor')) {
+      otherSvgClass = svgClass.replace('-minor', '-major');
+    }
+
+    fretboardContainer.innerHTML = `
+      <svg class="${svgClass}" width="60" height="150">
+        <use xlink:href='#${svgClass}'></use>
+      </svg>
+      <svg class="${otherSvgClass}" width="60" height="150">
+        <use xlink:href='#${otherSvgClass}'></use>
+      </svg>
+    `;
+    fretboardContainer.style.display = 'flex';
 
     // add a short delay before allowing the next iteration to start
     startButton.disabled = true;
@@ -304,9 +317,9 @@ function endSessionAndDisplayAndStoreResultsOnServer() {
 
   // Create and display a table of CPs and their solve times
   let resultsHTML =
-    '<table class="myTable"><tr><th>CP</th><th>Key</th><th>Quality</th><th>Time (seconds)</th></tr>';
+    '<table class="myTable"><tr><th>CP</th><th>Key</th><th>Quality</th><th>Time (seconds)</th><th>Date</th></tr>';
   cpsAndTimes.forEach(item => {
-    resultsHTML += `<tr><td>${item.cp}</td><td>${item.key}</td><td>${item.quality}</td><td>${item.time}</td></tr>`;
+    resultsHTML += `<tr><td>${item.cp}</td><td>${item.key}</td><td>${item.quality}</td><td>${item.time}</td><td>${item.date}</td></tr>`;
   });
   resultsHTML += '</table>';
   document.getElementById('resultsContainer').innerHTML = resultsHTML;
@@ -327,11 +340,12 @@ function endSessionAndDisplayAndStoreResultsOnServer() {
 
 // Function to convert data to CSV format
 function convertArrayToCSV(array) {
-  let csvContent = 'CP, Key, Time (seconds)\r\n';
-  array.forEach(function (rowArray) {
-    let row = rowArray.cp + ',' + rowArray.key + ',' + rowArray.time;
-    csvContent += row + '\r\n';
+  let csvContent = 'cp,key,time,quality,date\n'; // Add 'date' to the header
+
+  array.forEach(item => {
+    csvContent += `${item.cp},${item.key},${item.time},${item.quality},${item.date}\n`; // Add item.date to each row
   });
+
   return csvContent;
 }
 

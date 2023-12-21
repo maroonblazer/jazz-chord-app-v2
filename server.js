@@ -26,7 +26,7 @@ app.get('/', (req, res) => {
 app.post('/append-session-data', (req, res) => {
   const { data } = req.body; //Assuming data is an array of objects
   const csvData = data
-    .map(obj => `${obj.cp},${obj.key},${obj.quality},${obj.time}`)
+    .map(obj => `${obj.cp},${obj.key},${obj.quality},${obj.time},${obj.date}`) // Add obj.date here
     .join('\n');
 
   const filePath = path.join(__dirname, 'session-data.csv');
@@ -34,7 +34,8 @@ app.post('/append-session-data', (req, res) => {
   fs.access(filePath, fs.constants.F_OK, err => {
     // If file does not exist, write the headers
     if (err) {
-      fs.writeFile(filePath, 'Problem,Key,Quality,Time\n', err => {
+      fs.writeFile(filePath, 'Problem,Key,Quality,Time,Date\n', err => {
+        // Add 'Date' here
         if (err) {
           console.log(err);
           res.status(500).send('Error writing to file');
