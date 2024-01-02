@@ -319,9 +319,13 @@ function endSessionAndDisplayAndStoreResultsOnServer() {
   let resultsHTML =
     '<table class="myTable"><tr><th>CP</th><th>Key</th><th>Quality</th><th>Time (seconds)</th><th>Date</th></tr>';
   cpsAndTimes.forEach(item => {
-    resultsHTML += `<tr><td>${item.cp}</td><td>${item.key}</td><td>${item.quality}</td><td>${item.time}</td><td>${item.date}</td></tr>`;
+    let rowColor = item.quality.includes('Minor')
+      ? ' style="background-color: #efeded;"'
+      : '';
+    resultsHTML += `<tr${rowColor}><td>${item.cp}</td><td>${item.key}</td><td>${item.quality}</td><td>${item.time}</td><td>${item.date}</td></tr>`;
   });
   resultsHTML += '</table>';
+  console.log(resultsHTML);
   document.getElementById('resultsContainer').innerHTML = resultsHTML;
 
   // // Code to send the session data to the server goes here
