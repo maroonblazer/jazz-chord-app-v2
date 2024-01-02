@@ -38,7 +38,7 @@ async function runTest() {
       // repeat 4 times
       await startButton.click();
       console.log('Start button clicked', i);
-      await new Promise(r => setTimeout(r, 500));
+      await new Promise(r => setTimeout(r, 200));
 
       // Check if the SVG is being displayed at the correct time
       const svgDisplay = await page.evaluate(
