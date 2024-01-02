@@ -101,69 +101,6 @@ function handleSpacebarEvent(event) {
   }
 }
 
-// Function to handle the session button click event
-function handleSessionButtonClick() {
-  if (sessionButton.textContent === 'Begin Session') {
-    // clear the results container
-    document.getElementById('resultsContainer').innerHTML = '';
-
-    // Unhide the text field and elapsed time elements
-    textField.style.display = 'block';
-    elapsedTime.style.display = 'block';
-
-    // Reset the elapsed time and CP display
-    elapsedTime.textContent = '';
-    textField.value = '';
-    cpsAndTimes = []; // Reset the array
-    sessionButton.textContent = 'End';
-    // Code to start a session goes here
-    console.log('Session started!');
-    isSessionRunning = true;
-    startButton.disabled = false;
-    document.addEventListener('keydown', handleSpacebarEvent);
-  } else if (sessionButton.textContent === 'End') {
-    sessionButton.textContent = 'Begin Session';
-    console.log('Session ended!');
-
-    // Set the text field and elapsed time to empty strings
-    textField.value = '';
-    elapsedTime.textContent = '';
-    const fretboard = document.getElementById('fretboardSVG');
-    fretboard.style.display = 'none';
-
-    // hide the text field and elapsed time elements
-    textField.style.display = 'none';
-    elapsedTime.style.display = 'none';
-
-    startButton.disabled = true;
-    isSessionRunning = false;
-    iterationCount = 0;
-    document.removeEventListener('keydown', handleSpacebarEvent);
-
-    // Create and display a table of CPs and their solve times
-    let resultsHTML =
-      '<table class="myTable"><tr><th>CP</th><th>Key</th><th>Quality</th><th>Time (seconds)</th></tr>';
-    cpsAndTimes.forEach(item => {
-      resultsHTML += `<tr><td>${item.cp}</td><td>${item.key}</td><td>${item.quality}</td><td>${item.time}</td></tr>`;
-    });
-    resultsHTML += '</table>';
-    document.getElementById('resultsContainer').innerHTML = resultsHTML;
-
-    // // Code to send the session data to the server goes here
-    fetch('http://localhost:3000/append-session-data', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ data: cpsAndTimes }),
-    })
-      .then(response => response.text())
-      .then(result => console.log(result))
-      .catch(error => console.log('Error', error));
-  }
-  sessionButton.blur(); // Remove focus from the button
-}
-
 // Function to handle the Start button click event
 function handleStartButtonClick() {
   if (startButton.textContent === 'Start' && iterationCount < maxIterations) {
@@ -356,10 +293,3 @@ function convertArrayToCSV(array) {
 // Attach the handleButtonClick function to the button click event
 startButton.addEventListener('click', handleStartButtonClick);
 document.addEventListener('keydown', handleSpacebarEvent);
-
-// Make the "Begin Session" button listen for the Enter key press event
-document.addEventListener('keydown', event => {
-  if (event.keyCode === 13 && !isSessionRunning) {
-    handleSessionButtonClick();
-  }
-});
