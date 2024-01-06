@@ -1,12 +1,15 @@
-const puppeteer = require('puppeteer');
+// const puppeteer = require('puppeteer');
+import puppeteer from 'puppeteer';
 
 async function runTest() {
   // Launch the browser
   const browser = await puppeteer.launch({
     headless: false,
+    devtools: true,
     args: ['--window-size=768,1080', '--window-position=1700,0'],
   }); // set headless: true to run without a browser UI
   const page = await browser.newPage();
+  await page.setViewport({ width: 1280, height: 800 });
 
   // Navigate to your app
   await page.goto('http://localhost:3000'); // replace with your app's URL
@@ -27,7 +30,6 @@ async function runTest() {
     'Start button should be visible after session start'
   );
 
-  // Click the start button
   // Click the start button
   const startButton = await page.$('#startButton');
   const svgElement = await page.$('svg'); // select the first SVG on the page
@@ -54,10 +56,22 @@ async function runTest() {
   } else {
     console.log("The #startButton or the SVG wasn't found.");
   }
+  // Fetch call and processing
 
+  // add a delay
+  await new Promise(r => setTimeout(r, 2000));
+
+  await page.waitForFunction(
+    () =>
+      document.querySelector('#assistant-response-text') &&
+      document
+        .querySelector('#assistant-response-text')
+        .innerText.includes(`Generating feedback from the assistant...`),
+    { timeout: 5000 }
+  );
   // Close the browser after short delay
-  await new Promise(r => setTimeout(r, 7000));
-  await browser.close();
+  // await new Promise(r => setTimeout(r, 7000));
+  // await browser.close();
 }
 
 runTest().catch(error => console.error('Test failed:', error));

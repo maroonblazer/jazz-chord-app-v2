@@ -265,6 +265,10 @@ function endSessionAndDisplayAndStoreResultsOnServer() {
   console.log(resultsHTML);
   document.getElementById('resultsContainer').innerHTML = resultsHTML;
 
+  document.getElementById(
+    'assistant-response-text'
+  ).innerHTML = `Generating feedback from the assistant...`;
+
   // // Code to send the session data to the server goes here
   fetch('http://localhost:3000/append-session-data', {
     method: 'POST',
@@ -277,6 +281,30 @@ function endSessionAndDisplayAndStoreResultsOnServer() {
     .then(result => console.log(result))
     .catch(error => console.log('Error', error));
   startButton.textContent = 'Start';
+
+  // // Code to get feedback from the assistant goes here
+  console.log('About to fetch assistant feedback...');
+  fetch('http://localhost:3000/get-assistant-feedback', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  })
+    .then(response => response.json())
+    .then(data => {
+      // Create a new paragraph element
+      const p = document.createElement('p');
+
+      // Set the text of the paragraph to the answer
+      p.textContent = data.answer;
+
+      // Append the paragraph to the body of the document
+      document.getElementById('assistant-response-text').innerHTML =
+        p.textContent;
+    })
+    .catch(error => {
+      console.error('Error:', error);
+    });
 }
 
 // Function to convert data to CSV format

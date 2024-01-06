@@ -1,9 +1,10 @@
 // START THE SERVER WITH `node server.js`
-const path = require('path');
-const express = require('express');
-const fs = require('fs');
-const cors = require('cors');
-const req = require('express/lib/request');
+import path from 'path';
+import express from 'express';
+import fs from 'fs';
+import cors from 'cors';
+import { query } from './qa.js';
+
 const app = express();
 
 app.use(cors());
@@ -11,7 +12,7 @@ app.use(express.json()); // for parsing application/json
 
 const PORT = 3000;
 
-app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.static(path.join(process.cwd(), 'public')));
 
 // Define routes here
 app.listen(PORT, () => {
@@ -19,17 +20,17 @@ app.listen(PORT, () => {
 });
 
 app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, 'index.html'));
+  res.sendFile(path.join(process.cwd(), 'index.html'));
 });
 
 // Write an endpoint to handle data from the client
 app.post('/append-session-data', (req, res) => {
   const { data } = req.body; //Assuming data is an array of objects
   const csvData = data
-    .map(obj => `${obj.cp},${obj.key},${obj.quality},${obj.time},${obj.date}`) // Add obj.date here
+    .map(obj => `${obj.cp},${obj.key},${obj.quality},${obj.time},${obj.date}`)
     .join('\n');
 
-  const filePath = path.join(__dirname, 'session-data.csv');
+  const filePath = path.join(process.cwd(), 'session-data.csv');
 
   fs.access(filePath, fs.constants.F_OK, err => {
     // If file does not exist, write the headers
@@ -61,5 +62,16 @@ app.post('/append-session-data', (req, res) => {
       console.log('Data written to file');
       res.send('Data written to file');
     });
+  }
+});
+
+app.post('/get-assistant-feedback', async (req, res) => {
+  console.log('received request for assistant feedback');
+  try {
+    const data = await query();
+    res.send(data);
+  } catch (error) {
+    console.error(error);
+    res.status(500).send('Error querying data');
   }
 });
