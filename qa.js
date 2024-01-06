@@ -4,6 +4,7 @@ import { OpenAIEmbeddings } from 'langchain/embeddings/openai';
 import { YoutubeLoader } from 'langchain/document_loaders/web/youtube';
 import { CharacterTextSplitter } from 'langchain/text_splitter';
 import { PDFLoader } from 'langchain/document_loaders/fs/pdf';
+import { CSVLoader } from 'langchain/document_loaders/fs/csv';
 
 const question = process.argv[2] || 'hi';
 const video = `https://youtu.be/zR_iuq2evXo?si=cG8rODgRgXOx9_Cn`;
@@ -36,16 +37,32 @@ export const docsFromPDF = () => {
   );
 };
 
+// Load data from a CSV file
+export const docsFromCSV = () => {
+  const loader = new CSVLoader('session-data.csv');
+  return loader.loadAndSplit(
+    new CharacterTextSplitter({
+      separator: '.   ',
+      chunkSize: 2500,
+      chunkOverlap: 200,
+    })
+  );
+};
+
 const loadStore = async () => {
-  const videoDocs = await docsFromYTVideo(video);
-  const pdfDocs = await docsFromPDF();
-  console.log(videoDocs[0], pdfDocs[0]);
-  return createStore([...videoDocs, ...pdfDocs]);
+  // const videoDocs = await docsFromYTVideo(video);
+  // const pdfDocs = await docsFromPDF();
+  const csvDocs = await docsFromCSV();
+  // console.log(videoDocs[0], pdfDocs[0]);
+  // console.log(videoDocs[0]);
+  console.log(csvDocs[0]);
+  // return createStore([...videoDocs, ...pdfDocs]);
+  return createStore([...csvDocs]);
 };
 
 export const query = async () => {
   const store = await loadStore();
-  const results = await store.similaritySearch(question, 1);
+  const results = await store.similaritySearch(question, 2);
   const response = await openai.chat.completions.create({
     model: 'gpt-4',
     temperature: 0,
@@ -68,5 +85,3 @@ export const query = async () => {
     sources: results.map(r => r.metadata.source).join(',  '),
   };
 };
-
-// query();

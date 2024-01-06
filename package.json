@@ -20,6 +20,7 @@
   "homepage": "https://github.com/maroonblazer/jazz-chord-app-v2#readme",
   "dependencies": {
     "cors": "^2.8.5",
+    "d3-dsv": "^2.0.0",
     "dotenv": "^16.3.1",
     "express": "^4.18.2",
     "langchain": "^0.1.0",

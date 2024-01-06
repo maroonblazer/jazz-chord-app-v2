@@ -59,8 +59,6 @@ app.post('/append-session-data', (req, res) => {
         res.status(500).send('Error writing to file');
         return;
       }
-      console.log('Data written to file');
-      res.send('Data written to file');
     });
   }
 });

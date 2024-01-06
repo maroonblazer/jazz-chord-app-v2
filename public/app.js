@@ -1,4 +1,4 @@
-const maxIterations = 10; // Maximum number of iterations for a session
+const maxIterations = 3; // Maximum number of iterations for a session
 let cpsAndTimes = []; // Array to store CPs and their solve times; we'll use these to create a table of results and send to the server to write out to the csv file.
 let isSessionRunning = false;
 let iterationCount = 0; // Variable to store the session count
@@ -278,12 +278,11 @@ function endSessionAndDisplayAndStoreResultsOnServer() {
     body: JSON.stringify({ data: cpsAndTimes }),
   })
     .then(response => response.text())
-    .then(result => console.log(result))
+    .then(result => console.log(`logging the result promise-${result}`))
     .catch(error => console.log('Error', error));
   startButton.textContent = 'Start';
 
   // // Code to get feedback from the assistant goes here
-  console.log('About to fetch assistant feedback...');
   fetch('http://localhost:3000/get-assistant-feedback', {
     method: 'POST',
     headers: {

@@ -6,7 +6,7 @@ async function runTest() {
   const browser = await puppeteer.launch({
     headless: false,
     devtools: true,
-    args: ['--window-size=768,1080', '--window-position=1700,0'],
+    args: ['--window-size=1280,800', '--window-position=1700,0'],
   }); // set headless: true to run without a browser UI
   const page = await browser.newPage();
   await page.setViewport({ width: 1280, height: 800 });
@@ -35,7 +35,7 @@ async function runTest() {
   const svgElement = await page.$('svg'); // select the first SVG on the page
 
   if (startButton && svgElement) {
-    const maxIterations = 20;
+    const maxIterations = 6;
     for (let i = 0; i <= maxIterations; i++) {
       // repeat 4 times
       await startButton.click();
@@ -70,7 +70,7 @@ async function runTest() {
     { timeout: 5000 }
   );
   // Close the browser after short delay
-  // await new Promise(r => setTimeout(r, 7000));
+  // await new Promise(r => setTimeout(r, 2500));
   // await browser.close();
 }
 
