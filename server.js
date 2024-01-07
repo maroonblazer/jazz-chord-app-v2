@@ -35,6 +35,8 @@ app.post('/append-session-data', (req, res) => {
   fs.access(filePath, fs.constants.F_OK, err => {
     // If file does not exist, write the headers
     if (err) {
+      console.log('Received Post request to append session data to a NEW file');
+      console.log(`File ${filePath} does not exist so creating it...`);
       fs.writeFile(filePath, 'Problem,Key,Quality,Time,Date\n', err => {
         // Add 'Date' here
         if (err) {
@@ -48,6 +50,9 @@ app.post('/append-session-data', (req, res) => {
       });
     } else {
       // File exists, append the data
+      console.log(
+        'Received Post request to append session data to an existing file'
+      );
       appendData();
     }
   });
@@ -56,20 +61,21 @@ app.post('/append-session-data', (req, res) => {
     fs.appendFile(filePath, csvData + '\n', err => {
       if (err) {
         console.log(err);
-        res.status(500).send('Error writing to file');
-        return;
+        res.status(500).json({ message: 'Error writing to file' });
+      } else {
+        res.status(200).json({ message: 'Data appended successfully' });
       }
     });
   }
 });
 
 app.post('/get-assistant-feedback', async (req, res) => {
-  console.log('received request for assistant feedback');
+  console.log('Received Post request for assistant feedback');
   try {
     const data = await query();
-    res.send(data);
+    res.json(data); // Use res.json() to send a JSON response
   } catch (error) {
     console.error(error);
-    res.status(500).send('Error querying data');
+    res.status(500).json({ message: 'Error querying data' }); // Use res.json() to send a JSON error message
   }
 });

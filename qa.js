@@ -6,7 +6,8 @@ import { CharacterTextSplitter } from 'langchain/text_splitter';
 import { PDFLoader } from 'langchain/document_loaders/fs/pdf';
 import { CSVLoader } from 'langchain/document_loaders/fs/csv';
 
-const question = process.argv[2] || 'hi';
+// const question = process.argv[2] || 'hi';
+const question = `Which row in this csv file took the longest time to complete?`;
 const video = `https://youtu.be/zR_iuq2evXo?si=cG8rODgRgXOx9_Cn`;
 
 export const createStore = docs =>
@@ -38,7 +39,8 @@ export const docsFromPDF = () => {
 };
 
 // Load data from a CSV file
-export const docsFromCSV = () => {
+export const docsFromCSV = async () => {
+  console.log('Loading data from CSV...');
   const loader = new CSVLoader('session-data.csv');
   return loader.loadAndSplit(
     new CharacterTextSplitter({
@@ -55,7 +57,7 @@ const loadStore = async () => {
   const csvDocs = await docsFromCSV();
   // console.log(videoDocs[0], pdfDocs[0]);
   // console.log(videoDocs[0]);
-  console.log(csvDocs[0]);
+  console.log('Heres the csvDocs', csvDocs[0]);
   // return createStore([...videoDocs, ...pdfDocs]);
   return createStore([...csvDocs]);
 };
@@ -74,7 +76,7 @@ export const query = async () => {
       },
       {
         role: 'user',
-        content: `Answer the following question using the provided context. If you cannot answer the question with the context, don't lie and make up stuff. Just say you need more context. 
+        content: `Each row in the csv file contains a chord problem. The 'Time' column represents how long it took me to answer the chord problem for that row. Based on the data in the csv file, provide an analysis of my performance. E.g., which chord problems do I know well (i.e., took less time) and which chord problems should I spend more time practicing (i.e., took more time). Be concise. If you cannot answer the question with the context, don't lie and make up stuff. Just say you need more context. 
         Question: ${question}
         Context: ${results.map(r => r.pageContent).join('\n')}`,
       },

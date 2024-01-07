@@ -269,7 +269,8 @@ function endSessionAndDisplayAndStoreResultsOnServer() {
     'assistant-response-text'
   ).innerHTML = `Generating feedback from the assistant...`;
 
-  // // Code to send the session data to the server goes here
+  // Code to send the session data to the server goes here
+  console.log('Making fetch request...');
   fetch('http://localhost:3000/append-session-data', {
     method: 'POST',
     headers: {
@@ -277,18 +278,27 @@ function endSessionAndDisplayAndStoreResultsOnServer() {
     },
     body: JSON.stringify({ data: cpsAndTimes }),
   })
-    .then(response => response.text())
-    .then(result => console.log(`logging the result promise-${result}`))
-    .catch(error => console.log('Error', error));
-  startButton.textContent = 'Start';
-
-  // // Code to get feedback from the assistant goes here
-  fetch('http://localhost:3000/get-assistant-feedback', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-  })
+    .then(response => {
+      console.log('Received response:', response);
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      console.log('Response is OK, parsing as JSON...');
+      return response.json(); // Parse the response as JSON
+    })
+    .then(data => {
+      console.log('Received data:', data);
+      console.log(`logging the result promise-${data.message}`); // Access the message property of the data
+    })
+    .then(() => {
+      // This fetch call will be executed after the first one completes
+      return fetch('http://localhost:3000/get-assistant-feedback', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+    })
     .then(response => response.json())
     .then(data => {
       // Create a new paragraph element
@@ -305,6 +315,16 @@ function endSessionAndDisplayAndStoreResultsOnServer() {
       console.error('Error:', error);
     });
 }
+// Regarding the above: The fetch call is not sending any data in the body of the request. If the server-side route handler is expecting to receive data in the request body, you would need to add a body property to the fetch call, like so:
+//   fetch('http://localhost:3000/get-assistant-feedback', {
+//   method: 'POST',
+//   headers: {
+//     'Content-Type': 'application/json',
+//   },
+//   body: JSON.stringify({ /* your data here */ }),
+// })
+
+// We could use this to send a question to the server and get a response from the assistant. E.g., let the user type in a question and then send it to the server to get a response from the assistant.
 
 // Function to convert data to CSV format
 function convertArrayToCSV(array) {
