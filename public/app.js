@@ -85,11 +85,13 @@ function handleSpacebarEvent(event) {
 
 // Function to handle the Start button click event
 function handleStartButtonClick() {
+  // If the session is not running, start it
   if (startButton.textContent === 'Start' && iterationCount < maxIterations) {
     // clear the results container
     document.getElementById('resultsContainer').innerHTML = '';
     // clear the fretboard svg container
     fretboardContainer.innerHTML = '';
+    document.getElementById('assistant-response-text').innerHTML = '';
 
     const cpData = selectStringAndRootWithKey();
 
@@ -104,13 +106,16 @@ function handleStartButtonClick() {
     startButton.dataset.quality = cpData.type;
     iterationCount++;
     console.log('Iteration count:', iterationCount);
+    // We're in the middle of a session and the user pressed the spacebar, check if we've reached the end of the session. If we have, end the session and write the file/display the table. .
   } else if (
     startButton.textContent === 'Stop' &&
     iterationCount <= maxIterations
   ) {
+    // If the session is running, stop it
     if (iterationCount === maxIterations) {
       startButton.textContent = 'See Results';
     } else {
+      // We're in the middle of a session and the user pressed the spacebar, so we need to stop the timer and store the solve time.
       startButton.textContent = 'Start';
     }
     stopTimer();
@@ -288,6 +293,8 @@ function endSessionAndDisplayAndStoreResultsOnServer() {
 
       // Set the text of the paragraph to the answer
       p.textContent = data.answer;
+      // Change the start button text to 'Start'
+      startButton.textContent = 'Start';
 
       // Append the paragraph to the body of the document
       document.getElementById('assistant-response-text').innerHTML =

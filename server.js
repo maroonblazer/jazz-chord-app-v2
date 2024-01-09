@@ -31,6 +31,7 @@ app.post('/append-session-data', (req, res) => {
     .join('\n');
 
   const filePath = path.join(process.cwd(), 'session-data.csv');
+  const secondFilePath = path.join(process.cwd(), 'session-data-last-10.csv');
 
   fs.access(filePath, fs.constants.F_OK, err => {
     // If file does not exist, write the headers
@@ -44,7 +45,6 @@ app.post('/append-session-data', (req, res) => {
           res.status(500).send('Error writing to file');
           return;
         }
-
         // Headers have been written, now append the data
         appendData();
       });
@@ -63,9 +63,29 @@ app.post('/append-session-data', (req, res) => {
         console.log(err);
         res.status(500).json({ message: 'Error writing to file' });
       } else {
-        res.status(200).json({ message: 'Data appended successfully' });
+        overwriteData();
       }
     });
+  }
+  function overwriteData() {
+    const last10Rows = data
+      .slice(-10)
+      .map(obj => `${obj.cp},${obj.key},${obj.quality},${obj.time},${obj.date}`)
+      .join('\n');
+    fs.writeFile(
+      secondFilePath,
+      'Problem,Key,Quality,Time,Date\n' + last10Rows + '\n',
+      err => {
+        if (err) {
+          console.log(err);
+          res.status(500).json({ message: 'Error writing to second file' });
+        } else {
+          res.status(200).json({
+            message: 'Data appended successfully and second file overwritten',
+          });
+        }
+      }
+    );
   }
 });
 
