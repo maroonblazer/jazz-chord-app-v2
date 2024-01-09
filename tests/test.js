@@ -1,15 +1,28 @@
-// const puppeteer = require('puppeteer');
 import puppeteer from 'puppeteer';
+import { access, constants, unlink } from 'fs';
+import { join } from 'path';
+
+// Delete the session-data.csv file if it exists
+const filePath = join(process.cwd(), './session-data.csv');
+access(filePath, constants.F_OK, err => {
+  if (!err) {
+    unlink(filePath, err => {
+      if (err) {
+        console.log(err);
+      }
+    });
+  }
+});
 
 async function runTest() {
   // Launch the browser
   const browser = await puppeteer.launch({
     headless: false,
-    devtools: true,
-    args: ['--window-size=1280,800', '--window-position=1700,0'],
+    devtools: false,
+    args: ['--window-size=1280,1280', '--window-position=1700,0'],
   }); // set headless: true to run without a browser UI
   const page = await browser.newPage();
-  await page.setViewport({ width: 1280, height: 800 });
+  await page.setViewport({ width: 1280, height: 1280 });
 
   // Navigate to your app
   await page.goto('http://localhost:3000'); // replace with your app's URL
@@ -35,12 +48,14 @@ async function runTest() {
   const svgElement = await page.$('svg'); // select the first SVG on the page
 
   if (startButton && svgElement) {
-    const maxIterations = 6;
+    const maxIterations = 20;
     for (let i = 0; i <= maxIterations; i++) {
-      // repeat 4 times
       await startButton.click();
       console.log('Start button clicked', i);
-      await new Promise(r => setTimeout(r, 200));
+
+      // Generate a random delay between 200 and 1500
+      const delay = Math.floor(Math.random() * (1500 - 200 + 1)) + 200;
+      await new Promise(r => setTimeout(r, delay));
 
       // Check if the SVG is being displayed at the correct time
       const svgDisplay = await page.evaluate(
