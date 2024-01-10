@@ -1,4 +1,4 @@
-const maxIterations = 10; // Maximum number of iterations for a session
+const maxIterations = 7; // Maximum number of iterations for a session
 let cpsAndTimes = []; // Array to store CPs and their solve times; we'll use these to create a table of results and send to the server to write out to the csv file.
 let isSessionRunning = false;
 let iterationCount = 0; // Variable to store the session count
@@ -9,6 +9,8 @@ const startButton = document.getElementById('startButton');
 // startButton.disabled = true; // disable the Start button
 const textField = document.getElementById('textField');
 const elapsedTime = document.getElementById('elapsedTime');
+const inputContainer = document.getElementById('input-container');
+inputContainer.style.display = 'none';
 
 let timerId; // Variable to store the timer ID
 let startTime; // Variable to store the start time
@@ -89,6 +91,8 @@ function handleStartButtonClick() {
   if (startButton.textContent === 'Start' && iterationCount < maxIterations) {
     // clear the results container
     document.getElementById('resultsContainer').innerHTML = '';
+    // clear the input container
+    inputContainer.style.display = 'none';
     // clear the fretboard svg container
     fretboardContainer.innerHTML = '';
     document.getElementById('assistant-response-text').innerHTML = '';
@@ -299,6 +303,9 @@ function endSessionAndDisplayAndStoreResultsOnServer() {
       // Append the paragraph to the body of the document
       document.getElementById('assistant-response-text').innerHTML =
         p.textContent;
+
+      // Display the input container
+      inputContainer.style.display = 'flex';
     })
     .catch(error => {
       console.error('Error:', error);
