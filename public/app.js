@@ -1,4 +1,4 @@
-const maxIterations = 7; // Maximum number of iterations for a session
+const maxIterations = 1; // Maximum number of iterations for a session
 let cpsAndTimes = []; // Array to store CPs and their solve times; we'll use these to create a table of results and send to the server to write out to the csv file.
 let isSessionRunning = false;
 let iterationCount = 0; // Variable to store the session count
@@ -335,4 +335,33 @@ function convertArrayToCSV(array) {
 
 // Attach the handleButtonClick function to the button click event
 startButton.addEventListener('click', handleStartButtonClick);
+
+// Add keydown event listener to the document
 document.addEventListener('keydown', handleSpacebarEvent);
+
+const messageInput = document.getElementById('message');
+const sendButton = document.getElementById('send-button');
+
+// Remove keydown event listener when the input field is focused
+messageInput.addEventListener('focus', event => {
+  document.removeEventListener('keydown', handleSpacebarEvent);
+});
+
+// Remove keydown event listener when the send button is focused
+sendButton.addEventListener('focus', event => {
+  document.removeEventListener('keydown', handleSpacebarEvent);
+});
+
+// Re-add keydown event listener when the input field loses focus and the focus is not within the send button
+messageInput.addEventListener('blur', event => {
+  if (document.activeElement !== sendButton) {
+    document.addEventListener('keydown', handleSpacebarEvent);
+  }
+});
+
+// Re-add keydown event listener when the send button loses focus and the focus is not within the input field
+sendButton.addEventListener('blur', event => {
+  if (document.activeElement !== messageInput) {
+    document.addEventListener('keydown', handleSpacebarEvent);
+  }
+});
