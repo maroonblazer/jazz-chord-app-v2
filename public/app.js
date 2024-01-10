@@ -333,6 +333,59 @@ function convertArrayToCSV(array) {
   return csvContent;
 }
 
+function handleSendButtonClick() {
+  // Get the message from the input field
+  const message = messageInput.value;
+
+  // send the message to the server
+  fetch('http://localhost:3000/send-message', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ message: message }),
+  })
+    .then(response => {
+      console.log('Received response:', response);
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      console.log('Response is OK, parsing as JSON...');
+      return response.json(); // Parse the response as JSON
+    })
+    .then(data => {
+      console.log('Received data:', data);
+      console.log(`logging the result promise-${data.message}`); // Access the message property of the data
+    })
+    .then(() => {
+      // This fetch call will be executed after the first one completes
+      return fetch('http://localhost:3000/get-assistant-feedback', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+    })
+    .then(response => response.json())
+    .then(data => {
+      // Create a new paragraph element
+      const p = document.createElement('p');
+
+      // Set the text of the paragraph to the answer
+      p.textContent = data.answer;
+
+      // Append the paragraph to the body of the document
+      document.getElementById('assistant-response-text').innerHTML =
+        p.textContent;
+    })
+    .catch(error => {
+      console.error('Error:', error);
+    });
+
+  // Clear the input field
+  messageInput.value = '';
+}
+
 // Attach the handleButtonClick function to the button click event
 startButton.addEventListener('click', handleStartButtonClick);
 
@@ -341,6 +394,9 @@ document.addEventListener('keydown', handleSpacebarEvent);
 
 const messageInput = document.getElementById('message');
 const sendButton = document.getElementById('send-button');
+
+// Listen for clicks on the send button and call a new function named handleSendButtonClick
+sendButton.addEventListener('click', handleSendButtonClick);
 
 // Remove keydown event listener when the input field is focused
 messageInput.addEventListener('focus', event => {

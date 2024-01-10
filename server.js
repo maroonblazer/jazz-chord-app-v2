@@ -99,3 +99,11 @@ app.post('/get-assistant-feedback', async (req, res) => {
     res.status(500).json({ message: 'Error querying data' }); // Use res.json() to send a JSON error message
   }
 });
+
+// Handle the send-message endpoint
+app.post('/send-message', (req, res) => {
+  console.log('Received Post request to send a message');
+  const { message } = req.body;
+  console.log('Message received: ', message);
+  res.status(200).json({ message });
+});
