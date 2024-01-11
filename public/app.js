@@ -1,4 +1,4 @@
-const maxIterations = 1; // Maximum number of iterations for a session
+const maxIterations = 10; // Maximum number of iterations for a session
 let cpsAndTimes = []; // Array to store CPs and their solve times; we'll use these to create a table of results and send to the server to write out to the csv file.
 let isSessionRunning = false;
 let iterationCount = 0; // Variable to store the session count
@@ -253,7 +253,7 @@ function endSessionAndDisplayAndStoreResultsOnServer() {
     resultsHTML += `<tr${rowColor}><td>${item.cp}</td><td>${item.key}</td><td>${item.quality}</td><td>${item.time}</td><td>${item.date}</td></tr>`;
   });
   resultsHTML += '</table>';
-  console.log(resultsHTML);
+  // console.log(resultsHTML);
   document.getElementById('resultsContainer').innerHTML = resultsHTML;
 
   document.getElementById(
@@ -279,7 +279,9 @@ function endSessionAndDisplayAndStoreResultsOnServer() {
     })
     .then(data => {
       console.log('Received data:', data);
-      console.log(`logging the result promise-${data.message}`); // Access the message property of the data
+      console.log(
+        `logging the result promise from append-session-data-${data.message}`
+      ); // Access the message property of the data
     })
     .then(() => {
       // This fetch call will be executed after the first one completes
@@ -355,19 +357,9 @@ function handleSendButtonClick() {
     })
     .then(data => {
       console.log('Received data:', data);
-      console.log(`logging the result promise-${data.message}`); // Access the message property of the data
-    })
-    .then(() => {
-      // This fetch call will be executed after the first one completes
-      return fetch('http://localhost:3000/get-assistant-feedback', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
-    })
-    .then(response => response.json())
-    .then(data => {
+      console.log(
+        `logging the result promise from send-message-${data.answer}`
+      ); // Access the message property of the data
       // Create a new paragraph element
       const p = document.createElement('p');
 
@@ -377,6 +369,8 @@ function handleSendButtonClick() {
       // Append the paragraph to the body of the document
       document.getElementById('assistant-response-text').innerHTML =
         p.textContent;
+      // Clear the input field
+      messageInput.value = '';
     })
     .catch(error => {
       console.error('Error:', error);
