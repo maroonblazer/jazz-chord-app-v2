@@ -1,4 +1,4 @@
-const maxIterations = 10; // Maximum number of iterations for a session
+export const maxIterations = 10; // Maximum number of iterations for a session
 let cpsAndTimes = []; // Array to store CPs and their solve times; we'll use these to create a table of results and send to the server to write out to the csv file.
 let isSessionRunning = false;
 let iterationCount = 0; // Variable to store the session count

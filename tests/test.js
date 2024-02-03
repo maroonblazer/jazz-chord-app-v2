@@ -1,3 +1,4 @@
+// import { maxIterations } from '../public/app.js';
 import puppeteer from 'puppeteer';
 import { access, constants, unlink } from 'fs';
 import { join } from 'path';
@@ -48,8 +49,9 @@ async function runTest() {
   const svgElement = await page.$('svg'); // select the first SVG on the page
 
   if (startButton && svgElement) {
-    const maxIterations = 20;
-    for (let i = 0; i <= maxIterations; i++) {
+    // const numIterations = maxIterations * 2;
+    const numIterations = 20;
+    for (let i = 0; i <= numIterations; i++) {
       await startButton.click();
       console.log('Start button clicked', i);
 
@@ -62,9 +64,9 @@ async function runTest() {
         el => el.style.display,
         svgElement
       );
-      if (i < maxIterations && svgDisplay !== 'none') {
+      if (i < numIterations && svgDisplay !== 'none') {
         console.log('SVG is displayed at the correct time');
-      } else if (i === maxIterations && svgDisplay === 'none') {
+      } else if (i === numIterations && svgDisplay === 'none') {
         console.log('SVG is not displayed at the correct time');
       }
     }
