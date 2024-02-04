@@ -262,7 +262,7 @@ function endSessionAndDisplayAndStoreResultsOnServer() {
 
   // Code to send the session data to the server goes here
   console.log('Making fetch request...');
-  fetch('http://localhost:3000/append-session-data', {
+  fetch('/append-session-data', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -285,7 +285,7 @@ function endSessionAndDisplayAndStoreResultsOnServer() {
     })
     .then(() => {
       // This fetch call will be executed after the first one completes
-      return fetch('http://localhost:3000/get-assistant-feedback', {
+      return fetch('/get-assistant-feedback', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -340,7 +340,7 @@ function handleSendButtonClick() {
   const message = messageInput.value;
 
   // send the message to the server
-  fetch('http://localhost:3000/send-message', {
+  fetch('/send-message', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',

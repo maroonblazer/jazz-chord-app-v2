@@ -5,6 +5,7 @@
   "main": "app.js",
   "type": "module",
   "scripts": {
+    "start": "node server.js",
     "test": "echo \"Error: no test specified\" && exit 1",
     "create-sprite": "svg-sprite --symbol --symbol-dest=out --symbol-sprite=icons.svg --symbol-example=true public/svgs/*.svg"
   },
