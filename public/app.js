@@ -4,9 +4,7 @@ let isSessionRunning = false;
 let iterationCount = 0; // Variable to store the session count
 
 // Get the button, text field, and elapsed time elements
-const sessionButton = document.getElementById('sessionButton');
 const startButton = document.getElementById('startButton');
-// startButton.disabled = true; // disable the Start button
 const textField = document.getElementById('textField');
 const elapsedTime = document.getElementById('elapsedTime');
 const inputContainer = document.getElementById('input-container');
@@ -50,7 +48,6 @@ function selectStringAndRootWithKey() {
 
   // Randomly choose between Major and Minor
   const majorOrMinor = Math.random() < 0.5 ? 'Major' : 'Minor';
-  // const majorOrMinor = 'Major';
 
   return {
     cp: chosenString + ' ' + chosenRoot,
@@ -85,6 +82,29 @@ function handleSpacebarEvent(event) {
   }
 }
 
+// New code starts here
+
+// Object to store the session data
+let sessionData = {
+  cp: '',
+  key: '',
+  quality: '',
+};
+
+// Function to update session data
+function updateSessionData(cp, key, quality) {
+  sessionData.cp = cp;
+  sessionData.key = key;
+  sessionData.quality = quality;
+}
+
+// Function to clear session data
+function clearSessionData() {
+  sessionData = { cp: '', key: '', quality: '' };
+}
+
+// End of new code
+
 // Function to handle the Start button click event
 function handleStartButtonClick() {
   // If the session is not running, start it
@@ -105,9 +125,8 @@ function handleStartButtonClick() {
 
     startButton.textContent = 'Stop';
     startTimer();
-    startButton.dataset.cp = cpData.cp;
-    startButton.dataset.key = cpData.key; // Store the CP and its key in the dataset
-    startButton.dataset.quality = cpData.type;
+    updateSessionData(cpData.cp, cpData.key, cpData.type);
+
     iterationCount++;
     console.log('Iteration count:', iterationCount);
     // We're in the middle of a session and the user pressed the spacebar, check if we've reached the end of the session. If we have, end the session and write the file/display the table. .
@@ -126,9 +145,9 @@ function handleStartButtonClick() {
     const currentTime = new Date().getTime();
     const elapsedTimeInMilliseconds = currentTime - startTime;
     const elapsedTimeInSeconds = (elapsedTimeInMilliseconds / 1000).toFixed(1);
-    const cp = startButton.dataset.cp;
-    const key = startButton.dataset.key;
-    const quality = startButton.dataset.quality;
+    const cp = sessionData.cp;
+    const key = sessionData.key;
+    const quality = sessionData.quality;
 
     // Store the CP, its solve time, and the current date and time in the array
     cpsAndTimes.push({
