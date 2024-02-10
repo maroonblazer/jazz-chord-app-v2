@@ -93,28 +93,26 @@ app.post('/get-assistant-feedback', async (req, res) => {
   console.log('Received Post request for assistant feedback');
   try {
     const data = await query('session-data-last-10.csv', 10);
-    res.json(data); // Use res.json() to send a JSON response
+    res.json(data);
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: 'Error querying data' }); // Use res.json() to send a JSON error message
+    res.status(500).json({ message: 'Error querying data' });
   }
 });
 
-// Handle the send-message endpoint
 app.post('/send-message', async (req, res) => {
   console.log('Received Post request for follow-up feedback...');
   try {
-    // get the number of rows, minus the header row in the csv file
     const rows = fs
       .readFileSync('session-data.csv', 'utf8')
       .split('\n')
       .filter(row => row !== '').length;
     const question = req.body.message;
     console.log('Question from client:', question);
-    const data = await query('session-data.csv', rows, question); // we're not sending the question here
-    res.json(data); // Use res.json() to send a JSON response
+    const data = await query('session-data.csv', rows, question);
+    res.json(data);
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: 'Error querying data' }); // Use res.json() to send a JSON error message
+    res.status(500).json({ message: 'Error querying data' });
   }
 });
