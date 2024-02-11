@@ -1,4 +1,4 @@
-export const maxIterations = 10; // Maximum number of iterations for a session
+export const maxIterations = 3; // Maximum number of iterations for a session
 let cpsAndTimes = []; // Array to store CPs and their solve times; we'll use these to create a table of results and send to the server to write out to the csv file.
 let isSessionRunning = false;
 let iterationCount = 0; // Variable to store the session count
@@ -82,8 +82,6 @@ function handleSpacebarEvent(event) {
   }
 }
 
-// New code starts here
-
 // Object to store the session data
 let sessionData = {
   cp: '',
@@ -103,32 +101,11 @@ function clearSessionData() {
   sessionData = { cp: '', key: '', quality: '' };
 }
 
-// End of new code
-
 // Function to handle the Start button click event
 function handleStartButtonClick() {
   // If the session is not running, start it
   if (startButton.textContent === 'Start' && iterationCount < maxIterations) {
-    // clear the results container
-    document.getElementById('resultsContainer').innerHTML = '';
-    // clear the input container
-    inputContainer.style.display = 'none';
-    // clear the fretboard svg container
-    fretboardContainer.innerHTML = '';
-    document.getElementById('assistant-response-text').innerHTML = '';
-
-    const cpData = selectStringAndRootWithKey();
-
-    textField.style.display = 'block';
-    elapsedTime.style.display = 'block';
-    textField.value = cpData.cp + '  ' + cpData.key + '  ' + cpData.type;
-
-    startButton.textContent = 'Stop';
-    startTimer();
-    updateSessionData(cpData.cp, cpData.key, cpData.type);
-
-    iterationCount++;
-    console.log('Iteration count:', iterationCount);
+    startIteration();
     // We're in the middle of a session and the user pressed the spacebar, check if we've reached the end of the session. If we have, end the session and write the file/display the table. .
   } else if (
     startButton.textContent === 'Stop' &&
@@ -141,94 +118,7 @@ function handleStartButtonClick() {
       // We're in the middle of a session and the user pressed the spacebar, so we need to stop the timer and store the solve time.
       startButton.textContent = 'Start';
     }
-    stopTimer();
-    const currentTime = new Date().getTime();
-    const elapsedTimeInMilliseconds = currentTime - startTime;
-    const elapsedTimeInSeconds = (elapsedTimeInMilliseconds / 1000).toFixed(1);
-    const cp = sessionData.cp;
-    const key = sessionData.key;
-    const quality = sessionData.quality;
-
-    // Store the CP, its solve time, and the current date and time in the array
-    cpsAndTimes.push({
-      cp: cp,
-      key: key,
-      time: elapsedTimeInSeconds,
-      quality: quality,
-      date: new Date().toISOString(), // This will store the current date and time
-    });
-
-    // Determine which cp and quality was chosen and display the appropriate svg
-    let cpAndQuality = cp + '-' + quality;
-    let svgClass = '';
-    switch (cpAndQuality) {
-      case 'SS1 R/1-Major':
-        svgClass = 'ss1-r1-major';
-        break;
-      case 'SS1 R/1-Minor':
-        svgClass = 'ss1-r1-minor';
-        break;
-      case 'SS1 R/2-Major':
-        svgClass = 'ss1-r2-major';
-        break;
-      case 'SS1 R/2-Minor':
-        svgClass = 'ss1-r2-minor';
-        break;
-      case 'SS1 R/3-Major':
-        svgClass = 'ss1-r3-major';
-        break;
-      case 'SS1 R/3-Minor':
-        svgClass = 'ss1-r3-minor';
-        break;
-      case 'SS1 R/4-Major':
-        svgClass = 'ss1-r4-major';
-        break;
-      case 'SS1 R/4-Minor':
-        svgClass = 'ss1-r4-minor';
-        break;
-      case 'SS2 R/2-Major':
-        svgClass = 'ss2-r2-major';
-        break;
-      case 'SS2 R/2-Minor':
-        svgClass = 'ss2-r2-minor';
-        break;
-      case 'SS2 R/3-Major':
-        svgClass = 'ss2-r3-major';
-        break;
-      case 'SS2 R/3-Minor':
-        svgClass = 'ss2-r3-minor';
-        break;
-      case 'SS2 R/4-Major':
-        svgClass = 'ss2-r4-major';
-        break;
-      case 'SS2 R/4-Minor':
-        svgClass = 'ss2-r4-minor';
-        break;
-      case 'SS2 R/5-Major':
-        svgClass = 'ss2-r5-major';
-        break;
-      case 'SS2 R/5-Minor':
-        svgClass = 'ss2-r5-minor';
-        break;
-    }
-
-    let otherSvgClass;
-
-    if (svgClass.endsWith('-major')) {
-      otherSvgClass = svgClass.replace('-major', '-minor');
-    } else if (svgClass.endsWith('-minor')) {
-      otherSvgClass = svgClass.replace('-minor', '-major');
-    }
-
-    fretboardContainer.innerHTML = `
-      <svg class="${svgClass}" width="60" height="150">
-        <use xlink:href='#${svgClass}'></use>
-      </svg>
-      <svg class="${otherSvgClass}" width="60" height="150">
-        <use xlink:href='#${otherSvgClass}'></use>
-      </svg>
-    `;
-    fretboardContainer.style.display = 'flex';
+    stopIteratingAndDisplaySolution();
 
     // add a short delay before allowing the next iteration to start
     startButton.disabled = true;
@@ -236,12 +126,128 @@ function handleStartButtonClick() {
       startButton.disabled = false;
     }, 50);
   } else {
-    console.log('Max iterations reached!', iterationCount);
-    startButton.textContent = 'See Results';
-    endSessionAndDisplayAndStoreResultsOnServer();
-    cpsAndTimes = []; // Reset the array so that the results don't get appended to the previous session's results
-    document.addEventListener('keydown', handleSpacebarEvent);
+    stopIteratingAndDisplayResults();
   }
+}
+
+function stopIteratingAndDisplayResults() {
+  startButton.textContent = 'See Results';
+  endSessionAndDisplayAndStoreResultsOnServer();
+  cpsAndTimes = []; // Reset the array so that the results don't get appended to the previous session's results
+  document.addEventListener('keydown', handleSpacebarEvent);
+}
+
+function stopIteratingAndDisplaySolution() {
+  stopTimer();
+  const currentTime = new Date().getTime();
+  const elapsedTimeInMilliseconds = currentTime - startTime;
+  const elapsedTimeInSeconds = (elapsedTimeInMilliseconds / 1000).toFixed(1);
+  const cp = sessionData.cp;
+  const key = sessionData.key;
+  const quality = sessionData.quality;
+
+  // Store the CP, its solve time, and the current date and time in the array
+  cpsAndTimes.push({
+    cp: cp,
+    key: key,
+    time: elapsedTimeInSeconds,
+    quality: quality,
+    date: new Date().toISOString(), // This will store the current date and time
+  });
+
+  // Determine which cp and quality was chosen and display the appropriate svg
+  let cpAndQuality = cp + '-' + quality;
+  let svgClass = '';
+  switch (cpAndQuality) {
+    case 'SS1 R/1-Major':
+      svgClass = 'ss1-r1-major';
+      break;
+    case 'SS1 R/1-Minor':
+      svgClass = 'ss1-r1-minor';
+      break;
+    case 'SS1 R/2-Major':
+      svgClass = 'ss1-r2-major';
+      break;
+    case 'SS1 R/2-Minor':
+      svgClass = 'ss1-r2-minor';
+      break;
+    case 'SS1 R/3-Major':
+      svgClass = 'ss1-r3-major';
+      break;
+    case 'SS1 R/3-Minor':
+      svgClass = 'ss1-r3-minor';
+      break;
+    case 'SS1 R/4-Major':
+      svgClass = 'ss1-r4-major';
+      break;
+    case 'SS1 R/4-Minor':
+      svgClass = 'ss1-r4-minor';
+      break;
+    case 'SS2 R/2-Major':
+      svgClass = 'ss2-r2-major';
+      break;
+    case 'SS2 R/2-Minor':
+      svgClass = 'ss2-r2-minor';
+      break;
+    case 'SS2 R/3-Major':
+      svgClass = 'ss2-r3-major';
+      break;
+    case 'SS2 R/3-Minor':
+      svgClass = 'ss2-r3-minor';
+      break;
+    case 'SS2 R/4-Major':
+      svgClass = 'ss2-r4-major';
+      break;
+    case 'SS2 R/4-Minor':
+      svgClass = 'ss2-r4-minor';
+      break;
+    case 'SS2 R/5-Major':
+      svgClass = 'ss2-r5-major';
+      break;
+    case 'SS2 R/5-Minor':
+      svgClass = 'ss2-r5-minor';
+      break;
+  }
+
+  let otherSvgClass;
+
+  if (svgClass.endsWith('-major')) {
+    otherSvgClass = svgClass.replace('-major', '-minor');
+  } else if (svgClass.endsWith('-minor')) {
+    otherSvgClass = svgClass.replace('-minor', '-major');
+  }
+
+  fretboardContainer.innerHTML = `
+      <svg class="${svgClass}" width="60" height="150">
+        <use xlink:href='#${svgClass}'></use>
+      </svg>
+      <svg class="${otherSvgClass}" width="60" height="150">
+        <use xlink:href='#${otherSvgClass}'></use>
+      </svg>
+    `;
+  fretboardContainer.style.display = 'flex';
+}
+
+function startIteration() {
+  document.getElementById('resultsContainer').innerHTML = '';
+  // clear the input container
+  inputContainer.style.display = 'none';
+  // clear the fretboard svg container
+  fretboardContainer.innerHTML = '';
+  document.getElementById('assistant-response-text').innerHTML = '';
+
+  const cpData = selectStringAndRootWithKey();
+
+  textField.style.display = 'block';
+  elapsedTime.style.display = 'block';
+  textField.value = cpData.cp + '  ' + cpData.key + '  ' + cpData.type;
+
+  startButton.textContent = 'Stop';
+  startTimer();
+  updateSessionData(cpData.cp, cpData.key, cpData.type);
+
+  iterationCount++;
+  console.log('Iteration count:', iterationCount);
 }
 
 function endSessionAndDisplayAndStoreResultsOnServer() {
