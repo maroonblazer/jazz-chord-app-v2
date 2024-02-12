@@ -106,34 +106,6 @@ function clearSessionData() {
   sessionData = { cp: '', key: '', quality: '' };
 }
 
-// function handleStartButtonClick() {
-//   // if (startButton.textContent === 'Start' && iterationCount < maxIterations) {
-//   if (
-//     (currentState === SessionState.STOPPED) |
-//     (currentState === SessionState.PAUSED)
-//   ) {
-//     startIteration();
-//   } else if (
-//     // startButton.textContent === 'Stop' &&
-//     // iterationCount <= maxIterations
-//     currentState === SessionState.RUNNING
-//   ) {
-//     if (iterationCount === maxIterations) {
-//       startButton.textContent = 'See Results';
-//     } else {
-//       // startButton.textContent = 'Start';
-//     }
-//     stopIteratingAndDisplaySolution();
-//     // add a short delay before allowing the next iteration to start
-//     startButton.disabled = true;
-//     setTimeout(() => {
-//       startButton.disabled = false;
-//     }, 50);
-//   } else {
-//     stopIteratingAndDisplayResults();
-//   }
-// }
-
 function handleStartButtonClick() {
   switch (currentState) {
     case SessionState.STOPPED:
@@ -149,7 +121,6 @@ function handleStartButtonClick() {
 }
 
 function stopIteratingAndDisplayResults() {
-  // startButton.textContent = 'See Results';
   endSessionAndDisplayAndStoreResultsOnServer();
   cpsAndTimes = []; // Reset the array so that the results don't get appended to the previous session's results
   document.addEventListener('keydown', handleSpacebarEvent);
@@ -176,6 +147,28 @@ function stopIteratingAndDisplaySolution() {
   });
 
   // Determine which cp and quality was chosen and display the appropriate svg
+  let { svgClass, otherSvgClass } = getChordSVGs(cp, quality);
+
+  fretboardContainer.innerHTML = `
+      <svg class="${svgClass}" width="60" height="150">
+        <use xlink:href='#${svgClass}'></use>
+      </svg>
+      <svg class="${otherSvgClass}" width="60" height="150">
+        <use xlink:href='#${otherSvgClass}'></use>
+      </svg>
+    `;
+  fretboardContainer.style.display = 'flex';
+  if (iterationCount === maxIterations) {
+    startButton.textContent = 'See Results';
+    currentState = SessionState.LAST;
+  } else {
+    startButton.textContent = 'Start';
+    currentState = SessionState.PAUSED;
+  }
+  console.log(currentState);
+}
+
+function getChordSVGs(cp, quality) {
   let cpAndQuality = cp + '-' + quality;
   let svgClass = '';
   switch (cpAndQuality) {
@@ -236,49 +229,22 @@ function stopIteratingAndDisplaySolution() {
   } else if (svgClass.endsWith('-minor')) {
     otherSvgClass = svgClass.replace('-minor', '-major');
   }
-
-  fretboardContainer.innerHTML = `
-      <svg class="${svgClass}" width="60" height="150">
-        <use xlink:href='#${svgClass}'></use>
-      </svg>
-      <svg class="${otherSvgClass}" width="60" height="150">
-        <use xlink:href='#${otherSvgClass}'></use>
-      </svg>
-    `;
-  fretboardContainer.style.display = 'flex';
-  // iterationCount === maxIterations
-  //   ? (startButton.textContent = 'See Results')
-  //   : (startButton.textContent = 'Start');
-  if (iterationCount === maxIterations) {
-    startButton.textContent = 'See Results';
-    currentState = SessionState.LAST;
-  } else {
-    currentState = SessionState.PAUSED;
-  }
-  console.log(currentState);
+  return { svgClass, otherSvgClass };
 }
 
 function startIteration() {
   document.getElementById('resultsContainer').innerHTML = '';
-  // clear the input container
   inputContainer.style.display = 'none';
-  // clear the fretboard svg container
   fretboardContainer.innerHTML = '';
   document.getElementById('assistant-response-text').innerHTML = '';
-
   const cpData = selectStringAndRootWithKey();
-
   textField.style.display = 'block';
   elapsedTime.style.display = 'block';
   textField.value = cpData.cp + '  ' + cpData.key + '  ' + cpData.type;
-
   startButton.textContent = 'Stop';
   startTimer();
   updateSessionData(cpData.cp, cpData.key, cpData.type);
-
   iterationCount++;
-  // if (iterationCount === maxIterations) currentState = SessionState.LAST;
-  // else currentState = SessionState.RUNNING;
   currentState = SessionState.RUNNING;
   console.log('Iteration count:', iterationCount, currentState);
 }
