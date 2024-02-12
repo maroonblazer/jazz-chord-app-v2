@@ -1,4 +1,15 @@
-export const maxIterations = 3; // Maximum number of iterations for a session
+export const maxIterations = 10; // Maximum number of iterations for a session
+
+const SessionState = {
+  STOPPED: 'STOPPED',
+  RUNNING: 'RUNNING',
+  PAUSED: 'PAUSED',
+  LAST: 'LAST',
+  END: 'END',
+};
+
+let currentState = SessionState.STOPPED;
+
 let cpsAndTimes = []; // Array to store CPs and their solve times; we'll use these to create a table of results and send to the server to write out to the csv file.
 let isSessionRunning = false;
 let iterationCount = 0; // Variable to store the session count
@@ -56,13 +67,11 @@ function selectStringAndRootWithKey() {
   };
 }
 
-// Function to start the timer
 function startTimer() {
   startTime = new Date().getTime();
   timerId = setInterval(updateElapsedTime, 100);
 }
 
-// Function to update the elapsed time
 function updateElapsedTime() {
   const currentTime = new Date().getTime();
   const elapsedTimeInMilliseconds = currentTime - startTime;
@@ -70,7 +79,6 @@ function updateElapsedTime() {
   elapsedTime.textContent = `Elapsed Time: ${elapsedTimeInSeconds} seconds`;
 }
 
-// Function to stop the timer
 function stopTimer() {
   clearInterval(timerId);
 }
@@ -82,59 +90,71 @@ function handleSpacebarEvent(event) {
   }
 }
 
-// Object to store the session data
 let sessionData = {
   cp: '',
   key: '',
   quality: '',
 };
 
-// Function to update session data
 function updateSessionData(cp, key, quality) {
   sessionData.cp = cp;
   sessionData.key = key;
   sessionData.quality = quality;
 }
 
-// Function to clear session data
 function clearSessionData() {
   sessionData = { cp: '', key: '', quality: '' };
 }
 
-// Function to handle the Start button click event
-function handleStartButtonClick() {
-  // If the session is not running, start it
-  if (startButton.textContent === 'Start' && iterationCount < maxIterations) {
-    startIteration();
-    // We're in the middle of a session and the user pressed the spacebar, check if we've reached the end of the session. If we have, end the session and write the file/display the table. .
-  } else if (
-    startButton.textContent === 'Stop' &&
-    iterationCount <= maxIterations
-  ) {
-    // If the session is running, stop it
-    if (iterationCount === maxIterations) {
-      startButton.textContent = 'See Results';
-    } else {
-      // We're in the middle of a session and the user pressed the spacebar, so we need to stop the timer and store the solve time.
-      startButton.textContent = 'Start';
-    }
-    stopIteratingAndDisplaySolution();
+// function handleStartButtonClick() {
+//   // if (startButton.textContent === 'Start' && iterationCount < maxIterations) {
+//   if (
+//     (currentState === SessionState.STOPPED) |
+//     (currentState === SessionState.PAUSED)
+//   ) {
+//     startIteration();
+//   } else if (
+//     // startButton.textContent === 'Stop' &&
+//     // iterationCount <= maxIterations
+//     currentState === SessionState.RUNNING
+//   ) {
+//     if (iterationCount === maxIterations) {
+//       startButton.textContent = 'See Results';
+//     } else {
+//       // startButton.textContent = 'Start';
+//     }
+//     stopIteratingAndDisplaySolution();
+//     // add a short delay before allowing the next iteration to start
+//     startButton.disabled = true;
+//     setTimeout(() => {
+//       startButton.disabled = false;
+//     }, 50);
+//   } else {
+//     stopIteratingAndDisplayResults();
+//   }
+// }
 
-    // add a short delay before allowing the next iteration to start
-    startButton.disabled = true;
-    setTimeout(() => {
-      startButton.disabled = false;
-    }, 50);
-  } else {
-    stopIteratingAndDisplayResults();
+function handleStartButtonClick() {
+  switch (currentState) {
+    case SessionState.STOPPED:
+    case SessionState.PAUSED:
+      startIteration();
+      break;
+    case SessionState.RUNNING:
+      stopIteratingAndDisplaySolution();
+      break;
+    case SessionState.LAST:
+      stopIteratingAndDisplayResults();
   }
 }
 
 function stopIteratingAndDisplayResults() {
-  startButton.textContent = 'See Results';
+  // startButton.textContent = 'See Results';
   endSessionAndDisplayAndStoreResultsOnServer();
   cpsAndTimes = []; // Reset the array so that the results don't get appended to the previous session's results
   document.addEventListener('keydown', handleSpacebarEvent);
+  currentState = SessionState.END;
+  console.log(currentState);
 }
 
 function stopIteratingAndDisplaySolution() {
@@ -226,6 +246,16 @@ function stopIteratingAndDisplaySolution() {
       </svg>
     `;
   fretboardContainer.style.display = 'flex';
+  // iterationCount === maxIterations
+  //   ? (startButton.textContent = 'See Results')
+  //   : (startButton.textContent = 'Start');
+  if (iterationCount === maxIterations) {
+    startButton.textContent = 'See Results';
+    currentState = SessionState.LAST;
+  } else {
+    currentState = SessionState.PAUSED;
+  }
+  console.log(currentState);
 }
 
 function startIteration() {
@@ -247,7 +277,10 @@ function startIteration() {
   updateSessionData(cpData.cp, cpData.key, cpData.type);
 
   iterationCount++;
-  console.log('Iteration count:', iterationCount);
+  // if (iterationCount === maxIterations) currentState = SessionState.LAST;
+  // else currentState = SessionState.RUNNING;
+  currentState = SessionState.RUNNING;
+  console.log('Iteration count:', iterationCount, currentState);
 }
 
 function endSessionAndDisplayAndStoreResultsOnServer() {

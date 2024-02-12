@@ -16,26 +16,22 @@ access(filePath, constants.F_OK, err => {
 });
 
 async function runTest() {
-  // Launch the browser
   const browser = await puppeteer.launch({
     headless: false,
     devtools: false,
     args: ['--window-size=1280,1280', '--window-position=1700,0'],
-  }); // set headless: true to run without a browser UI
+  });
   const page = await browser.newPage();
   await page.setViewport({ width: 1280, height: 1280 });
 
-  // Navigate to your app
-  await page.goto('http://localhost:3000'); // replace with your app's URL
+  await page.goto('http://localhost:3000');
 
-  // Perform actions, e.g., click a button
   const sessionButton = await page.$('#sessionButton');
   if (sessionButton) {
     await sessionButton.click();
   } else {
     console.log("The #sessionButton wasn't found.");
   }
-  // Optionally, assert conditions, e.g., check if an element is visible
   const startButtonVisible = await page.waitForSelector('#startButton', {
     visible: true,
   });
@@ -44,9 +40,8 @@ async function runTest() {
     'Start button should be visible after session start'
   );
 
-  // Click the start button
   const startButton = await page.$('#startButton');
-  const svgElement = await page.$('svg'); // select the first SVG on the page
+  const svgElement = await page.$('svg');
 
   if (startButton && svgElement) {
     // const numIterations = maxIterations * 2;
@@ -73,9 +68,7 @@ async function runTest() {
   } else {
     console.log("The #startButton or the SVG wasn't found.");
   }
-  // Fetch call and processing
 
-  // add a delay
   await new Promise(r => setTimeout(r, 2000));
 
   await page.waitForFunction(
