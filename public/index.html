@@ -370,37 +370,38 @@
     <div class="main">
       <div class="displayContainer">
         <div class="button-container">
-          <button id="startButton" class="button">Start</button>
+          <button id="startButton">Start</button>
         </div>
-        <input id="textField" class="text-field" type="text" readonly />
-        <div id="elapsedTime" class="elapsed-time"></div>
+        <p id="chordProblemTextField"></p>
+        <div id="elapsedTime"></div>
         <div id="resultsContainer"></div>
       </div>
-    </div>
-    <div id="fretboardContainer"></div>
-    <div id="assistant-container">
+      <div id="fretboardContainer"></div>
       <div id="assistant-response-text"></div>
-    </div>
-    <div id="input-container" class="input-container">
-      <textarea id="message" placeholder="Type your message here..."></textarea>
-      <button id="send-button">
-        <svg
-          id="send-icon"
-          xmlns="http://www.w3.org/2000/svg"
-          width="20"
-          height="20"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          class="feather feather-send"
-        >
-          <line x1="22" y1="2" x2="11" y2="13"></line>
-          <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
-        </svg>
-      </button>
+      <div id="input-container" class="input-container">
+        <textarea
+          id="message"
+          placeholder="Type your message here..."
+        ></textarea>
+        <button id="send-button">
+          <svg
+            id="send-icon"
+            xmlns="http://www.w3.org/2000/svg"
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            class="feather feather-send"
+          >
+            <line x1="22" y1="2" x2="11" y2="13"></line>
+            <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+          </svg>
+        </button>
+      </div>
     </div>
 
     <script type="module" src="app.js"></script>

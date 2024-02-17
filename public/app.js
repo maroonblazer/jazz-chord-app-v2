@@ -1,4 +1,4 @@
-export const maxIterations = 10; // Maximum number of iterations for a session
+export const maxIterations = 2; // Maximum number of iterations for a session
 
 const SessionState = {
   STOPPED: 'STOPPED',
@@ -16,7 +16,7 @@ let iterationCount = 0; // Variable to store the session count
 
 // Get the button, text field, and elapsed time elements
 const startButton = document.getElementById('startButton');
-const textField = document.getElementById('textField');
+const chordProblemText = document.getElementById('chordProblemTextField');
 const elapsedTime = document.getElementById('elapsedTime');
 const inputContainer = document.getElementById('input-container');
 inputContainer.style.display = 'none';
@@ -124,7 +124,7 @@ function stopIteratingAndDisplayResults() {
   endSessionAndDisplayAndStoreResultsOnServer();
   cpsAndTimes = []; // Reset the array so that the results don't get appended to the previous session's results
   document.addEventListener('keydown', handleSpacebarEvent);
-  currentState = SessionState.END;
+  currentState = SessionState.STOPPED;
   console.log(currentState);
 }
 
@@ -238,9 +238,11 @@ function startIteration() {
   fretboardContainer.innerHTML = '';
   document.getElementById('assistant-response-text').innerHTML = '';
   const cpData = selectStringAndRootWithKey();
-  textField.style.display = 'block';
+  chordProblemText.style.display = 'block';
   elapsedTime.style.display = 'block';
-  textField.value = cpData.cp + '  ' + cpData.key + '  ' + cpData.type;
+  // chordProblemText.value = cpData.cp + '  ' + cpData.key + '  ' + cpData.type;
+  chordProblemText.textContent =
+    cpData.cp + '  ' + cpData.key + '  ' + cpData.type;
   startButton.textContent = 'Stop';
   startTimer();
   updateSessionData(cpData.cp, cpData.key, cpData.type);
@@ -254,11 +256,11 @@ function endSessionAndDisplayAndStoreResultsOnServer() {
   // Set the text field and elapsed time to empty strings
   document.removeEventListener('keydown', handleSpacebarEvent); //why is this here? To prevent the user from starting a new session by pressing the spacebar before we display and store the results.
 
-  textField.value = '';
+  chordProblemText.value = '';
   elapsedTime.textContent = '';
 
   // hide the text field and elapsed time elements
-  textField.style.display = 'none';
+  chordProblemText.style.display = 'none';
   elapsedTime.style.display = 'none';
 
   // hide the fretboard svg container

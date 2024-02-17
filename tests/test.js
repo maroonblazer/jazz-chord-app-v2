@@ -45,7 +45,7 @@ async function runTest() {
 
   if (startButton && svgElement) {
     // const numIterations = maxIterations * 2;
-    const numIterations = 20;
+    const numIterations = 4;
     for (let i = 0; i <= numIterations; i++) {
       await startButton.click();
       console.log('Start button clicked', i);
