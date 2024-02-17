@@ -34,8 +34,8 @@ function chooseRandomString(strings) {
 
 // Function to concatenate two strings returned from chooseRandomString. If 'SS1' is chosen, then 'R/5' should not be chosen. If 'SS2' is chosen, then 'R/1' should not be chosen.
 function selectStringAndRootWithKey() {
-  const stringSet = ['SS1', 'SS2'];
-  const roots = ['R/1', 'R/2', 'R/3', 'R/4', 'R/5'];
+  const stringSet = ['1', '2'];
+  const roots = ['1', '2', '3', '4', '5'];
   // prettier-ignore
   const musicalKeys = ['C','D','E','F','G','A','B','Db','Eb','Gb','Ab','Bb','C#','D#','F#','G#','A#'];
   const chosenKey = chooseRandomString(musicalKeys);
@@ -44,10 +44,10 @@ function selectStringAndRootWithKey() {
     chosenString = chooseRandomString(stringSet);
     chosenRoot = chooseRandomString(roots);
 
-    if (chosenString === 'SS1' && chosenRoot === 'R/5') {
-      chosenRoot = 'R/4';
-    } else if (chosenString === 'SS2' && chosenRoot === 'R/1') {
-      chosenRoot = 'R/2';
+    if (chosenString === '1' && chosenRoot === '5') {
+      chosenRoot = '4';
+    } else if (chosenString === '2' && chosenRoot === '1') {
+      chosenRoot = '2';
     }
   } while (chordsToForget.includes(chosenString + ' ' + chosenRoot));
 
@@ -61,7 +61,8 @@ function selectStringAndRootWithKey() {
   const majorOrMinor = Math.random() < 0.5 ? 'Major' : 'Minor';
 
   return {
-    cp: chosenString + ' ' + chosenRoot,
+    stringSet: chosenString,
+    root: chosenRoot,
     key: chosenKey,
     type: majorOrMinor,
   };
@@ -91,13 +92,15 @@ function handleSpacebarEvent(event) {
 }
 
 let sessionData = {
-  cp: '',
+  stringSet: '',
+  root: '',
   key: '',
   quality: '',
 };
 
-function updateSessionData(cp, key, quality) {
-  sessionData.cp = cp;
+function updateSessionData(stringSet, root, key, quality) {
+  sessionData.stringSet = stringSet;
+  sessionData.root = root;
   sessionData.key = key;
   sessionData.quality = quality;
 }
@@ -133,13 +136,15 @@ function stopIteratingAndDisplaySolution() {
   const currentTime = new Date().getTime();
   const elapsedTimeInMilliseconds = currentTime - startTime;
   const elapsedTimeInSeconds = (elapsedTimeInMilliseconds / 1000).toFixed(1);
-  const cp = sessionData.cp;
+  const stringSet = sessionData.stringSet;
+  const root = sessionData.root;
   const key = sessionData.key;
   const quality = sessionData.quality;
 
   // Store the CP, its solve time, and the current date and time in the array
   cpsAndTimes.push({
-    cp: cp,
+    stringSet: stringSet,
+    root: root,
     key: key,
     time: elapsedTimeInSeconds,
     quality: quality,
@@ -147,7 +152,7 @@ function stopIteratingAndDisplaySolution() {
   });
 
   // Determine which cp and quality was chosen and display the appropriate svg
-  let { svgClass, otherSvgClass } = getChordSVGs(cp, quality);
+  let { svgClass, otherSvgClass } = getChordSVGs(stringSet, root, quality);
 
   fretboardContainer.innerHTML = `
       <svg class="${svgClass}" width="60" height="150">
@@ -168,8 +173,9 @@ function stopIteratingAndDisplaySolution() {
   console.log(currentState);
 }
 
-function getChordSVGs(cp, quality) {
-  let cpAndQuality = cp + '-' + quality;
+function getChordSVGs(ss, root, quality) {
+  let cpAndQuality = `SS${ss} R/${root}-${quality}`;
+
   let svgClass = '';
   switch (cpAndQuality) {
     case 'SS1 R/1-Major':
@@ -234,18 +240,21 @@ function getChordSVGs(cp, quality) {
 
 function startIteration() {
   document.getElementById('resultsContainer').innerHTML = '';
-  // inputContainer.style.display = 'none';
   fretboardContainer.innerHTML = '';
   document.getElementById('assistant-response-text').innerHTML = '';
   const cpData = selectStringAndRootWithKey();
-  // chordProblemText.style.display = 'block';
-  // elapsedTime.style.display = 'block';
-  // chordProblemText.value = cpData.cp + '  ' + cpData.key + '  ' + cpData.type;
+
   chordProblemText.textContent =
-    cpData.cp + '  ' + cpData.key + '  ' + cpData.type;
+    cpData.stringSet +
+    '  ' +
+    cpData.root +
+    '  ' +
+    cpData.key +
+    '  ' +
+    cpData.type;
   startButton.textContent = 'Stop';
   startTimer();
-  updateSessionData(cpData.cp, cpData.key, cpData.type);
+  updateSessionData(cpData.stringSet, cpData.root, cpData.key, cpData.type);
   iterationCount++;
   currentState = SessionState.RUNNING;
   console.log('Iteration count:', iterationCount, currentState);
@@ -256,12 +265,8 @@ function endSessionAndDisplayAndStoreResultsOnServer() {
   // Set the text field and elapsed time to empty strings
   document.removeEventListener('keydown', handleSpacebarEvent); //why is this here? To prevent the user from starting a new session by pressing the spacebar before we display and store the results.
 
-  chordProblemText.value = '';
+  chordProblemText.textContent = '';
   elapsedTime.textContent = '';
-
-  // hide the text field and elapsed time elements
-  // chordProblemText.style.display = 'none';
-  // elapsedTime.style.display = 'none';
 
   // hide the fretboard svg container
   fretboardContainer.innerHTML = '';
@@ -271,15 +276,14 @@ function endSessionAndDisplayAndStoreResultsOnServer() {
 
   // Create and display a table of CPs and their solve times
   let resultsHTML =
-    '<table class="myTable"><tr><th>CP</th><th>Key</th><th>Quality</th><th>Time (seconds)</th><th>Date</th></tr>';
+    '<table class="myTable"><tr><th>SS</th><th>Root</th><th>Key</th><th>Quality</th><th>Time (seconds)</th><th>Date</th></tr>';
   cpsAndTimes.forEach(item => {
     let rowColor = item.quality.includes('Minor')
       ? ' style="background-color: #efeded;"'
       : '';
-    resultsHTML += `<tr${rowColor}><td>${item.cp}</td><td>${item.key}</td><td>${item.quality}</td><td>${item.time}</td><td>${item.date}</td></tr>`;
+    resultsHTML += `<tr${rowColor}><td>${item.stringSet}</td><td>${item.root}</td><td>${item.key}</td><td>${item.quality}</td><td>${item.time}</td><td>${item.date}</td></tr>`;
   });
   resultsHTML += '</table>';
-  // console.log(resultsHTML);
   document.getElementById('resultsContainer').innerHTML = resultsHTML;
 
   document.getElementById(
@@ -352,10 +356,10 @@ function endSessionAndDisplayAndStoreResultsOnServer() {
 
 // Function to convert data to CSV format
 function convertArrayToCSV(array) {
-  let csvContent = 'cp,key,time,quality,date\n'; // Add 'date' to the header
+  let csvContent = 'ss,root,,key,time,quality,date\n'; // Add 'date' to the header
 
   array.forEach(item => {
-    csvContent += `${item.cp},${item.key},${item.time},${item.quality},${item.date}\n`; // Add item.date to each row
+    csvContent += `${item.stringSet},${item.root},${item.key},${item.time},${item.quality},${item.date}\n`; // Add item.date to each row
   });
 
   return csvContent;

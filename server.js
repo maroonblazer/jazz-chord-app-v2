@@ -27,7 +27,10 @@ app.get('/', (req, res) => {
 app.post('/append-session-data', (req, res) => {
   const { data } = req.body; //Assuming data is an array of objects
   const csvData = data
-    .map(obj => `${obj.cp},${obj.key},${obj.quality},${obj.time},${obj.date}`)
+    .map(
+      obj =>
+        `${obj.stringSet},${obj.root},${obj.key},${obj.quality},${obj.time},${obj.date}`
+    )
     .join('\n');
 
   const filePath = path.join(process.cwd(), 'session-data.csv');
@@ -38,7 +41,7 @@ app.post('/append-session-data', (req, res) => {
     if (err) {
       console.log('Received Post request to append session data to a NEW file');
       console.log(`File ${filePath} does not exist so creating it...`);
-      fs.writeFile(filePath, 'Problem,Key,Quality,Time,Date\n', err => {
+      fs.writeFile(filePath, 'SS,Root,Key,Quality,Time,Date\n', err => {
         // Add 'Date' here
         if (err) {
           console.log(err);
@@ -70,11 +73,14 @@ app.post('/append-session-data', (req, res) => {
   function overwriteData() {
     const last10Rows = data
       .slice(-10)
-      .map(obj => `${obj.cp},${obj.key},${obj.quality},${obj.time},${obj.date}`)
+      .map(
+        obj =>
+          `${obj.stringSet},${obj.root},${obj.key},${obj.quality},${obj.time},${obj.date}`
+      )
       .join('\n');
     fs.writeFile(
       secondFilePath,
-      'Problem,Key,Quality,Time,Date\n' + last10Rows + '\n',
+      'SS,Root,Key,Quality,Time,Date\n' + last10Rows + '\n',
       err => {
         if (err) {
           console.log(err);
