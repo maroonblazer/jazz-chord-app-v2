@@ -234,12 +234,12 @@ function getChordSVGs(cp, quality) {
 
 function startIteration() {
   document.getElementById('resultsContainer').innerHTML = '';
-  inputContainer.style.display = 'none';
+  // inputContainer.style.display = 'none';
   fretboardContainer.innerHTML = '';
   document.getElementById('assistant-response-text').innerHTML = '';
   const cpData = selectStringAndRootWithKey();
-  chordProblemText.style.display = 'block';
-  elapsedTime.style.display = 'block';
+  // chordProblemText.style.display = 'block';
+  // elapsedTime.style.display = 'block';
   // chordProblemText.value = cpData.cp + '  ' + cpData.key + '  ' + cpData.type;
   chordProblemText.textContent =
     cpData.cp + '  ' + cpData.key + '  ' + cpData.type;
@@ -260,8 +260,8 @@ function endSessionAndDisplayAndStoreResultsOnServer() {
   elapsedTime.textContent = '';
 
   // hide the text field and elapsed time elements
-  chordProblemText.style.display = 'none';
-  elapsedTime.style.display = 'none';
+  // chordProblemText.style.display = 'none';
+  // elapsedTime.style.display = 'none';
 
   // hide the fretboard svg container
   fretboardContainer.innerHTML = '';
