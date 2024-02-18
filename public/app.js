@@ -18,8 +18,8 @@ let iterationCount = 0; // Variable to store the session count
 const startButton = document.getElementById('startButton');
 const chordProblemText = document.getElementById('chordProblemTextField');
 const elapsedTime = document.getElementById('elapsedTime');
-const inputContainer = document.getElementById('input-container');
-inputContainer.style.display = 'none';
+// const inputContainer = document.getElementById('input-container');
+// inputContainer.style.display = 'none';
 
 let timerId; // Variable to store the timer ID
 let startTime; // Variable to store the start time
@@ -335,9 +335,6 @@ function endSessionAndDisplayAndStoreResultsOnServer() {
       // Append the paragraph to the body of the document
       document.getElementById('assistant-response-text').innerHTML =
         p.textContent;
-
-      // Display the input container
-      inputContainer.style.display = 'flex';
     })
     .catch(error => {
       console.error('Error:', error);
@@ -415,33 +412,3 @@ startButton.addEventListener('click', handleStartButtonClick);
 
 // Add keydown event listener to the document
 document.addEventListener('keydown', handleSpacebarEvent);
-
-const messageInput = document.getElementById('message');
-const sendButton = document.getElementById('send-button');
-
-// Listen for clicks on the send button and call a new function named handleSendButtonClick
-sendButton.addEventListener('click', handleSendButtonClick);
-
-// Remove keydown event listener when the input field is focused
-messageInput.addEventListener('focus', event => {
-  document.removeEventListener('keydown', handleSpacebarEvent);
-});
-
-// Remove keydown event listener when the send button is focused
-sendButton.addEventListener('focus', event => {
-  document.removeEventListener('keydown', handleSpacebarEvent);
-});
-
-// Re-add keydown event listener when the input field loses focus and the focus is not within the send button
-messageInput.addEventListener('blur', event => {
-  if (document.activeElement !== sendButton) {
-    document.addEventListener('keydown', handleSpacebarEvent);
-  }
-});
-
-// Re-add keydown event listener when the send button loses focus and the focus is not within the input field
-sendButton.addEventListener('blur', event => {
-  if (document.activeElement !== messageInput) {
-    document.addEventListener('keydown', handleSpacebarEvent);
-  }
-});
