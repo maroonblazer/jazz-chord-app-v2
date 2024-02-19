@@ -15,8 +15,8 @@ let isSessionRunning = false;
 let iterationCount = 0; // Variable to store the session count
 
 // Get the button, text field, and elapsed time elements
-const startButton = document.getElementById('startButton');
-const chordProblemText = document.getElementById('chordProblemTextField');
+const startButton = document.getElementById('start-stop-button');
+const chordProblemText = document.getElementById('stringSetTextField');
 const elapsedTime = document.getElementById('elapsedTime');
 // const inputContainer = document.getElementById('input-container');
 // inputContainer.style.display = 'none';
@@ -26,7 +26,7 @@ let startTime; // Variable to store the start time
 let chordsToForget = []; // Queue to store the last two strings
 
 // select the div container that will hold the svg image
-const fretboardContainer = document.getElementById('fretboardContainer');
+const fretboardContainer = document.getElementById('fretboard-container');
 
 function chooseRandomString(strings) {
   return strings[Math.floor(Math.random() * strings.length)];

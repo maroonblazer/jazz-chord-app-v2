@@ -47,7 +47,7 @@ export const query = async (
       },
       {
         role: 'user',
-        content: `Each row in the csv file contains a chord problem. The 'Time' column represents how long it took me to answer the chord problem for that row. Chord problems with a smaller time value took less time. Chord problems with larger time values took more time. The longer a chord problem takes, the more I need to practice it. Be as concise as possible. Format your response like the following example:
+        content: `Each row in the csv file contains a chord problem. The 'Time' column represents how long it took me to answer the chord problem for that row. Chord problems with a smaller time value took less time. Chord problems with larger time values took more time. The longer a chord problem takes, the more I need to practice it. When asked which chord problem took the longest time to complete, determine the answer by comparing the values in the 'Time' column. The problem with the largest value for 'Time' is the problem that needs the most practice. Be as concise as possible. Format your response like the following example:
 		        'String Set 2, Root on 3, in C Minor took 24.3 seconds. \n
 		        String Set 1 Root on 1, in Db Minor took 14.5 seconds. \n
 		        String Set 1 Root on 4, in A# Major took 11.2 seconds. \n'
