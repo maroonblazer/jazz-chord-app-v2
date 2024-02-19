@@ -16,7 +16,9 @@ let iterationCount = 0; // Variable to store the session count
 
 // Get the button, text field, and elapsed time elements
 const startButton = document.getElementById('start-stop-button');
-const chordProblemText = document.getElementById('stringSetTextField');
+const stringSetTextField = document.getElementById('stringSetTextField');
+const rootTextField = document.getElementById('rootTextField');
+const keyTextField = document.getElementById('keyTextField');
 const elapsedTime = document.getElementById('elapsedTime');
 // const inputContainer = document.getElementById('input-container');
 // inputContainer.style.display = 'none';
@@ -244,14 +246,17 @@ function startIteration() {
   document.getElementById('assistant-response-text').innerHTML = '';
   const cpData = selectStringAndRootWithKey();
 
-  chordProblemText.textContent =
-    cpData.stringSet +
-    '  ' +
-    cpData.root +
-    '  ' +
-    cpData.key +
-    '  ' +
-    cpData.type;
+  stringSetTextField.textContent = cpData.stringSet;
+  rootTextField.textContent = cpData.root;
+  keyTextField.textContent = cpData.key;
+  // stringSetTextField.textContent =
+  //   cpData.stringSet +
+  //   '  ' +
+  //   cpData.root +
+  //   '  ' +
+  //   cpData.key +
+  //   '  ' +
+  //   cpData.type;
   startButton.textContent = 'Stop';
   startTimer();
   updateSessionData(cpData.stringSet, cpData.root, cpData.key, cpData.type);
@@ -265,7 +270,9 @@ function endSessionAndDisplayAndStoreResultsOnServer() {
   // Set the text field and elapsed time to empty strings
   document.removeEventListener('keydown', handleSpacebarEvent); //why is this here? To prevent the user from starting a new session by pressing the spacebar before we display and store the results.
 
-  chordProblemText.textContent = '';
+  stringSetTextField.textContent = '--';
+  rootTextField.textContent = '--';
+  keyTextField.textContent = '--';
   elapsedTime.textContent = '';
 
   // hide the fretboard svg container
