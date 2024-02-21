@@ -16,6 +16,7 @@ let iterationCount = 0; // Variable to store the session count
 
 // Get the button, text field, and elapsed time elements
 const startButton = document.getElementById('start-stop-button');
+const startStopButtonLabel = document.getElementById('start-stop-button-label');
 const stringSetTextField = document.getElementById('stringSetTextField');
 const rootTextField = document.getElementById('rootTextField');
 const keyTextField = document.getElementById('keyTextField');
@@ -166,10 +167,10 @@ function stopIteratingAndDisplaySolution() {
     `;
   fretboardContainer.style.display = 'flex';
   if (iterationCount === maxIterations) {
-    startButton.textContent = 'See Results';
+    startStopButtonLabel.textContent = 'See Results';
     currentState = SessionState.LAST;
   } else {
-    startButton.textContent = 'Start';
+    startStopButtonLabel.textContent = 'Start';
     currentState = SessionState.PAUSED;
   }
   console.log(currentState);
@@ -257,7 +258,7 @@ function startIteration() {
   //   cpData.key +
   //   '  ' +
   //   cpData.type;
-  startButton.textContent = 'Stop';
+  startStopButtonLabel.textContent = 'Stop';
   startTimer();
   updateSessionData(cpData.stringSet, cpData.root, cpData.key, cpData.type);
   iterationCount++;
@@ -337,7 +338,7 @@ function endSessionAndDisplayAndStoreResultsOnServer() {
       // Set the text of the paragraph to the answer
       p.textContent = data.answer;
       // Change the start button text to 'Start'
-      startButton.textContent = 'Start';
+      startStopButtonLabel.textContent = 'Start';
 
       // Append the paragraph to the body of the document
       document.getElementById('assistant-response-text').innerHTML =
