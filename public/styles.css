@@ -20,9 +20,9 @@ body {
 
 /* Everything above is from the FEM Responsive Web Design course */
 
-* {
-  /* border: 1px solid red; */
-}
+/* * {
+  border: 1px solid red;
+} */
 .problem-container {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -43,6 +43,18 @@ body {
   margin: 1rem auto;
 }
 
+#elapsedTime {
+  display: none;
+}
+
+#fretboard-container {
+  justify-content: center;
+}
+
+#resultsContainer {
+  overflow-x: auto;
+}
+
 .button-container {
   text-align: center;
 }
@@ -61,7 +73,7 @@ body {
 /* Style the table so that the data for each column is center-aligned under each column heading */
 table {
   border-collapse: collapse;
-  width: 35%;
+  font-size: 0.5rem;
 }
 
 th {
