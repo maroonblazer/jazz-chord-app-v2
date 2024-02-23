@@ -292,14 +292,15 @@ function endSessionAndDisplayAndStoreResultsOnServer() {
     resultsHTML += `<tr${rowColor}><td>${item.stringSet}</td><td>${item.root}</td><td>${item.key}</td><td>${item.quality}</td><td>${item.time}</td><td>${item.date}</td></tr>`;
   });
   resultsHTML += '</table>';
-  document.getElementById('resultsContainer').innerHTML = resultsHTML;
+  // document.getElementById('resultsContainer').innerHTML = resultsHTML
+  console.table(cpsAndTimes);
 
   document.getElementById(
     'assistant-response-text'
   ).innerHTML = `Generating feedback from the assistant...`;
 
   // Code to send the session data to the server goes here
-  console.log('Making fetch request...');
+  // console.log('Making fetch request...');
   fetch('/append-session-data', {
     method: 'POST',
     headers: {
@@ -308,18 +309,19 @@ function endSessionAndDisplayAndStoreResultsOnServer() {
     body: JSON.stringify({ data: cpsAndTimes }),
   })
     .then(response => {
-      console.log('Received response:', response);
+      // console.log('Received response:', response);
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
-      console.log('Response is OK, parsing as JSON...');
+      // console.log('Response is OK, parsing as JSON...');
       return response.json(); // Parse the response as JSON
     })
     .then(data => {
-      console.log('Received data:', data);
-      console.log(
-        `logging the result promise from append-session-data-${data.message}`
-      ); // Access the message property of the data
+      // console.log('Received data:', data);
+      console
+        .log
+        // `logging the result promise from append-session-data-${data.message}`
+        (); // Access the message property of the data
     })
     .then(() => {
       // This fetch call will be executed after the first one completes
