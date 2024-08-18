@@ -37,7 +37,7 @@ export const query = async (
   const store = await loadStore(csvFile);
   const results = await store.similaritySearch(question, k);
   const response = await openai.chat.completions.create({
-    model: 'gpt-3.5-turbo-16k-0613',
+    model: 'gpt-3.5-turbo',
     temperature: 0,
     messages: [
       {

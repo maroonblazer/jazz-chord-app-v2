@@ -1,4 +1,4 @@
-export const maxIterations = 2; // Maximum number of iterations for a session
+export const maxIterations = 10; // Maximum number of iterations for a session
 
 const SessionState = {
   STOPPED: 'STOPPED',
@@ -334,17 +334,28 @@ function endSessionAndDisplayAndStoreResultsOnServer() {
     })
     .then(response => response.json())
     .then(data => {
+      // THIS IS THE CONTENT OF OUR ANSWER FROM THE LLM. There are 2 objects: 'answer' and 'sources'.  We want just the answer.
+      // START new code for this block:
       // Create a new paragraph element
       const p = document.createElement('p');
 
-      // Set the text of the paragraph to the answer
-      p.textContent = data.answer;
+      // Set the inner HTML of the paragraph to the answer, replacing \n\n with <br>
+      p.innerHTML = data.answer.replace(/\n\n/g, '<br>');
+
       // Change the start button text to 'Start'
       startStopButtonLabel.textContent = 'Start';
 
       // Append the paragraph to the body of the document
+      const responseContainer = document.getElementById(
+        'assistant-response-text'
+      );
+      responseContainer.innerHTML = ''; // Clear previous content
+      responseContainer.appendChild(p);
+
+      // Update the innerHTML of the response container with the paragraph's innerHTML
       document.getElementById('assistant-response-text').innerHTML =
-        p.textContent;
+        p.innerHTML;
+      // END new code for this block:
     })
     .catch(error => {
       console.error('Error:', error);
