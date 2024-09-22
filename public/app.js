@@ -43,14 +43,23 @@ function selectStringAndRootWithKey() {
   const musicalKeys = ['C','D','E','F','G','A','B','Db','Eb','Gb','Ab','Bb','C#','D#','F#','G#','A#'];
   const chosenKey = chooseRandomString(musicalKeys);
   let chosenString, chosenRoot;
+  let maxAttempts = 10;
+  let attempts = 0;
+
   do {
     chosenString = chooseRandomString(stringSet);
-    chosenRoot = chooseRandomString(roots);
+    chosenRoot = '3';
 
     if (chosenString === '1' && chosenRoot === '5') {
       chosenRoot = '4';
     } else if (chosenString === '2' && chosenRoot === '1') {
       chosenRoot = '2';
+    }
+
+    attempts++;
+    if (attempts >= maxAttempts) {
+      console.error('Max attempts reached, exiting loop.');
+      break;
     }
   } while (chordsToForget.includes(chosenString + ' ' + chosenRoot));
 
