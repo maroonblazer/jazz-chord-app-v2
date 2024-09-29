@@ -35,20 +35,23 @@ function chooseRandomString(strings) {
   return strings[Math.floor(Math.random() * strings.length)];
 }
 
+// Add this to your global variables
+const chordTypes = ['maj7', 'min7', 'dom7', 'min7b5', 'alt dom', 'maj9', 'min9', 'dom13'];
+
 // Function to concatenate two strings returned from chooseRandomString. If 'SS1' is chosen, then 'R/5' should not be chosen. If 'SS2' is chosen, then 'R/1' should not be chosen.
 function selectStringAndRootWithKey() {
   const stringSet = ['1', '2'];
   const roots = ['1', '2', '3', '4', '5'];
-  // prettier-ignore
   const musicalKeys = ['C','D','E','F','G','A','B','Db','Eb','Gb','Ab','Bb','C#','D#','F#','G#','A#'];
   const chosenKey = chooseRandomString(musicalKeys);
+  const chosenType = chooseRandomString(chordTypes);
   let chosenString, chosenRoot;
   let maxAttempts = 10;
   let attempts = 0;
 
   do {
     chosenString = chooseRandomString(stringSet);
-    chosenRoot = '3';
+    chosenRoot = chooseRandomString(roots); // Changed this line
 
     if (chosenString === '1' && chosenRoot === '5') {
       chosenRoot = '4';
@@ -69,14 +72,11 @@ function selectStringAndRootWithKey() {
   }
   chordsToForget.push(chosenString + ' ' + chosenRoot);
 
-  // Randomly choose between Major and Minor
-  const majorOrMinor = Math.random() < 0.5 ? 'Major' : 'Minor';
-
   return {
     stringSet: chosenString,
     root: chosenRoot,
     key: chosenKey,
-    type: majorOrMinor,
+    type: chosenType
   };
 }
 
@@ -107,18 +107,18 @@ let sessionData = {
   stringSet: '',
   root: '',
   key: '',
-  quality: '',
+  type: '',
 };
 
-function updateSessionData(stringSet, root, key, quality) {
+function updateSessionData(stringSet, root, key, type) {
   sessionData.stringSet = stringSet;
   sessionData.root = root;
   sessionData.key = key;
-  sessionData.quality = quality;
+  sessionData.type = type;
 }
 
 function clearSessionData() {
-  sessionData = { cp: '', key: '', quality: '' };
+  sessionData = { cp: '', key: '', type: '' };
 }
 
 function handleStartButtonClick() {
@@ -151,7 +151,7 @@ function stopIteratingAndDisplaySolution() {
   const stringSet = sessionData.stringSet;
   const root = sessionData.root;
   const key = sessionData.key;
-  const quality = sessionData.quality;
+  const type = sessionData.type;
 
   // Store the CP, its solve time, and the current date and time in the array
   cpsAndTimes.push({
@@ -159,12 +159,12 @@ function stopIteratingAndDisplaySolution() {
     root: root,
     key: key,
     time: elapsedTimeInSeconds,
-    quality: quality,
-    date: new Date().toISOString(), // This will store the current date and time
+    quality: type, // Changed from 'type' to 'quality'
+    date: new Date().toISOString(),
   });
 
-  // Determine which cp and quality was chosen and display the appropriate svg
-  let { svgClass, otherSvgClass } = getChordSVGs(stringSet, root, quality);
+  // Determine which cp and type was chosen and display the appropriate svg
+  let { svgClass, otherSvgClass } = getChordSVGs(stringSet, root, type);
 
   fretboardContainer.innerHTML = `
       <svg class="${svgClass}" width="60" height="150">
@@ -185,67 +185,67 @@ function stopIteratingAndDisplaySolution() {
   console.log(currentState);
 }
 
-function getChordSVGs(ss, root, quality) {
-  let cpAndQuality = `SS${ss} R/${root}-${quality}`;
+function getChordSVGs(ss, root, type) {
+  let cpAndType = `SS${ss} R/${root}-${type}`;
 
   let svgClass = '';
-  switch (cpAndQuality) {
-    case 'SS1 R/1-Major':
-      svgClass = 'ss1-r1-major';
+  switch (cpAndType) {
+    case 'SS1 R/1-maj7':
+      svgClass = 'ss1-r1-maj7';
       break;
-    case 'SS1 R/1-Minor':
-      svgClass = 'ss1-r1-minor';
+    case 'SS1 R/1-min7':
+      svgClass = 'ss1-r1-min7';
       break;
-    case 'SS1 R/2-Major':
-      svgClass = 'ss1-r2-major';
+    case 'SS1 R/2-maj7':
+      svgClass = 'ss1-r2-maj7';
       break;
-    case 'SS1 R/2-Minor':
-      svgClass = 'ss1-r2-minor';
+    case 'SS1 R/2-min7':
+      svgClass = 'ss1-r2-min7';
       break;
-    case 'SS1 R/3-Major':
-      svgClass = 'ss1-r3-major';
+    case 'SS1 R/3-maj7':
+      svgClass = 'ss1-r3-maj7';
       break;
-    case 'SS1 R/3-Minor':
-      svgClass = 'ss1-r3-minor';
+    case 'SS1 R/3-min7':
+      svgClass = 'ss1-r3-min7';
       break;
-    case 'SS1 R/4-Major':
-      svgClass = 'ss1-r4-major';
+    case 'SS1 R/4-maj7':
+      svgClass = 'ss1-r4-maj7';
       break;
-    case 'SS1 R/4-Minor':
-      svgClass = 'ss1-r4-minor';
+    case 'SS1 R/4-min7':
+      svgClass = 'ss1-r4-min7';
       break;
-    case 'SS2 R/2-Major':
-      svgClass = 'ss2-r2-major';
+    case 'SS2 R/2-maj7':
+      svgClass = 'ss2-r2-maj7';
       break;
-    case 'SS2 R/2-Minor':
-      svgClass = 'ss2-r2-minor';
+    case 'SS2 R/2-min7':
+      svgClass = 'ss2-r2-min7';
       break;
-    case 'SS2 R/3-Major':
-      svgClass = 'ss2-r3-major';
+    case 'SS2 R/3-maj7':
+      svgClass = 'ss2-r3-maj7';
       break;
-    case 'SS2 R/3-Minor':
-      svgClass = 'ss2-r3-minor';
+    case 'SS2 R/3-min7':
+      svgClass = 'ss2-r3-min7';
       break;
-    case 'SS2 R/4-Major':
-      svgClass = 'ss2-r4-major';
+    case 'SS2 R/4-maj7':
+      svgClass = 'ss2-r4-maj7';
       break;
-    case 'SS2 R/4-Minor':
-      svgClass = 'ss2-r4-minor';
+    case 'SS2 R/4-min7':
+      svgClass = 'ss2-r4-min7';
       break;
-    case 'SS2 R/5-Major':
-      svgClass = 'ss2-r5-major';
+    case 'SS2 R/5-maj7':
+      svgClass = 'ss2-r5-maj7';
       break;
-    case 'SS2 R/5-Minor':
-      svgClass = 'ss2-r5-minor';
+    case 'SS2 R/5-min7':
+      svgClass = 'ss2-r5-min7';
       break;
   }
 
   let otherSvgClass;
 
-  if (svgClass.endsWith('-major')) {
-    otherSvgClass = svgClass.replace('-major', '-minor');
-  } else if (svgClass.endsWith('-minor')) {
-    otherSvgClass = svgClass.replace('-minor', '-major');
+  if (svgClass.endsWith('-maj7')) {
+    otherSvgClass = svgClass.replace('-maj7', '-min7');
+  } else if (svgClass.endsWith('-min7')) {
+    otherSvgClass = svgClass.replace('-min7', '-maj7');
   }
   return { svgClass, otherSvgClass };
 }
@@ -259,14 +259,7 @@ function startIteration() {
   stringSetTextField.textContent = cpData.stringSet;
   rootTextField.textContent = cpData.root;
   keyTextField.textContent = cpData.key;
-  // stringSetTextField.textContent =
-  //   cpData.stringSet +
-  //   '  ' +
-  //   cpData.root +
-  //   '  ' +
-  //   cpData.key +
-  //   '  ' +
-  //   cpData.type;
+  document.getElementById('typeTextField').textContent = cpData.type;
   startStopButtonLabel.textContent = 'Stop';
   startTimer();
   updateSessionData(cpData.stringSet, cpData.root, cpData.key, cpData.type);
@@ -295,7 +288,7 @@ function endSessionAndDisplayAndStoreResultsOnServer() {
   let resultsHTML =
     '<table class="myTable"><tr><th>SS</th><th>Root</th><th>Key</th><th>Quality</th><th>Time (seconds)</th><th>Date</th></tr>';
   cpsAndTimes.forEach(item => {
-    let rowColor = item.quality.includes('Minor')
+    let rowColor = item.quality.includes('min7')
       ? ' style="background-color: #efeded;"'
       : '';
     resultsHTML += `<tr${rowColor}><td>${item.stringSet}</td><td>${item.root}</td><td>${item.key}</td><td>${item.quality}</td><td>${item.time}</td><td>${item.date}</td></tr>`;
@@ -383,10 +376,10 @@ function endSessionAndDisplayAndStoreResultsOnServer() {
 
 // Function to convert data to CSV format
 function convertArrayToCSV(array) {
-  let csvContent = 'ss,root,,key,time,quality,date\n'; // Add 'date' to the header
+  let csvContent = 'ss,root,,key,time,type,date\n'; // Add 'date' to the header
 
   array.forEach(item => {
-    csvContent += `${item.stringSet},${item.root},${item.key},${item.time},${item.quality},${item.date}\n`; // Add item.date to each row
+    csvContent += `${item.stringSet},${item.root},${item.key},${item.time},${item.type},${item.date}\n`; // Add item.date to each row
   });
 
   return csvContent;
@@ -442,3 +435,17 @@ startButton.addEventListener('click', handleStartButtonClick);
 
 // Add keydown event listener to the document
 document.addEventListener('keydown', handleSpacebarEvent);
+
+// Update the sendDataToServer function
+function sendDataToServer() {
+  const data = {
+    stringSet: sessionData.stringSet,
+    root: sessionData.root,
+    key: sessionData.key,
+    quality: sessionData.type, // Changed from 'type' to 'quality'
+    time: new Date().toLocaleTimeString(),
+    date: new Date().toLocaleDateString()
+  };
+
+  // ... rest of the function remains the same ...
+}
