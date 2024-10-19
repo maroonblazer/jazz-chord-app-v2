@@ -1,4 +1,4 @@
-export const maxIterations = 10; // Maximum number of iterations for a session
+export const maxIterations = 4; // Maximum number of iterations for a session
 
 const SessionState = {
   STOPPED: "STOPPED",
@@ -31,6 +31,214 @@ let chordsToForget = []; // Queue to store the last two strings
 
 // select the div container that will hold the svg image
 const fretboardContainer = document.getElementById("fretboard-container");
+
+function newChord(fretPositions, options = {}) {
+  // Default values
+  const { width = 339, height = 806, circleColor = "black" } = options;
+
+  // Ensure fretPositions is always an array
+  if (!Array.isArray(fretPositions)) {
+    throw new Error("fretPositions must be an array");
+  }
+
+  console.log("Input fretPositions:", fretPositions);
+
+  // Generate SVG string
+  let svg = `<svg width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" fill="none" xmlns="http://www.w3.org/2000/svg">`;
+
+  // Add fretboard base group
+  svg += `
+    <g id="fretboard-base">
+      <g id="Frame 1">
+        <g id="Strings">
+          <line id="Low E" x1="13.5" y1="2" x2="13.5" y2="806" stroke="black"/>
+          <line id="A" x1="73.5" y1="2" x2="73.5" y2="806" stroke="black"/>
+          <line id="D" x1="133.5" y1="2" x2="133.5" y2="806" stroke="black"/>
+          <line id="G" x1="193.5" y1="2" x2="193.5" y2="806" stroke="black"/>
+          <line id="B" x1="253.5" y1="2" x2="253.5" y2="806" stroke="black"/>
+          <line id="High E" x1="313.5" y1="2" x2="313.5" y2="806" stroke="black"/>
+        </g>
+        <rect id="Fretboard" x="1.5" y="1.5" width="323" height="803" stroke="black" stroke-width="3"/>
+      </g>
+      <g id="Frets">
+        <line id="Fret 5" x1="3" y1="680.5" x2="323" y2="680.5" stroke="black" stroke-width="3"/>
+        <line id="Fret 4" x1="3" y1="560.5" x2="323" y2="560.5" stroke="black" stroke-width="3"/>
+        <line id="Fret 3" x1="3" y1="440.5" x2="323" y2="440.5" stroke="black" stroke-width="3"/>
+        <line id="Fret 2" x1="3" y1="300.5" x2="323" y2="300.5" stroke="black" stroke-width="3"/>
+        <line id="Fret 1" x1="3" y1="160.5" x2="323" y2="160.5" stroke="black" stroke-width="3"/>
+      </g>
+    </g>`;
+
+  // Add circles for pressed frets
+  svg += `<g id="chord-circles">`;
+  const stringPositions = [13.5, 73.5, 133.5, 193.5, 253.5, 313.5]; // Low E to High E
+  const fretYPositions = [0, 80.25, 230.5, 370.5, 500.5, 620.5]; // 0 is open string
+
+  fretPositions.forEach((fret, index) => {
+    if (fret !== null) {
+      const x = stringPositions[index];
+      const y = fretYPositions[fret];
+      console.log(
+        `Adding circle: string ${index + 1}, fret ${fret}, x: ${x}, y: ${y}`
+      );
+      svg += `<circle cx="${x}" cy="${y}" r="24" fill="${circleColor}"/>`;
+    }
+  });
+  svg += `</g>`;
+
+  // Close SVG tag
+  svg += "</svg>";
+
+  return svg;
+}
+
+function getFretPositions(stringSet, root, type) {
+  // Define chord shapes
+  const chordShapes = {
+    SS1: {
+      "R/1": {
+        maj7: [null, null, 4, 4, 3, 3],
+        min7: [null, null, 3, 3, 3, 3],
+        dom7: [null, null, 3, 4, 3, 3],
+        min7b5: [null, null, 3, 3, 2, 3],
+        "alt dom": [null, null, 3, 4, 4, 4],
+        maj9: [null, null, 4, 4, 5, 5],
+        min9: [null, null, 3, 3, 3, 5],
+        dom13: [null, null, 3, 3, 4, 5],
+      },
+      "R/2": {
+        maj7: [null, null, 3, 5, 2, 4],
+        min7: [null, null, 2, 4, 2, 4],
+        dom7: [null, null, 3, 4, 2, 4],
+        dom7: [null, null, 3, 4, 2, 4],
+        min7b5: [null, null, 2, 4, 2, 3],
+        "alt dom": [null, null, 3, 4, 3, 5],
+        maj9: [null, null, 3, 5, 4, 4],
+        min9: [null, null, 2, 4, 4, 4],
+        dom13: [null, null, 3, 4, 4, 4],
+      },
+      "R/3": {
+        maj7: [null, null, 2, 4, 2, 4],
+        min7: [null, null, 3, 3, 2, 4],
+        dom7: [null, null, 3, 3, 3, 4],
+        min7b5: [null, null, 2, 3, 2, 4],
+        "alt dom": [null, null, 4, 4, 3, 4],
+        maj9: [null, null, 3, 3, 3, 5],
+        min9: [null, null, 3, 5, 2, 4],
+        dom13: [null, null, 3, 5, 3, 4],
+      },
+      "R/4": {
+        maj7: [null, null, 3, 5, 5, 5],
+        min7: [null, null, 3, 5, 4, 4],
+        dom7: [null, null, 3, 5, 4, 5],
+        min7b5: [null, null, 3, 4, 4, 4],
+        "alt dom": [null, null, 3, 5, 3, 4],
+        maj9: [null, null, 3, 5, 5, 5],
+        min9: [null, null, 3, 3, 4, 4],
+        dom13: [null, null, 1, 5, 2, 3],
+      },
+    },
+    SS2: {
+      "R/2": {
+        maj7: [null, 3,3,1,2, null],
+        min7: [null, 3, 3, 2, 3, null],
+        dom7: [null, 3, 4, 2, 3, null],
+        min7b5: [null, 3, 3, 1, 3, null],
+        "alt dom": [null, 3,4,3,4, null],
+        maj9: [null, 4,4,4,5, null],
+        min9: [null, 2,2,1,4, null],
+        dom13: [null, 3,4,4,5, null],
+      },
+      "R/3": {
+        maj7: [null, 3,5,1,4, null],
+        min7: [null, 2,4,1,4, null],
+        dom7: [null, 3,4,1,4, null],
+        min7b5: [null, 2,4,1,3, null],
+        "alt dom": [null, 3,4,2,5, null],
+        maj9: [null, 2,2,2,3, null],
+        min9: [null, 2,4,3,2, null],
+        dom13: [null, 3,4,3,4, null],
+      },
+      "R/4": {
+        maj7: [null, 2,2,1,4, null],
+        min7: [null, 3,3,1,4, null],
+        dom7: [null, 3,3,2,4, null],
+        min7b5: [null, 2,3,1,4, null],
+        "alt dom": [null, 4,4,2,4, null],
+        maj9: [null, 2,4,1,4, null],
+        min9: [null, 3,5,1,4, null],
+        dom13: [null, 3,5,2,4, null],
+      },
+      "R/5": {
+        maj7: [null, 3,5,4,5, null],
+        min7: [null, 3,5,3,4, null],
+        dom7: [null, 3,5,3,5, null],
+        min7b5: [null, 3,4,3,4, null],
+        "alt dom": [null, 3,5,2,4, null],
+        maj9: [null, 3,5,4,5, null],
+        min9: [null, 3,3,3,4, null],
+        dom13: [null, 1,5,1,3, null],
+      },
+    },
+  };
+
+  // Lookup the chord shape
+  const shape = chordShapes[`SS${stringSet}`]?.[`R/${root}`]?.[type];
+
+  if (!shape) {
+    console.error(`No shape found for SS${stringSet} R/${root} ${type}`);
+    return [null, null, null, null, null, null]; // Return a default shape if not found
+  }
+
+  return shape;
+}
+
+function testChordShape(stringSet, root, type) {
+  const fretPositions = getFretPositions(stringSet, root, type);
+  const svgString = newChord(fretPositions);
+
+  // Clear previous content and display the new chord
+  fretboardContainer.innerHTML = svgString;
+  fretboardContainer.style.visibility = "visible";
+
+  console.log(`Displaying chord: SS${stringSet} R/${root} ${type}`);
+  console.log("Fret positions:", fretPositions);
+}
+
+// Make testChordShape available globally for console testing
+window.testChordShape = testChordShape;
+
+function cycleChordShapes(stringSet, root) {
+  const chordTypes = [
+    "maj7",
+    "min7",
+    "dom7",
+    "min7b5",
+    "alt dom",
+    "maj9",
+    "min9",
+    "dom13"
+  ];
+
+  let index = 0;
+
+  function displayNextChord() {
+    if (index < chordTypes.length) {
+      const chordType = chordTypes[index];
+      console.log(`Displaying: SS${stringSet} R/${root} ${chordType}`);
+      testChordShape(stringSet, root, chordType);
+      index++;
+      setTimeout(displayNextChord, 3000); // Wait for 3 seconds before showing the next chord
+    } else {
+      console.log("Finished cycling through all chord types.");
+    }
+  }
+
+  displayNextChord();
+}
+
+// Make cycleChordShapes available globally for console testing
+window.cycleChordShapes = cycleChordShapes;
 
 function chooseRandomString(strings) {
   if (!Array.isArray(strings) || strings.length === 0) {
@@ -249,13 +457,10 @@ function stopIteratingAndDisplaySolution() {
   });
 
   // Determine which cp and type was chosen and display the appropriate svg
-  let { svgClass } = getChordSVGs(stringSet, root, type);
+  let fretPositions = getFretPositions(stringSet, root, type);
+  let svgString = newChord(fretPositions);
 
-  fretboardContainer.innerHTML = `
-      <svg class="${svgClass}" width="120" height="300">
-        <use xlink:href='#${svgClass}'></use>
-      </svg>
-    `;
+  fretboardContainer.innerHTML = svgString;
   fretboardContainer.style.visibility = "visible";
 
   console.log("Before state update - Iteration count:", iterationCount);
@@ -272,75 +477,6 @@ function stopIteratingAndDisplaySolution() {
   console.log(currentState);
 }
 
-function getChordSVGs(ss, root, type) {
-  let cpAndType = `SS${ss} R/${root}-${type}`;
-
-  let svgClass = "";
-  switch (cpAndType) {
-    case "SS1 R/1-dom13":
-      svgClass = "ss1-r1-dom13";
-      break;
-    case "SS1 R/1-min9":
-      svgClass = "ss1-r1-min9";
-      break;
-    case "SS1 R/2-dom13":
-      svgClass = "ss1-r2-dom13";
-      break;
-    case "SS1 R/2-min9":
-      svgClass = "ss1-r2-min9";
-      break;
-    case "SS1 R/3-dom13":
-      svgClass = "ss1-r3-dom13";
-      break;
-    case "SS1 R/3-min9":
-      svgClass = "ss1-r3-min9";
-      break;
-    case "SS1 R/4-dom13":
-      svgClass = "ss1-r4-dom13";
-      break;
-    case "SS1 R/4-min9":
-      svgClass = "ss1-r4-min9";
-      break;
-    case "SS2 R/2-dom13":
-      svgClass = "ss2-r2-dom13";
-      break;
-    case "SS2 R/2-min9":
-      svgClass = "ss2-r2-min9";
-      break;
-    case "SS2 R/3-dom13":
-      svgClass = "ss2-r3-dom13";
-      break;
-    case "SS2 R/3-min9":
-      svgClass = "ss2-r3-min9";
-      break;
-    case "SS2 R/4-dom13":
-      svgClass = "ss2-r4-dom13";
-      break;
-    case "SS2 R/4-min9":
-      svgClass = "ss2-r4-min9";
-      break;
-    case "SS2 R/5-dom13":
-      svgClass = "ss2-r5-dom13";
-      break;
-    case "SS2 R/5-min9":
-      svgClass = "ss2-r5-min9";
-      break;
-    default:
-      console.warn(`No matching SVG found for ${cpAndType}`);
-      svgClass = "ss0-r1-dom13";
-      break;
-  }
-
-  let otherSvgClass;
-
-  if (svgClass.endsWith("-maj7")) {
-    otherSvgClass = svgClass.replace("-maj7", "-min7");
-  } else if (svgClass.endsWith("-min7")) {
-    otherSvgClass = svgClass.replace("-min7", "-maj7");
-  }
-  return { svgClass, otherSvgClass };
-}
-
 function startIteration() {
   console.log("Starting iteration - Current count:", iterationCount);
 
@@ -351,9 +487,9 @@ function startIteration() {
   }
 
   console.log("Clearing previous iteration data");
-  document.getElementById("resultsContainer").innerHTML = "";
+  // document.getElementById("resultsContainer").innerHTML = "";
   fretboardContainer.innerHTML = "";
-  document.getElementById("assistant-response-text").innerHTML = "";
+  // document.getElementById("assistant-response-text").innerHTML = "";
 
   console.log("Selecting new chord data");
   const cpData = selectStringAndRootWithKey();
@@ -409,9 +545,15 @@ function endSessionAndDisplayAndStoreResultsOnServer() {
   // document.getElementById('resultsContainer').innerHTML = resultsHTML
   console.table(cpsAndTimes);
 
-  document.getElementById(
-    "assistant-response-text"
-  ).innerHTML = `Generating feedback from the assistant...`;
+  // document.getElementById(
+  //   "assistant-response-text"
+  // ).innerHTML = `Generating feedback from the assistant...`;
+
+  const feedbackMessage = document.createElement("p");
+  feedbackMessage.textContent = "Generating feedback from the assistant...";
+  const container = document.getElementById("fretboard-container");
+  container.innerHTML = ""; // Clear previous content
+  container.appendChild(feedbackMessage);
 
   // Code to send the session data to the server goes here
   // console.log('Making fetch request...');
@@ -448,10 +590,11 @@ function endSessionAndDisplayAndStoreResultsOnServer() {
     })
     .then((response) => response.json())
     .then((data) => {
-      // THIS IS THE CONTENT OF OUR ANSWER FROM THE LLM. There are 2 objects: 'answer' and 'sources'.  We want just the answer.
-      // START new code for this block:
       // Create a new paragraph element
       const p = document.createElement("p");
+
+      // Add an id to the paragraph element
+      p.id = "assistant-response";
 
       // Set the inner HTML of the paragraph to the answer, replacing \n\n with <br>
       p.innerHTML = data.answer.replace(/\n\n/g, "<br>");
@@ -461,15 +604,10 @@ function endSessionAndDisplayAndStoreResultsOnServer() {
 
       // Append the paragraph to the body of the document
       const responseContainer = document.getElementById(
-        "assistant-response-text"
+        "fretboard-container"
       );
       responseContainer.innerHTML = ""; // Clear previous content
       responseContainer.appendChild(p);
-
-      // Update the innerHTML of the response container with the paragraph's innerHTML
-      document.getElementById("assistant-response-text").innerHTML =
-        p.innerHTML;
-      // END new code for this block:
     })
     .catch((error) => {
       console.error("Error:", error);
@@ -529,7 +667,7 @@ function handleSendButtonClick() {
       p.textContent = data.answer;
 
       // Append the paragraph to the body of the document
-      document.getElementById("assistant-response-text").innerHTML =
+      document.getElementById("fretboard-container").innerHTML =
         p.textContent;
       // Clear the input field
       messageInput.value = "";
@@ -560,102 +698,3 @@ function sendDataToServer() {
   };
 }
 
-function getFretPositions(stringSet, root, type) {
-  // Define chord shapes
-  const chordShapes = {
-    SS1: {
-      "R/1": {
-        maj7: [null, null, 2, 4, 1, 1],
-        min7: [null, null, 2, 3, 1, 1],
-        dom7: [null, null, 2, 3, 2, 1],
-        min7b5: [null, null, 2, 3, 1, 0],
-        "alt dom": [null, null, 2, 3, 1, 2],
-        maj9: [null, null, 2, 4, 1, 3],
-        min9: [null, null, 2, 3, 1, 3],
-        dom13: [null, null, 2, 3, 2, 3],
-      },
-      "R/2": {
-        maj7: [null, null, 1, 1, 1, 3],
-        min7: [null, null, 1, 1, 0, 3],
-        dom7: [null, null, 1, 1, 0, 1],
-        min7b5: [null, null, 1, 1, 0, 2],
-        "alt dom": [null, null, 1, 2, 0, 1],
-        maj9: [null, null, 1, 3, 1, 3],
-        min9: [null, null, 1, 3, 0, 3],
-        dom13: [null, null, 1, 1, 0, 3],
-      },
-      "R/3": {
-        maj7: [null, null, 1, 3, 3, 2],
-        min7: [null, null, 1, 3, 2, 2],
-        dom7: [null, null, 1, 3, 1, 2],
-        min7b5: [null, null, 1, 2, 2, 2],
-        "alt dom": [null, null, 1, 2, 1, 2],
-        maj9: [null, null, 1, 3, 3, 4],
-        min9: [null, null, 1, 3, 2, 4],
-        dom13: [null, null, 1, 3, 1, 4],
-      },
-      "R/4": {
-        maj7: [null, null, 1, 2, 2, 1],
-        min7: [null, null, 1, 2, 1, 1],
-        dom7: [null, null, 1, 2, 0, 1],
-        min7b5: [null, null, 1, 2, 1, 0],
-        "alt dom": [null, null, 1, 2, 0, 3],
-        maj9: [null, null, 1, 2, 2, 3],
-        min9: [null, null, 1, 2, 1, 3],
-        dom13: [null, null, 1, 2, 0, 3],
-      },
-    },
-    SS2: {
-      "R/2": {
-        maj7: [null, 1, 3, 2, 3, null],
-        min7: [null, 1, 3, 1, 3, null],
-        dom7: [null, 1, 3, 1, 1, null],
-        min7b5: [null, 1, 2, 1, 3, null],
-        "alt dom": [null, 1, 2, 1, 1, null],
-        maj9: [null, 1, 3, 2, 3, 3],
-        min9: [null, 1, 3, 1, 3, 3],
-        dom13: [null, 1, 3, 1, 3, 3],
-      },
-      "R/3": {
-        maj7: [null, 1, 1, 2, 3, 1],
-        min7: [null, 1, 1, 2, 2, 1],
-        dom7: [null, 1, 1, 2, 1, 1],
-        min7b5: [null, 1, 1, 2, 2, 0],
-        "alt dom": [null, 1, 1, 2, 1, 0],
-        maj9: [null, 1, 1, 2, 3, 3],
-        min9: [null, 1, 1, 2, 2, 3],
-        dom13: [null, 1, 1, 2, 1, 3],
-      },
-      "R/4": {
-        maj7: [null, 1, 3, 2, 1, 1],
-        min7: [null, 1, 3, 1, 1, 1],
-        dom7: [null, 1, 3, 1, 1, 2],
-        min7b5: [null, 1, 2, 1, 1, 1],
-        "alt dom": [null, 1, 2, 1, 1, 2],
-        maj9: [null, 1, 3, 2, 1, 3],
-        min9: [null, 1, 3, 1, 1, 3],
-        dom13: [null, 1, 3, 1, 1, 3],
-      },
-      "R/5": {
-        maj7: [null, 1, 2, 2, 1, 1],
-        min7: [null, 1, 2, 1, 1, 1],
-        dom7: [null, 1, 2, 1, 1, 2],
-        min7b5: [null, 1, 2, 1, 0, 1],
-        "alt dom": [null, 1, 2, 1, 0, 2],
-        maj9: [null, 1, 2, 2, 1, 3],
-        min9: [null, 1, 2, 1, 1, 3],
-        dom13: [null, 1, 2, 1, 1, 3],
-      },
-    },
-  };
-
-  // Lookup the chord shape
-  const shape = chordShapes[`SS${stringSet}`]?.[`R/${root}`]?.[type];
-
-  if (!shape) {
-    console.error(`No shape found for SS${stringSet} R/${root} ${type}`);
-    return [null, null, null, null, null, null]; // Return a default shape if not found
-  }
-
-  return shape;
-}

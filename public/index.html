@@ -7,7 +7,7 @@
     <meta name="viewport" content="width=device-width" />
     <link rel="stylesheet" href="styles.css" />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
-    <title>7th Chords with Extensions Practice</title>
+    <title>Jazz Chords Practice</title>
   </head>
   <body>
     <!-- svg symbols -->
@@ -437,14 +437,13 @@
         <span class="label" id="typeLabel">Type:</span>
         <span id="typeTextField">--</span>
       </div>
-      <!-- <div id="elapsedTime"></div> -->
+      
       <div id="fretboard-container"></div>
-      <div id="resultsContainer"></div>
+      
       <div class="button-container">
-        <button id="start-stop-button"></button>
-        <p class="label" id="start-stop-button-label">Start/Stop</p>
+        <button id="start-stop-button" role="button" aria-labelledby="start-stop-button-label"></button>
+        <p class="label" id="start-stop-button-label">Start</p>
       </div>
-      <div id="assistant-response-text"></div>
     </div>
 
     <script type="module" src="app.js"></script>

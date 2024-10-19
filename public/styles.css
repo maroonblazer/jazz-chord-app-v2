@@ -58,6 +58,11 @@ body {
   max-width: 300px;  /* Adjust this value as needed */
 }
 
+#fretboard-container p {
+  font-size: 18px;
+  line-height: 2.2;
+}
+
 #fretboard-container svg {
   width: 120px;
   height: 300px;
@@ -158,9 +163,6 @@ table td:first-child {
   cursor: pointer;
   color: #858585;
   margin-left: 10px;
-}
-
-svg {
 }
 
 #send-button svg {

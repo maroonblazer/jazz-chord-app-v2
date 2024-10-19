@@ -6,7 +6,6 @@
   "type": "module",
   "scripts": {
     "start": "node server.js",
-    "test": "echo \"Error: no test specified\" && exit 1",
     "create-sprite": "svg-sprite --symbol --symbol-dest=out --symbol-sprite=icons.svg --symbol-example=true public/svgs/*.svg"
   },
   "repository": {
@@ -32,5 +31,9 @@
     "svg-sprite": "^2.0.2",
     "youtube-transcript": "^1.0.6",
     "youtubei.js": "^5.8.0"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.48.1",
+    "@types/node": "^22.7.7"
   }
 }
