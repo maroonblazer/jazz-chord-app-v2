@@ -58,7 +58,7 @@ body {
   max-width: 300px;  /* Adjust this value as needed */
 }
 
-#fretboard-container p {
+#fretboard-container ul {
   font-size: 18px;
   line-height: 2.2;
 }

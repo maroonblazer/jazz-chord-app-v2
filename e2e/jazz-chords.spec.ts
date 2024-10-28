@@ -33,27 +33,10 @@ test('Jazz Chords App', async ({ page }) => {
   const seeResultsButton = page.getByRole('button', { name: /See Results/ });
   await expect(seeResultsButton).toBeVisible();
 
-  // Set up a promise that will resolve when the API call is complete
-  const apiResponsePromise = page.waitForResponse(response => 
-    response.url().includes('/get-assistant-feedback') && response.status() === 200
-  );
-
   // Click the "See Results" button
   await seeResultsButton.click();
-
-  // Wait for the API response
-  await apiResponsePromise;
-
-  // Now check for the results container
-  const assistantResponse = page.locator('#assistant-response');
-  await expect(assistantResponse).toBeVisible();
-
-  // Check that the fretboard is visible
-//   const fretboard = page.locator('#fretboard-svg');
-//   await expect(fretboard).toBeVisible();
-
-  // Check that the results container is visible
-//   const resultsContainer = page.locator('#results-container');
-//   await expect(resultsContainer).toBeVisible();
-
+  
+  // Wait for the <h3> element with text "Chord Shapes That Need More Practice:" to be visible
+  const chordShapesHeader = page.getByRole('heading', { name: 'Chord Shapes That Need More Practice:' });
+  await expect(chordShapesHeader).toBeVisible();
 });

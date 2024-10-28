@@ -3,7 +3,8 @@ import path from 'path';
 import express from 'express';
 import fs from 'fs';
 import cors from 'cors';
-import { query } from './qa.js';
+// import { query } from './qa.js';
+import csvParser from 'csv-parser';
 
 const app = express();
 
@@ -120,5 +121,44 @@ app.post('/send-message', async (req, res) => {
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: 'Error querying data' });
+  }
+});
+
+function analyzeChordProblems(filePath, topN = 3) {
+  return new Promise((resolve, reject) => {
+    const results = [];
+
+    fs.createReadStream(filePath)
+      .pipe(csvParser())
+      .on('data', (row) => {
+        results.push(row);
+      })
+      .on('end', () => {
+        // Sort by 'Time' in descending order
+        results.sort((a, b) => parseFloat(b.Time) - parseFloat(a.Time));
+
+        // Select the top N results
+        const topResults = results.slice(0, topN);
+
+        // Format the results
+        const formattedResults = topResults.map((result) => 
+          `SS${result.SS}, R/${result.Root}, ${result.Key} ${result.Quality} took ${result.Time} secs.`
+        );
+
+        resolve(formattedResults);
+      })
+      .on('error', (error) => reject(error));
+  });
+}
+
+// Example usage or endpoint
+app.get('/analyze-session-data', async (req, res) => {
+  try {
+    const filePath = path.join(process.cwd(), 'session-data-last-10.csv');
+    const results = await analyzeChordProblems(filePath);
+    res.json({ results });
+  } catch (error) {
+    console.error('Error analyzing session data:', error);
+    res.status(500).json({ error: 'Failed to analyze session data' });
   }
 });

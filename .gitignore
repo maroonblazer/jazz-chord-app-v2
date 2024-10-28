@@ -14,3 +14,4 @@ scratch.js
 /playwright-report/
 /blob-report/
 /playwright/.cache/
+demo-todo-app.spec.ts

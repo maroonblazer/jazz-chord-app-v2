@@ -517,22 +517,17 @@ function startIteration() {
 
 function endSessionAndDisplayAndStoreResultsOnServer() {
   console.log("Iteration count:", iterationCount);
-  // Set the text field and elapsed time to empty strings
-  document.removeEventListener("keydown", handleSpacebarEvent); //why is this here? To prevent the user from starting a new session by pressing the spacebar before we display and store the results.
+  document.removeEventListener("keydown", handleSpacebarEvent);
 
   stringSetTextField.textContent = "--";
   rootTextField.textContent = "--";
   keyTextField.textContent = "--";
-  typeTextField.textContent = "--"; // Use the global reference here
-  // elapsedTime.textContent = "";
-
-  // hide the fretboard svg container
+  typeTextField.textContent = "--";
   fretboardContainer.innerHTML = "";
 
   isSessionRunning = false;
-  iterationCount = 0; // Reset the session count
+  iterationCount = 0;
 
-  // Create and display a table of CPs and their solve times
   let resultsHTML =
     '<table class="myTable"><tr><th>SS</th><th>Root</th><th>Key</th><th>Quality</th><th>Time (seconds)</th><th>Date</th></tr>';
   cpsAndTimes.forEach((item) => {
@@ -542,21 +537,14 @@ function endSessionAndDisplayAndStoreResultsOnServer() {
     resultsHTML += `<tr${rowColor}><td>${item.stringSet}</td><td>${item.root}</td><td>${item.key}</td><td>${item.quality}</td><td>${item.time}</td><td>${item.date}</td></tr>`;
   });
   resultsHTML += "</table>";
-  // document.getElementById('resultsContainer').innerHTML = resultsHTML
   console.table(cpsAndTimes);
 
-  // document.getElementById(
-  //   "assistant-response-text"
-  // ).innerHTML = `Generating feedback from the assistant...`;
-
   const feedbackMessage = document.createElement("p");
-  feedbackMessage.textContent = "Generating feedback from the assistant...";
+  feedbackMessage.textContent = "Generating feedback...";
   const container = document.getElementById("fretboard-container");
-  container.innerHTML = ""; // Clear previous content
+  container.innerHTML = "";
   container.appendChild(feedbackMessage);
 
-  // Code to send the session data to the server goes here
-  // console.log('Making fetch request...');
   fetch("/append-session-data", {
     method: "POST",
     headers: {
@@ -565,62 +553,51 @@ function endSessionAndDisplayAndStoreResultsOnServer() {
     body: JSON.stringify({ data: cpsAndTimes }),
   })
     .then((response) => {
-      // console.log('Received response:', response);
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
-      // console.log('Response is OK, parsing as JSON...');
-      return response.json(); // Parse the response as JSON
-    })
-    .then((data) => {
-      // console.log('Received data:', data);
-      console
-        .log
-        // `logging the result promise from append-session-data-${data.message}`
-        (); // Access the message property of the data
+      return response.json();
     })
     .then(() => {
-      // This fetch call will be executed after the first one completes
-      return fetch("/get-assistant-feedback", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+      // Fetch the analysis results from the server
+      return fetch("/analyze-session-data", {
+        method: "GET",
       });
     })
     .then((response) => response.json())
     .then((data) => {
-      // Create a new paragraph element
-      const p = document.createElement("p");
+      // Create results container
+      const container = document.getElementById("fretboard-container");
+      container.innerHTML = "";
 
-      // Add an id to the paragraph element
-      p.id = "assistant-response";
+      // Create and style results header
+      const header = document.createElement("h3");
+      header.textContent = "Chord Shapes That Need More Practice:";
+      header.style.marginBottom = "1rem";
+      container.appendChild(header);
 
-      // Set the inner HTML of the paragraph to the answer, replacing \n\n with <br>
-      p.innerHTML = data.answer.replace(/\n\n/g, "<br>");
+      // Create results list
+      const list = document.createElement("ul");
+      list.style.listStyle = "none";
+      list.style.padding = "0";
 
-      // Change the start button text to 'Start'
+      // Add each result as a list item
+      data.results.forEach((result) => {
+        const item = document.createElement("li");
+        item.textContent = result;
+        item.style.marginBottom = "0.5rem";
+        list.appendChild(item);
+      });
+
+      container.appendChild(list);
       startStopButtonLabel.textContent = "Start";
-
-      // Append the paragraph to the body of the document
-      const responseContainer = document.getElementById(
-        "fretboard-container"
-      );
-      responseContainer.innerHTML = ""; // Clear previous content
-      responseContainer.appendChild(p);
     })
     .catch((error) => {
       console.error("Error:", error);
+      const container = document.getElementById("fretboard-container");
+      container.innerHTML = "Error analyzing session data. Please try again.";
     });
 }
-// Regarding the above: The fetch call is not sending any data in the body of the request. If the server-side route handler is expecting to receive data in the request body, you would need to add a body property to the fetch call, like so:
-//   fetch('http://localhost:3000/get-assistant-feedback', {
-//   method: 'POST',
-//   headers: {
-//     'Content-Type': 'application/json',
-//   },
-//   body: JSON.stringify({ /* your data here */ }),
-// })
 
 // We could use this to send a question to the server and get a response from the assistant. E.g., let the user type in a question and then send it to the server to get a response from the assistant.
 
