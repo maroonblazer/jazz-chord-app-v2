@@ -141,9 +141,10 @@ function analyzeChordProblems(filePath, topN = 3) {
         const topResults = results.slice(0, topN);
 
         // Format the results
-        const formattedResults = topResults.map((result) => 
-          `SS${result.SS}, R/${result.Root}, ${result.Key} ${result.Quality} took ${result.Time} secs.`
-        );
+        const formattedResults = topResults.map((result) => ({
+          chordInfo: `SS${result.SS}, R/${result.Root}, ${result.Key} ${result.Quality}`,
+          timeInfo: `${result.Time}s`
+        }));
 
         resolve(formattedResults);
       })

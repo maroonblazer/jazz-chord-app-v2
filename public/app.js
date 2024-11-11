@@ -566,26 +566,22 @@ function endSessionAndDisplayAndStoreResultsOnServer() {
     })
     .then((response) => response.json())
     .then((data) => {
-      // Create results container
       const container = document.getElementById("fretboard-container");
       container.innerHTML = "";
 
-      // Create and style results header
       const header = document.createElement("h3");
-      header.textContent = "Chord Shapes That Need More Practice:";
-      header.style.marginBottom = "1rem";
+      header.textContent = "Drill These Chord Shapes:";
       container.appendChild(header);
 
-      // Create results list
       const list = document.createElement("ul");
-      list.style.listStyle = "none";
-      list.style.padding = "0";
-
-      // Add each result as a list item
-      data.results.forEach((result) => {
+      
+      data.results.forEach((result, index) => {
         const item = document.createElement("li");
-        item.textContent = result;
-        item.style.marginBottom = "0.5rem";
+        item.innerHTML = `
+          <span class="problem-number">${index + 1}</span>
+          <span class="chord-info">${result.chordInfo}</span>
+          <span class="time-info">${result.timeInfo}</span>
+        `;
         list.appendChild(item);
       });
 
