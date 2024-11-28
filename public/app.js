@@ -1,4 +1,4 @@
-export const maxIterations = 4; // Maximum number of iterations for a session
+export const maxIterations = 10; // Maximum number of iterations for a session
 
 const SessionState = {
   STOPPED: "STOPPED",
@@ -31,6 +31,29 @@ let chordsToForget = []; // Queue to store the last two strings
 
 // select the div container that will hold the svg image
 const fretboardContainer = document.getElementById("fretboard-container");
+
+// Add these to your global variables
+const keySelect = document.getElementById('key-select');
+const typeSelect = document.getElementById('type-select');
+const optionsButton = document.getElementById('options-button');
+const optionsMenu = document.querySelector('.options-menu');
+
+// Add options menu toggle
+optionsButton.addEventListener('click', () => {
+  const isExpanded = optionsButton.getAttribute('aria-expanded') === 'true';
+  optionsButton.setAttribute('aria-expanded', !isExpanded);
+  optionsMenu.hidden = isExpanded;
+});
+
+// Close menu when clicking outside
+document.addEventListener('click', (event) => {
+  if (!optionsMenu.hidden && 
+      !optionsMenu.contains(event.target) && 
+      !optionsButton.contains(event.target)) {
+    optionsButton.setAttribute('aria-expanded', 'false');
+    optionsMenu.hidden = true;
+  }
+});
 
 function newChord(fretPositions, options = {}) {
   // Default values
@@ -248,7 +271,16 @@ function chooseRandomString(strings) {
   return strings[Math.floor(Math.random() * strings.length)];
 }
 
-// Add this to your global variables
+// Add these arrays as global constants at the top of app.js
+const musicalKeys = [
+  // Natural keys
+  "C", "D", "E", "F", "G", "A", "B",
+  // Sharp keys
+  "C#", "D#", "F#", "G#", "A#",
+  // Flat keys
+  "Db", "Eb", "Gb", "Ab", "Bb"
+];
+
 const chordTypes = [
   "maj7",
   "min7",
@@ -257,40 +289,21 @@ const chordTypes = [
   "alt dom",
   "maj9",
   "min9",
-  "dom13",
+  "dom13"
 ];
 
 // Function to concatenate two strings returned from chooseRandomString. If 'SS1' is chosen, then 'R/5' should not be chosen. If 'SS2' is chosen, then 'R/1' should not be chosen.
 function selectStringAndRootWithKey() {
-  console.log("Selecting string and root with key");
   const stringSet = ["1", "2"];
   const roots = ["1", "2", "3", "4", "5"];
-  const musicalKeys = [
-    "C",
-    "D",
-    "E",
-    "F",
-    "G",
-    "A",
-    "B",
-    "Db",
-    "Eb",
-    "Gb",
-    "Ab",
-    "Bb",
-    "C#",
-    "D#",
-    "F#",
-    "G#",
-    "A#",
-  ];
-
-  const chosenKey = chooseRandomString(musicalKeys);
-  const chosenType = chooseRandomString(chordTypes);
+  
+  const selectedKey = keySelect.value || chooseRandomString(musicalKeys);
+  const selectedType = typeSelect.value || chooseRandomString(chordTypes);
   const chosenString = chooseRandomString(stringSet);
 
-  console.log("Chosen key:", chosenKey);
-  console.log("Chosen type:", chosenType);
+  console.log("Selecting string and root with key");
+  console.log("Chosen key:", selectedKey);
+  console.log("Chosen type:", selectedType);
   console.log("Chosen string:", chosenString);
 
   let chosenRoot;
@@ -334,8 +347,8 @@ function selectStringAndRootWithKey() {
   return {
     stringSet: chosenString,
     root: chosenRoot,
-    key: chosenKey,
-    type: chosenType,
+    key: selectedKey,
+    type: selectedType,
   };
 }
 

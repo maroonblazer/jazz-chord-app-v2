@@ -172,3 +172,60 @@ body {
   font-size: 1rem;
   line-height: 1.5;
 }
+
+.options-container {
+  position: relative;
+  margin: 0 1rem;
+}
+
+.options-toggle {
+  display: flex;
+  justify-content: flex-end;
+}
+
+#options-button {
+  background: none;
+  border: none;
+  color: var(--color-border);
+  font-family: var(--font-family);
+  font-size: var(--font-size-small);
+  cursor: pointer;
+  padding: 0.5rem;
+}
+
+#options-button:hover {
+  color: var(--color-text);
+}
+
+.options-menu {
+  position: absolute;
+  right: 0;
+  top: 100%;
+  background: white;
+  border: 1px solid var(--color-border);
+  border-radius: var(--border-radius);
+  padding: 1rem;
+  box-shadow: var(--shadow-default);
+  z-index: 10;
+  min-width: 200px;
+}
+
+.options-group {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.75rem;
+  align-items: center;
+  margin-bottom: 0.75rem;
+}
+
+.options-group:last-child {
+  margin-bottom: 0;
+}
+
+.options-group select {
+  font-family: var(--font-family);
+  font-size: var(--font-size-small);
+  padding: 0.25rem;
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+}

@@ -37,6 +37,6 @@ test('Jazz Chords App', async ({ page }) => {
   await seeResultsButton.click();
   
   // Wait for the <h3> element with text "Chord Shapes That Need More Practice:" to be visible
-  const chordShapesHeader = page.getByRole('heading', { name: 'Chord Shapes That Need More Practice:' });
+  const chordShapesHeader = page.getByRole('heading', { name: 'Drill These Chord Shapes:' });
   await expect(chordShapesHeader).toBeVisible();
 });

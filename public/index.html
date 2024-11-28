@@ -426,6 +426,52 @@
       </symbol>
     </svg>
     <!-- end of svg symbols -->
+    <div class="options-container">
+      <div class="options-toggle">
+        <button id="options-button" aria-expanded="false">
+          Options
+        </button>
+      </div>
+      <div class="options-menu" hidden>
+        <div class="options-group">
+          <label for="key-select">Key:</label>
+          <select id="key-select">
+            <option value="">Random</option>
+            <option value="C">C</option>
+            <option value="D">D</option>
+            <option value="E">E</option>
+            <option value="F">F</option>
+            <option value="G">G</option>
+            <option value="A">A</option>
+            <option value="B">B</option>
+            <option value="C#">C#</option>
+            <option value="D#">D#</option>
+            <option value="F#">F#</option>
+            <option value="G#">G#</option>
+            <option value="A#">A#</option>
+            <option value="Db">Db</option>
+            <option value="Eb">Eb</option>
+            <option value="Gb">Gb</option>
+            <option value="Ab">Ab</option>
+            <option value="Bb">Bb</option>
+          </select>
+        </div>
+        <div class="options-group">
+          <label for="type-select">Type:</label>
+          <select id="type-select">
+            <option value="">Random</option>
+            <option value="maj7">Maj7</option>
+            <option value="min7">Min7</option>
+            <option value="dom7">Dom7</option>
+            <option value="min7b5">Min7b5</option>
+            <option value="alt dom">Alt Dom</option>
+            <option value="maj9">Maj9</option>
+            <option value="min9">Min9</option>
+            <option value="dom13">Dom13</option>
+          </select>
+        </div>
+      </div>
+    </div>
     <div class="main">
       <div class="problem-container">
         <span class="label" id="stringSetLabel">String Set:</span>
@@ -445,6 +491,8 @@
         <p class="label" id="start-stop-button-label">Start</p>
       </div>
     </div>
+
+    
 
     <script type="module" src="app.js"></script>
   </body>
