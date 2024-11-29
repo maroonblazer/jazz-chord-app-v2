@@ -685,3 +685,13 @@ function sendDataToServer() {
   };
 }
 
+// Add this with your other document.ready or initialization code
+const resetOptionsButton = document.getElementById('reset-options-button');
+
+resetOptionsButton.addEventListener('click', () => {
+  // Reset all selects to their default ("") value
+  document.getElementById('key-select').value = "";
+  document.getElementById('type-select').value = "";
+  document.getElementById('string-set-select').value = "";
+});
+
