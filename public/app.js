@@ -294,7 +294,8 @@ const chordTypes = [
 
 // Function to concatenate two strings returned from chooseRandomString. If 'SS1' is chosen, then 'R/5' should not be chosen. If 'SS2' is chosen, then 'R/1' should not be chosen.
 function selectStringAndRootWithKey() {
-  const stringSet = ["1", "2"];
+  const selectedStringSet = document.getElementById('string-set-select').value;
+  const stringSet = selectedStringSet ? [selectedStringSet] : ["1", "2"];
   const roots = ["1", "2", "3", "4", "5"];
   
   const selectedKey = keySelect.value || chooseRandomString(musicalKeys);
