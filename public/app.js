@@ -55,6 +55,10 @@ document.addEventListener('click', (event) => {
   }
 });
 
+// Add these near the top with other global variables
+const markWrongButton = document.getElementById('mark-wrong-button');
+const WRONG_ANSWER_TIME = 999999; // Large number to ensure it appears in results
+
 function newChord(fretPositions, options = {}) {
   // Default values
   const { width = 339, height = 806, circleColor = "black" } = options;
@@ -461,6 +465,7 @@ function stopIteratingAndDisplaySolution() {
   const type = sessionData.type;
 
   // Store the CP, its solve time, and the current date and time in the array
+  const currentProblemIndex = cpsAndTimes.length;
   cpsAndTimes.push({
     stringSet: stringSet,
     root: root,
@@ -476,6 +481,19 @@ function stopIteratingAndDisplaySolution() {
 
   fretboardContainer.innerHTML = svgString;
   fretboardContainer.style.visibility = "visible";
+  
+  // Show the mark wrong button
+  markWrongButton.classList.remove('hidden');
+
+  // Add event listener for marking wrong
+  const handleMarkWrong = () => {
+    cpsAndTimes[currentProblemIndex].time = WRONG_ANSWER_TIME;
+    cpsAndTimes[currentProblemIndex].wasMarkedWrong = true;
+    markWrongButton.classList.add('hidden');
+    markWrongButton.removeEventListener('click', handleMarkWrong);
+  };
+  
+  markWrongButton.addEventListener('click', handleMarkWrong);
 
   console.log("Before state update - Iteration count:", iterationCount);
   console.log("Before state update - Current state:", currentState);
@@ -524,6 +542,9 @@ function startIteration() {
 
   iterationCount++;
   currentState = SessionState.RUNNING;
+
+  // Hide the mark wrong button when starting new iteration
+  markWrongButton.classList.add('hidden');
 
   console.log("After starting iteration - Iteration count:", iterationCount);
   console.log("After starting iteration - Current state:", currentState);

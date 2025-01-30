@@ -243,3 +243,21 @@ body {
 .reset-button:hover {
   background-color: #e8e8e8;
 }
+
+.hidden {
+  display: none;
+}
+
+#mark-wrong-button {
+  margin-top: 10px;
+  padding: 8px 16px;
+  background-color: #ff4444;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+#mark-wrong-button:hover {
+  background-color: #cc0000;
+}
