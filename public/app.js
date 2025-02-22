@@ -609,6 +609,8 @@ function endSessionAndDisplayAndStoreResultsOnServer() {
       container.appendChild(header);
 
       const list = document.createElement("ul");
+      list.setAttribute('tabindex', '0'); // Make the list focusable
+      list.style.cursor = 'text'; // Show text cursor on hover
       
       data.results.forEach((result, index) => {
         const item = document.createElement("li");
@@ -618,6 +620,25 @@ function endSessionAndDisplayAndStoreResultsOnServer() {
           <span class="time-info">${result.timeInfo}</span>
         `;
         list.appendChild(item);
+      });
+
+      // Add copy event listener
+      list.addEventListener('keydown', (e) => {
+        if ((e.metaKey || e.ctrlKey) && e.key === 'c') {
+          e.preventDefault();
+          const clipboardText = formatResultsForClipboard(data.results);
+          navigator.clipboard.writeText(clipboardText)
+            .then(() => {
+              console.log('Copy successful, applying visual feedback');
+              const items = list.querySelectorAll('li');
+              items.forEach(item => item.classList.add('copy-flash'));
+              setTimeout(() => {
+                console.log('Resetting background color');
+                items.forEach(item => item.classList.remove('copy-flash'));
+              }, 300);
+            })
+            .catch(err => console.error('Failed to copy:', err));
+        }
       });
 
       container.appendChild(list);
@@ -715,4 +736,11 @@ resetOptionsButton.addEventListener('click', () => {
   document.getElementById('type-select').value = "";
   document.getElementById('string-set-select').value = "";
 });
+
+// Add this function near the top with other utility functions
+function formatResultsForClipboard(results) {
+  return results
+    .map((result, index) => `${index + 1} ${result.chordInfo} ${result.timeInfo}`)
+    .join('\n');
+}
 

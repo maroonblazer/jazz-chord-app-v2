@@ -89,6 +89,20 @@ body {
   background-color: #e0e0e0;
   border-radius: var(--border-radius);
   padding: 1px;
+  position: relative;
+}
+
+#fretboard-container ul::after {
+  content: "Click to select, Cmd+C to copy";
+  position: absolute;
+  bottom: -24px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: var(--font-size-small);
+  color: var(--color-gray-light);
+  opacity: 0.8;
+  width: 100%;
+  text-align: center;
 }
 
 #fretboard-container h3 {
@@ -260,4 +274,9 @@ body {
 
 #mark-wrong-button:hover {
   background-color: #cc0000;
+}
+
+#fretboard-container li.copy-flash {
+  background-color: #d8d8d8 !important;
+  transition: background-color 0.1s ease;
 }
