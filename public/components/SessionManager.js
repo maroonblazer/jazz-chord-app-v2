@@ -121,10 +121,7 @@ export class SessionManager {
   }
 
   endSession() {
-    this.stateManager.transitionTo('END');
-    this.stateManager.updateState('session.isRunning', false);
-    
-    // Send results to server
+    // Send results to server and display them
     this.sendResultsToServer();
   }
 
@@ -212,12 +209,9 @@ export class SessionManager {
     
     container.appendChild(list);
     
-    // Transition to END state so clicking Start will properly reset
-    // Only transition if not already in END state
-    const currentState = this.stateManager.getState();
-    if (currentState.session.status !== 'END') {
-      this.stateManager.transitionTo('END');
-    }
+    // Now transition to END state - results are displayed
+    this.stateManager.transitionTo('END');
+    this.stateManager.updateState('session.isRunning', false);
   }
 
   formatResultsForClipboard(results) {

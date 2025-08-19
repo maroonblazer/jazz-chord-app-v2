@@ -100,6 +100,30 @@ export class Database {
           CREATE INDEX idx_session_results_chord_info ON session_results(string_set, root, key_signature, chord_type);
           CREATE INDEX idx_session_results_solve_time ON session_results(solve_time_seconds);
         `
+      },
+      {
+        name: '005_fix_performance_view_formatting',
+        up: `
+          DROP VIEW performance_summary;
+          CREATE VIEW performance_summary AS
+          SELECT 
+            (CASE 
+              WHEN string_set LIKE 'SS%' THEN string_set 
+              ELSE 'SS' || string_set 
+            END || ' ' ||
+            CASE 
+              WHEN root LIKE 'R/%' THEN root 
+              ELSE 'R/' || root 
+            END || ' ' || key_signature || ' ' || chord_type) as chord_info,
+            AVG(solve_time_seconds) as avg_time,
+            COUNT(*) as attempts,
+            SUM(CASE WHEN was_marked_wrong THEN 1 ELSE 0 END) as wrong_answers,
+            MAX(solve_time_seconds) as max_time,
+            MIN(solve_time_seconds) as min_time
+          FROM session_results 
+          GROUP BY string_set, root, key_signature, chord_type
+          ORDER BY avg_time DESC;
+        `
       }
     ];
 
@@ -190,7 +214,14 @@ export class Database {
   async getWorstPerformingChords(limit = 3) {
     return await this.db.all(`
       SELECT 
-        ('SS' || string_set || ', R/' || root || ', ' || key_signature || ' ' || chord_type) as chordInfo,
+        (CASE 
+          WHEN string_set LIKE 'SS%' THEN string_set 
+          ELSE 'SS' || string_set 
+        END || ', ' ||
+        CASE 
+          WHEN root LIKE 'R/%' THEN root 
+          ELSE 'R/' || root 
+        END || ', ' || key_signature || ' ' || chord_type) as chordInfo,
         (solve_time_seconds || 's') as timeInfo,
         solve_time_seconds as raw_time
       FROM session_results 
