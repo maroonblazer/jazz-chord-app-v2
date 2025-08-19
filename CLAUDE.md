@@ -5,8 +5,10 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Commands
 
 ### Development
-- `npm start` - Start the Express server on port 3000
-- `node server.js` - Alternative way to start the server
+- `npm start` - Start the legacy Express server on port 3000
+- `npm run start:refactored` - Start the refactored server with database layer
+- `node server.js` - Alternative way to start legacy server
+- `node server-refactored.js` - Alternative way to start refactored server
 
 ### Testing
 - `npx playwright test` - Run E2E tests across all browsers
@@ -19,6 +21,12 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Architecture Overview
 
 This is a full-stack jazz chord practice app built with vanilla JavaScript frontend and Express backend. The app presents timed chord identification challenges and tracks performance data.
+
+**Two Architecture Versions Available:**
+1. **Legacy Architecture** (`app.js`, `server.js`) - Original monolithic implementation
+2. **Refactored Architecture** (`app-refactored.js`, `server-refactored.js`) - Modular, component-based with database layer
+
+Access refactored version: `http://localhost:3000?arch=refactored`
 
 ### Frontend Architecture (`public/app.js`)
 - **State Machine**: Uses `SessionState` enum (STOPPED, RUNNING, PAUSED, LAST, END)

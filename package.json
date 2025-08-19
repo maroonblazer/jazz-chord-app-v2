@@ -6,6 +6,7 @@
   "type": "module",
   "scripts": {
     "start": "node server.js",
+    "start:refactored": "node server-refactored.js",
     "create-sprite": "svg-sprite --symbol --symbol-dest=out --symbol-sprite=icons.svg --symbol-example=true public/svgs/*.svg"
   },
   "repository": {
@@ -29,6 +30,8 @@
     "pdf-parse": "^1.1.1",
     "puppeteer": "^19.11.1",
     "request": "^2.88.2",
+    "sqlite": "^5.1.1",
+    "sqlite3": "^5.1.7",
     "svg-sprite": "^2.0.2",
     "youtube-transcript": "^1.0.6",
     "youtubei.js": "^5.8.0"
