@@ -25,6 +25,19 @@ export class UIController {
       stringSetSelect: document.getElementById('string-set-select'),
       resetOptionsButton: document.getElementById('reset-options-button')
     };
+    
+    // Validate all required DOM elements exist
+    const missingElements = [];
+    Object.entries(this.elements).forEach(([key, element]) => {
+      if (!element) {
+        missingElements.push(key);
+      }
+    });
+    
+    if (missingElements.length > 0) {
+      console.error('UIController: Missing DOM elements:', missingElements);
+      throw new Error(`Missing required DOM elements: ${missingElements.join(', ')}`);
+    }
   }
 
   setupEventListeners() {
@@ -35,7 +48,7 @@ export class UIController {
 
     // Spacebar for start/stop
     document.addEventListener("keydown", (event) => {
-      if (event.keyCode === 32) {
+      if (event.code === 'Space') {
         event.preventDefault();
         this.sessionManager.handleStartStopClick();
       }
@@ -107,7 +120,11 @@ export class UIController {
         this.elements.keyTextField.textContent = currentProblem.key || "--";
         this.elements.typeTextField.textContent = currentProblem.type || "--";
       } else if (session.status === 'STOPPED') {
-        this.clearProblemDisplay();
+        // Don't clear if results are being displayed
+        const hasResultsHeader = this.elements.fretboardContainer.querySelector('h3');
+        if (!hasResultsHeader) {
+          this.clearProblemDisplay();
+        }
       }
     });
 
@@ -120,11 +137,18 @@ export class UIController {
       }
     });
 
-    // Clear fretboard when session stops
+    // Clear fretboard when session stops or when starting new iteration
     this.stateManager.subscribe('session.status', (status) => {
       if (status === 'STOPPED') {
+        // Don't clear if fretboard contains results (has h3 header)
+        const hasResultsHeader = this.elements.fretboardContainer.querySelector('h3');
+        if (!hasResultsHeader) {
+          this.elements.fretboardContainer.innerHTML = "";
+          this.clearProblemDisplay();
+        }
+      } else if (status === 'RUNNING') {
+        // Clear fretboard when starting a new iteration
         this.elements.fretboardContainer.innerHTML = "";
-        this.clearProblemDisplay();
       }
     });
   }

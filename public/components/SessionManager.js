@@ -7,6 +7,13 @@ export class SessionManager {
   }
 
   startSession() {
+    // Clear fretboard container when starting new session
+    const container = document.getElementById("fretboard-container");
+    if (container) {
+      container.innerHTML = "";
+      container.style.visibility = "visible";
+    }
+    
     this.stateManager.reset();
     this.startIteration();
   }
@@ -19,19 +26,19 @@ export class SessionManager {
       return;
     }
 
+    // Update session state first
+    this.stateManager.updateSession({
+      isRunning: true
+    });
+    
+    this.stateManager.transitionTo('RUNNING');
+    
     // Generate new problem
     const problem = this.chordGenerator.generateRandomProblem();
     this.stateManager.updateCurrentProblem(problem);
     
     // Start timing
     this.timerManager.start();
-    
-    // Update session state
-    this.stateManager.updateSession({
-      isRunning: true
-    });
-    
-    this.stateManager.transitionTo('RUNNING');
     
     // Hide mark wrong button
     this.stateManager.updateState('ui.markWrongVisible', false);
@@ -64,7 +71,8 @@ export class SessionManager {
     this.stateManager.updateState('session.iterationCount', newIterationCount);
     
     // Determine next state
-    if (newIterationCount >= state.session.maxIterations) {
+    const maxIterations = this.stateManager.getState().session.maxIterations;
+    if (newIterationCount >= maxIterations) {
       this.stateManager.transitionTo('LAST');
     } else {
       this.stateManager.transitionTo('PAUSED');
@@ -124,6 +132,8 @@ export class SessionManager {
     const state = this.stateManager.getState();
     const results = state.results.cpsAndTimes;
     
+    console.log('Sending results to server:', results.length, 'results');
+    
     try {
       const response = await fetch("/append-session-data", {
         method: "POST",
@@ -137,9 +147,13 @@ export class SessionManager {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
       
+      console.log('Results sent successfully, fetching analysis...');
+      
       // Get analysis
       const analysisResponse = await fetch("/analyze-session-data");
       const analysisData = await analysisResponse.json();
+      
+      console.log('Analysis received:', analysisData);
       
       this.displayResults(analysisData.results);
       
@@ -149,10 +163,16 @@ export class SessionManager {
   }
 
   displayResults(analysisResults) {
+    console.log('displayResults called with:', analysisResults);
+    
     // This would be handled by ResultsDisplay component in full implementation
     const container = document.getElementById("fretboard-container");
-    if (!container) return;
+    if (!container) {
+      console.error('displayResults: fretboard-container not found');
+      return;
+    }
     
+    console.log('displayResults: clearing container and building results...');
     container.innerHTML = "";
     
     const header = document.createElement("h3");
@@ -192,8 +212,12 @@ export class SessionManager {
     
     container.appendChild(list);
     
-    // Reset session
-    this.stateManager.transitionTo('STOPPED');
+    // Transition to END state so clicking Start will properly reset
+    // Only transition if not already in END state
+    const currentState = this.stateManager.getState();
+    if (currentState.session.status !== 'END') {
+      this.stateManager.transitionTo('END');
+    }
   }
 
   formatResultsForClipboard(results) {
@@ -204,10 +228,17 @@ export class SessionManager {
 
   handleStartStopClick() {
     const state = this.stateManager.getState();
-    const { status } = state.session;
+    const { status, iterationCount } = state.session;
     
     switch (status) {
       case 'STOPPED':
+        // Only reset session if we're truly starting fresh (count is 0)
+        if (iterationCount === 0) {
+          this.startSession();
+        } else {
+          this.startIteration();
+        }
+        break;
       case 'PAUSED':
         this.startIteration();
         break;
@@ -216,6 +247,9 @@ export class SessionManager {
         break;
       case 'LAST':
         this.endSession();
+        break;
+      case 'END':
+        this.startSession();
         break;
       default:
         console.log("Unexpected state:", status);
