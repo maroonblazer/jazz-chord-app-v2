@@ -82,10 +82,24 @@ class JazzChordApp {
 }
 
 // Initialize the app when DOM is loaded
-document.addEventListener('DOMContentLoaded', () => {
-  const app = new JazzChordApp();
-  console.log("Jazz Chord App initialized with modular architecture");
-});
+function initializeApp() {
+  try {
+    console.log("Initializing JazzChordApp...");
+    const app = new JazzChordApp();
+    console.log("Jazz Chord App initialized with modular architecture");
+  } catch (error) {
+    console.error("Error initializing JazzChordApp:", error);
+  }
+}
+
+// Check if DOM is already loaded, otherwise wait for DOMContentLoaded
+if (document.readyState === 'loading') {
+  console.log("DOM still loading, waiting for DOMContentLoaded...");
+  document.addEventListener('DOMContentLoaded', initializeApp);
+} else {
+  console.log("DOM already loaded, initializing immediately...");
+  initializeApp();
+}
 
 // Export for potential use in other modules
 export { JazzChordApp };

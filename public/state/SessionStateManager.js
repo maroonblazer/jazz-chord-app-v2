@@ -97,6 +97,8 @@ export class SessionStateManager {
     Object.keys(problem).forEach(key => {
       this.updateState(`currentProblem.${key}`, problem[key]);
     });
+    // Also notify about the whole currentProblem object change
+    this.notifyListeners('currentProblem', this.state.currentProblem);
   }
 
   updateTiming(updates) {

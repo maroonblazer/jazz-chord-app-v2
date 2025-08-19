@@ -20,22 +20,9 @@ app.use(express.static(path.join(process.cwd(), 'public')));
 const db = new Database();
 let currentSessionId = null;
 
-// Initialize database on startup
-db.init().then(() => {
-  console.log('Database initialized successfully');
-}).catch(error => {
-  console.error('Failed to initialize database:', error);
-  process.exit(1);
-});
-
-// Define routes here
-app.listen(PORT, () => {
-  console.log(`Server listening on port ${PORT}`);
-  console.log('Using refactored architecture with database layer');
-});
-
+// Define routes first
 app.get('/', (req, res) => {
-  res.sendFile(path.join(process.cwd(), 'index.html'));
+  res.sendFile(path.join(process.cwd(), 'public/index.html'));
 });
 
 // Enhanced endpoint to handle data from the client
@@ -195,6 +182,25 @@ app.get('/health', async (req, res) => {
     });
   }
 });
+
+// Initialize database and start server
+async function startServer() {
+  try {
+    await db.init();
+    console.log('Database initialized successfully');
+    
+    app.listen(PORT, () => {
+      console.log(`Server listening on port ${PORT}`);
+      console.log('Using refactored architecture with database layer');
+    });
+  } catch (error) {
+    console.error('Failed to initialize database:', error);
+    process.exit(1);
+  }
+}
+
+// Start the server
+startServer();
 
 // Graceful shutdown
 process.on('SIGINT', async () => {
