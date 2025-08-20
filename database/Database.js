@@ -222,7 +222,7 @@ export class Database {
           WHEN root LIKE 'R/%' THEN root 
           ELSE 'R/' || root 
         END || ', ' || key_signature || ' ' || chord_type) as chordInfo,
-        (ROUND(AVG(solve_time_seconds), 1) || 's avg (' || COUNT(*) || ' attempts)') as timeInfo,
+        (ROUND(AVG(solve_time_seconds), 1) || 's') as timeInfo,
         AVG(solve_time_seconds) as avgTime,
         MAX(solve_time_seconds) as maxTime,
         COUNT(*) as attempts

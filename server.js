@@ -163,7 +163,7 @@ function analyzeChordProblems(filePath, topN = 3) {
           
           return {
             chordInfo: chordKey,
-            timeInfo: `${avgTime.toFixed(1)}s avg (${group.attempts} attempts)`,
+            timeInfo: `${avgTime.toFixed(1)}s`,
             avgTime: avgTime,
             maxTime: group.maxTime,
             attempts: group.attempts
