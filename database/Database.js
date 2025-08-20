@@ -222,11 +222,14 @@ export class Database {
           WHEN root LIKE 'R/%' THEN root 
           ELSE 'R/' || root 
         END || ', ' || key_signature || ' ' || chord_type) as chordInfo,
-        (solve_time_seconds || 's') as timeInfo,
-        solve_time_seconds as raw_time
+        (ROUND(AVG(solve_time_seconds), 1) || 's avg (' || COUNT(*) || ' attempts)') as timeInfo,
+        AVG(solve_time_seconds) as avgTime,
+        MAX(solve_time_seconds) as maxTime,
+        COUNT(*) as attempts
       FROM session_results 
       WHERE solve_time_seconds < 999999  -- Exclude marked wrong answers
-      ORDER BY solve_time_seconds DESC 
+      GROUP BY string_set, root, key_signature, chord_type
+      ORDER BY AVG(solve_time_seconds) DESC 
       LIMIT ?
     `, limit);
   }

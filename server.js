@@ -134,19 +134,45 @@ function analyzeChordProblems(filePath, topN = 3) {
         results.push(row);
       })
       .on('end', () => {
-        // Sort by 'Time' in descending order
-        results.sort((a, b) => parseFloat(b.Time) - parseFloat(a.Time));
+        // Group by chord combination and calculate average time
+        const chordGroups = {};
+        
+        results.forEach(row => {
+          const chordKey = `SS${row.SS}, R/${row.Root}, ${row.Key} ${row.Quality}`;
+          const time = parseFloat(row.Time);
+          
+          if (!chordGroups[chordKey]) {
+            chordGroups[chordKey] = {
+              times: [],
+              maxTime: time,
+              attempts: 0
+            };
+          }
+          
+          chordGroups[chordKey].times.push(time);
+          chordGroups[chordKey].maxTime = Math.max(chordGroups[chordKey].maxTime, time);
+          chordGroups[chordKey].attempts++;
+        });
 
-        // Select the top N results
-        const topResults = results.slice(0, topN);
+        // Calculate averages and sort by worst average time
+        const aggregatedResults = Object.keys(chordGroups).map(chordKey => {
+          const group = chordGroups[chordKey];
+          const avgTime = group.times.reduce((sum, time) => sum + time, 0) / group.times.length;
+          
+          return {
+            chordInfo: chordKey,
+            timeInfo: `${avgTime.toFixed(1)}s avg (${group.attempts} attempts)`,
+            avgTime: avgTime,
+            maxTime: group.maxTime,
+            attempts: group.attempts
+          };
+        });
 
-        // Format the results
-        const formattedResults = topResults.map((result) => ({
-          chordInfo: `SS${result.SS}, R/${result.Root}, ${result.Key} ${result.Quality}`,
-          timeInfo: `${result.Time}s`
-        }));
+        // Sort by average time descending and take top N
+        aggregatedResults.sort((a, b) => b.avgTime - a.avgTime);
+        const topResults = aggregatedResults.slice(0, topN);
 
-        resolve(formattedResults);
+        resolve(topResults);
       })
       .on('error', (error) => reject(error));
   });

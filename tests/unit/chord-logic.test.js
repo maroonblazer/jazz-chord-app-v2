@@ -190,4 +190,142 @@ describe('Chord Generation Logic', () => {
       expect(applyOptionsFilter(options, 2, 3, 'F#', 'min7')).toBe(true);
     });
   });
+
+  describe('Problematic Chords Analysis', () => {
+    function aggregateChordProblems(sessionData, topN = 3) {
+      // Group by chord combination and calculate average time
+      const chordGroups = {};
+      
+      sessionData.forEach(row => {
+        const chordKey = `SS${row.stringSet}, R/${row.root}, ${row.key} ${row.type}`;
+        const time = parseFloat(row.time);
+        
+        if (!chordGroups[chordKey]) {
+          chordGroups[chordKey] = {
+            times: [],
+            maxTime: time,
+            attempts: 0
+          };
+        }
+        
+        chordGroups[chordKey].times.push(time);
+        chordGroups[chordKey].maxTime = Math.max(chordGroups[chordKey].maxTime, time);
+        chordGroups[chordKey].attempts++;
+      });
+
+      // Calculate averages and sort by worst average time
+      const aggregatedResults = Object.keys(chordGroups).map(chordKey => {
+        const group = chordGroups[chordKey];
+        const avgTime = group.times.reduce((sum, time) => sum + time, 0) / group.times.length;
+        
+        return {
+          chordInfo: chordKey,
+          timeInfo: `${avgTime.toFixed(1)}s avg (${group.attempts} attempts)`,
+          avgTime: avgTime,
+          maxTime: group.maxTime,
+          attempts: group.attempts
+        };
+      });
+
+      // Sort by average time descending and take top N
+      aggregatedResults.sort((a, b) => b.avgTime - a.avgTime);
+      return aggregatedResults.slice(0, topN);
+    }
+
+    test('should deduplicate same chord problems', () => {
+      const sessionData = [
+        { stringSet: 1, root: 2, key: 'C', type: 'maj7', time: 5000 },
+        { stringSet: 1, root: 2, key: 'C', type: 'maj7', time: 4000 },
+        { stringSet: 1, root: 3, key: 'D', type: 'min7', time: 3000 },
+        { stringSet: 2, root: 4, key: 'F', type: 'dom7', time: 2000 }
+      ];
+
+      const results = aggregateChordProblems(sessionData, 3);
+      
+      expect(results).toHaveLength(3);
+      
+      // Should have unique chord combinations only
+      const chordInfos = results.map(r => r.chordInfo);
+      const uniqueChords = new Set(chordInfos);
+      expect(uniqueChords.size).toBe(3);
+      
+      // C maj7 should be aggregated with average time of 4.5s
+      const cMaj7Result = results.find(r => r.chordInfo === 'SS1, R/2, C maj7');
+      expect(cMaj7Result).toBeDefined();
+      expect(cMaj7Result.avgTime).toBe(4500);
+      expect(cMaj7Result.attempts).toBe(2);
+    });
+
+    test('should sort by average time descending', () => {
+      const sessionData = [
+        { stringSet: 1, root: 1, key: 'A', type: 'maj7', time: 2000 },
+        { stringSet: 1, root: 2, key: 'B', type: 'min7', time: 6000 },
+        { stringSet: 1, root: 2, key: 'B', type: 'min7', time: 4000 },
+        { stringSet: 1, root: 3, key: 'C', type: 'dom7', time: 3000 }
+      ];
+
+      const results = aggregateChordProblems(sessionData, 3);
+      
+      expect(results[0].chordInfo).toBe('SS1, R/2, B min7'); // avg 5000
+      expect(results[1].chordInfo).toBe('SS1, R/3, C dom7'); // 3000
+      expect(results[2].chordInfo).toBe('SS1, R/1, A maj7'); // 2000
+    });
+
+    test('should handle single attempts correctly', () => {
+      const sessionData = [
+        { stringSet: 1, root: 1, key: 'C', type: 'maj7', time: 4000 },
+        { stringSet: 2, root: 2, key: 'D', type: 'min7', time: 3000 }
+      ];
+
+      const results = aggregateChordProblems(sessionData, 2);
+      
+      expect(results).toHaveLength(2);
+      expect(results[0].attempts).toBe(1);
+      expect(results[1].attempts).toBe(1);
+    });
+
+    test('should calculate times correctly with real CSV data format', () => {
+      // Simulate real CSV data structure from session-data-last-10.csv
+      const csvRows = [
+        { SS: '2', Root: '3', Key: 'C', Quality: 'min7b5', Time: '34.7' },
+        { SS: '2', Root: '5', Key: 'Bb', Quality: 'maj7', Time: '9.8' },
+        { SS: '2', Root: '3', Key: 'C', Quality: 'min7b5', Time: '25.3' }, // Same chord as first
+        { SS: '1', Root: '1', Key: 'A#', Quality: 'min9', Time: '7.4' }
+      ];
+
+      // Convert to format expected by aggregateChordProblems function
+      const sessionData = csvRows.map(row => ({
+        stringSet: parseInt(row.SS),
+        root: parseInt(row.Root),
+        key: row.Key,
+        type: row.Quality,
+        time: parseFloat(row.Time)
+      }));
+
+      const results = aggregateChordProblems(sessionData, 3);
+      
+      // C min7b5 should be aggregated: (34.7 + 25.3) / 2 = 30.0
+      const cMin7b5Result = results.find(r => r.chordInfo === 'SS2, R/3, C min7b5');
+      expect(cMin7b5Result).toBeDefined();
+      expect(cMin7b5Result.avgTime).toBe(30.0);
+      expect(cMin7b5Result.attempts).toBe(2);
+      expect(cMin7b5Result.timeInfo).toBe('30.0s avg (2 attempts)');
+
+      // Bb maj7 should have single attempt
+      const bbMaj7Result = results.find(r => r.chordInfo === 'SS2, R/5, Bb maj7');
+      expect(bbMaj7Result).toBeDefined();
+      expect(bbMaj7Result.avgTime).toBe(9.8);
+      expect(bbMaj7Result.attempts).toBe(1);
+      expect(bbMaj7Result.timeInfo).toBe('9.8s avg (1 attempts)');
+    });
+
+    test('should match legacy server parseFloat logic', () => {
+      // Test the exact logic from server.js line 142
+      const mockCSVRow = { SS: '1', Root: '2', Key: 'D', Quality: 'maj7', Time: '15.6' };
+      const time = parseFloat(mockCSVRow.Time);
+      
+      expect(time).toBe(15.6);
+      expect(typeof time).toBe('number');
+    });
+  });
 });
