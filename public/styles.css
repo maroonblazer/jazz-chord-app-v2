@@ -163,6 +163,15 @@ body {
   border: 3px solid var(--color-border);
   border-radius: 50%;
   cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+#start-stop-button.see-results {
+  width: 4rem;
+  height: 4rem;
+  background-color: #4CAF50;
+  border-color: #45a049;
+  box-shadow: 0 4px 8px rgba(76, 175, 80, 0.3);
 }
 
 #start-stop-button-label {
@@ -170,6 +179,13 @@ body {
   font-weight: 500;
   font-size: var(--font-size-medium);
   letter-spacing: var(--letter-spacing);
+  transition: all 0.3s ease;
+}
+
+#start-stop-button-label.see-results {
+  font-weight: 700;
+  font-size: 1.1em;
+  color: #2E7D32;
 }
 
 #stringSetTextField,

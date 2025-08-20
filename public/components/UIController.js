@@ -258,6 +258,15 @@ export class UIController {
     this.stateManager.subscribe('session.status', (status) => {
       const buttonText = this.getButtonTextForStatus(status);
       this.elements.startStopButtonLabel.textContent = buttonText;
+      
+      // Add prominent styling for "See Results"
+      if (buttonText === 'See Results') {
+        this.elements.startButton.classList.add('see-results');
+        this.elements.startStopButtonLabel.classList.add('see-results');
+      } else {
+        this.elements.startButton.classList.remove('see-results');
+        this.elements.startStopButtonLabel.classList.remove('see-results');
+      }
     });
 
     // Update current problem display

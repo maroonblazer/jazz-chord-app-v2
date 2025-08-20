@@ -415,6 +415,10 @@ function resetSession() {
   keyTextField.textContent = "--";
   typeTextField.textContent = "--"; // Use the global reference here
   // elapsedTime.textContent = "";
+  
+  // Remove see-results styling
+  startStopButton.classList.remove('see-results');
+  startStopButtonLabel.classList.remove('see-results');
 
   console.log("Session reset - Iteration count:", iterationCount);
   console.log("Session reset - Current state:", currentState);
@@ -506,9 +510,13 @@ function stopIteratingAndDisplaySolution() {
   if (iterationCount >= maxIterations) {
     console.log("Maximum iterations reached. Transitioning to LAST state.");
     startStopButtonLabel.textContent = "See Results";
+    startStopButton.classList.add('see-results');
+    startStopButtonLabel.classList.add('see-results');
     currentState = SessionState.LAST;
   } else {
     startStopButtonLabel.textContent = "Start";
+    startStopButton.classList.remove('see-results');
+    startStopButtonLabel.classList.remove('see-results');
     currentState = SessionState.PAUSED;
   }
   console.log(currentState);
@@ -648,6 +656,8 @@ function endSessionAndDisplayAndStoreResultsOnServer() {
 
       container.appendChild(list);
       startStopButtonLabel.textContent = "Start";
+      startStopButton.classList.remove('see-results');
+      startStopButtonLabel.classList.remove('see-results');
     })
     .catch((error) => {
       console.error("Error:", error);
