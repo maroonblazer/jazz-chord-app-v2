@@ -163,6 +163,38 @@ app.post('/send-message', async (req, res) => {
   }
 });
 
+// Database wipe endpoint - requires confirmation
+app.post('/wipe-database', async (req, res) => {
+  try {
+    const { confirmation } = req.body;
+    
+    // Require exact confirmation text for safety
+    if (confirmation !== 'DELETE ALL MY DATA') {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'Invalid confirmation. Type exactly: DELETE ALL MY DATA' 
+      });
+    }
+    
+    console.log('Database wipe requested with valid confirmation');
+    const result = await db.wipeAllData();
+    
+    res.json({
+      success: true,
+      message: result.message,
+      timestamp: new Date().toISOString()
+    });
+    
+  } catch (error) {
+    console.error('Failed to wipe database:', error);
+    res.status(500).json({ 
+      success: false, 
+      message: 'Failed to wipe database: ' + error.message,
+      timestamp: new Date().toISOString()
+    });
+  }
+});
+
 // Health check endpoint
 app.get('/health', async (req, res) => {
   try {

@@ -276,6 +276,34 @@ export class Database {
     return stats;
   }
 
+  async wipeAllData() {
+    // Completely reset database by dropping all tables and views
+    await this.db.exec('BEGIN TRANSACTION');
+    try {
+      // Drop views first (they depend on tables)
+      await this.db.exec('DROP VIEW IF EXISTS performance_summary');
+      
+      // Drop tables in reverse order (respecting foreign key dependencies)
+      await this.db.exec('DROP TABLE IF EXISTS session_results');
+      await this.db.exec('DROP TABLE IF EXISTS sessions');
+      
+      // Drop migrations table to force recreation
+      await this.db.exec('DROP TABLE IF EXISTS migrations');
+      
+      await this.db.exec('COMMIT');
+      console.log('Database wiped successfully - all tables dropped');
+      
+      // Reinitialize database with fresh migrations
+      await this.runMigrations();
+      
+      return { success: true, message: 'All session data has been permanently deleted' };
+    } catch (error) {
+      await this.db.exec('ROLLBACK');
+      console.error('Failed to wipe database:', error);
+      throw new Error('Failed to wipe database: ' + error.message);
+    }
+  }
+
   async close() {
     if (this.db) {
       await this.db.close();

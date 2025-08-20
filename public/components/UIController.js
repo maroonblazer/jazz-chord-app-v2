@@ -23,7 +23,8 @@ export class UIController {
       keySelect: document.getElementById('key-select'),
       typeSelect: document.getElementById('type-select'),
       stringSetSelect: document.getElementById('string-set-select'),
-      resetOptionsButton: document.getElementById('reset-options-button')
+      resetOptionsButton: document.getElementById('reset-options-button'),
+      wipeDatabaseButton: document.getElementById('wipe-database-button')
     };
     
     // Validate all required DOM elements exist
@@ -101,6 +102,151 @@ export class UIController {
         selectedStringSet: null
       });
     });
+
+    // Wipe database button (with confirmation)
+    this.elements.wipeDatabaseButton.addEventListener('click', () => {
+      this.showWipeDatabaseConfirmation();
+    });
+  }
+
+  showWipeDatabaseConfirmation() {
+    // Create modal overlay
+    const overlay = document.createElement('div');
+    overlay.className = 'modal-overlay';
+    
+    overlay.innerHTML = `
+      <div class="modal">
+        <div class="modal-header">
+          <span class="modal-icon">⚠️</span>
+          <h2 class="modal-title">Delete All Session Data</h2>
+        </div>
+        <div class="modal-body">
+          <p>This will permanently delete <strong>ALL</strong> your session history, practice data, and performance statistics.</p>
+          <div class="modal-warning">
+            <strong>Warning:</strong> This action cannot be undone. All your progress will be lost forever.
+          </div>
+          <p>To confirm, please type: <strong>DELETE ALL MY DATA</strong></p>
+          <input type="text" class="modal-input" id="confirmation-input" placeholder="Type the confirmation text exactly...">
+        </div>
+        <div class="modal-actions">
+          <button class="modal-button modal-button-cancel">Cancel</button>
+          <button class="modal-button modal-button-confirm" disabled id="confirm-wipe-button">Delete All Data</button>
+        </div>
+      </div>
+    `;
+    
+    document.body.appendChild(overlay);
+    
+    // Get elements
+    const input = overlay.querySelector('#confirmation-input');
+    const confirmButton = overlay.querySelector('#confirm-wipe-button');
+    const cancelButton = overlay.querySelector('.modal-button-cancel');
+    
+    // Enable/disable confirm button based on input
+    input.addEventListener('input', () => {
+      confirmButton.disabled = input.value !== 'DELETE ALL MY DATA';
+    });
+    
+    // Handle cancel
+    const closeModal = () => {
+      document.body.removeChild(overlay);
+    };
+    
+    cancelButton.addEventListener('click', closeModal);
+    overlay.addEventListener('click', (e) => {
+      if (e.target === overlay) closeModal();
+    });
+    
+    // Handle confirm
+    confirmButton.addEventListener('click', async () => {
+      if (input.value === 'DELETE ALL MY DATA') {
+        confirmButton.disabled = true;
+        confirmButton.textContent = 'Deleting...';
+        
+        try {
+          const response = await fetch('/wipe-database', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+              confirmation: input.value
+            })
+          });
+          
+          const result = await response.json();
+          
+          closeModal();
+          
+          if (result.success) {
+            this.showSuccessMessage('All session data has been permanently deleted.');
+          } else {
+            this.showErrorMessage('Failed to delete data: ' + result.message);
+          }
+          
+        } catch (error) {
+          closeModal();
+          this.showErrorMessage('Failed to delete data: ' + error.message);
+        }
+      }
+    });
+    
+    // Focus input
+    input.focus();
+  }
+
+  showSuccessMessage(message) {
+    // Create success notification
+    const notification = document.createElement('div');
+    notification.style.cssText = `
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background: #d4edda;
+      color: #155724;
+      border: 1px solid #c3e6cb;
+      padding: 12px 16px;
+      border-radius: 4px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      z-index: 1001;
+      max-width: 300px;
+    `;
+    notification.textContent = message;
+    
+    document.body.appendChild(notification);
+    
+    setTimeout(() => {
+      if (document.body.contains(notification)) {
+        document.body.removeChild(notification);
+      }
+    }, 5000);
+  }
+
+  showErrorMessage(message) {
+    // Create error notification
+    const notification = document.createElement('div');
+    notification.style.cssText = `
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background: #f8d7da;
+      color: #721c24;
+      border: 1px solid #f5c6cb;
+      padding: 12px 16px;
+      border-radius: 4px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      z-index: 1001;
+      max-width: 300px;
+    `;
+    notification.textContent = message;
+    
+    document.body.appendChild(notification);
+    
+    setTimeout(() => {
+      if (document.body.contains(notification)) {
+        document.body.removeChild(notification);
+      }
+    }, 5000);
   }
 
   setupStateSubscriptions() {
