@@ -1,0 +1,568 @@
+import { test, expect, describe, beforeEach, jest } from '@jest/globals';
+import { JSDOM } from 'jsdom';
+
+// Mock DOM environment with complete UI structure
+const dom = new JSDOM(`
+  <!DOCTYPE html>
+  <html>
+    <head>
+      <title>Jazz Chords Practice</title>
+    </head>
+    <body>
+      <div class="main-container">
+        <div class="problem-container">
+          <div id="stringSetTextField">--</div>
+          <div id="rootTextField">--</div>
+          <div id="keyTextField">--</div>
+          <div id="typeTextField">--</div>
+        </div>
+        
+        <div class="timer-container">
+          <div id="timer-display">00:00</div>
+          <div id="session-progress">0 / 10</div>
+        </div>
+        
+        <button id="start-stop-button">
+          <span id="start-stop-button-label">Start</span>
+        </button>
+        
+        <div class="options-container">
+          <div class="option-group">
+            <label for="keySelect">Key:</label>
+            <select id="keySelect">
+              <option value="">Any</option>
+              <option value="C">C</option>
+              <option value="D">D</option>
+              <option value="E">E</option>
+            </select>
+          </div>
+          
+          <div class="option-group">
+            <label for="typeSelect">Type:</label>
+            <select id="typeSelect">
+              <option value="">Any</option>
+              <option value="maj7">maj7</option>
+              <option value="min7">min7</option>
+              <option value="dom7">dom7</option>
+            </select>
+          </div>
+          
+          <div class="option-group">
+            <label for="stringSetSelect">String Set:</label>
+            <select id="stringSetSelect">
+              <option value="">Any</option>
+              <option value="1">1 (E,B,G,D)</option>
+              <option value="2">2 (B,G,D,A)</option>
+            </select>
+          </div>
+        </div>
+        
+        <div id="fretboard-container">
+          <svg id="fretboard"></svg>
+        </div>
+        
+        <div id="results-container" style="display: none;">
+          <h2>Drill These Chord Shapes:</h2>
+          <div id="results-list"></div>
+          <button id="copy-results-button">Copy Results</button>
+        </div>
+      </div>
+    </body>
+  </html>
+`);
+
+global.document = dom.window.document;
+global.window = dom.window;
+global.navigator = { clipboard: { writeText: jest.fn() } };
+
+// Mock keyboard event
+global.KeyboardEvent = dom.window.KeyboardEvent;
+
+// UI Component classes for testing
+class TimerDisplay {
+  constructor() {
+    this.element = document.getElementById('timer-display');
+    this.startTime = null;
+    this.intervalId = null;
+  }
+
+  start() {
+    this.startTime = Date.now();
+    this.intervalId = setInterval(() => {
+      this.update();
+    }, 100);
+  }
+
+  stop() {
+    if (this.intervalId) {
+      clearInterval(this.intervalId);
+      this.intervalId = null;
+    }
+  }
+
+  update() {
+    if (!this.startTime) return;
+    
+    const elapsed = Date.now() - this.startTime;
+    const seconds = Math.floor(elapsed / 1000);
+    const minutes = Math.floor(seconds / 60);
+    const remainingSeconds = seconds % 60;
+    
+    const formattedTime = `${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`;
+    this.element.textContent = formattedTime;
+  }
+
+  reset() {
+    this.stop();
+    this.startTime = null;
+    this.element.textContent = '00:00';
+  }
+}
+
+class ProgressDisplay {
+  constructor() {
+    this.element = document.getElementById('session-progress');
+    this.current = 0;
+    this.total = 10;
+  }
+
+  update(current, total = this.total) {
+    this.current = current;
+    this.total = total;
+    this.element.textContent = `${current} / ${total}`;
+  }
+
+  reset() {
+    this.update(0);
+  }
+}
+
+class OptionsPanel {
+  constructor() {
+    this.keySelect = document.getElementById('keySelect');
+    this.typeSelect = document.getElementById('typeSelect');
+    this.stringSetSelect = document.getElementById('stringSetSelect');
+  }
+
+  getSelectedOptions() {
+    return {
+      key: this.keySelect.value || null,
+      type: this.typeSelect.value || null,
+      stringSet: this.stringSetSelect.value ? parseInt(this.stringSetSelect.value) : null
+    };
+  }
+
+  setOptions(options) {
+    if (options.key) this.keySelect.value = options.key;
+    if (options.type) this.typeSelect.value = options.type;
+    if (options.stringSet) this.stringSetSelect.value = options.stringSet.toString();
+  }
+
+  reset() {
+    this.keySelect.value = '';
+    this.typeSelect.value = '';
+    this.stringSetSelect.value = '';
+  }
+}
+
+class ProblemDisplay {
+  constructor() {
+    this.stringSetField = document.getElementById('stringSetTextField');
+    this.rootField = document.getElementById('rootTextField');
+    this.keyField = document.getElementById('keyTextField');
+    this.typeField = document.getElementById('typeTextField');
+  }
+
+  displayProblem(problem) {
+    this.stringSetField.textContent = `SS${problem.stringSet}`;
+    this.rootField.textContent = `R/${problem.root}`;
+    this.keyField.textContent = problem.key;
+    this.typeField.textContent = problem.type;
+  }
+
+  clear() {
+    this.stringSetField.textContent = '--';
+    this.rootField.textContent = '--';
+    this.keyField.textContent = '--';
+    this.typeField.textContent = '--';
+  }
+}
+
+class ResultsDisplay {
+  constructor() {
+    this.container = document.getElementById('results-container');
+    this.list = document.getElementById('results-list');
+    this.copyButton = document.getElementById('copy-results-button');
+    
+    this.copyButton.addEventListener('click', () => this.copyResults());
+    document.addEventListener('keydown', (e) => this.handleKeyboardShortcut(e));
+  }
+
+  show(results) {
+    this.list.innerHTML = '';
+    
+    results.forEach((result, index) => {
+      const item = document.createElement('div');
+      item.className = 'result-item';
+      item.innerHTML = `
+        <span class="result-number">${index + 1}.</span>
+        <span class="result-chord">SS${result.stringSet} R/${result.root} ${result.key} ${result.type}</span>
+        <span class="result-time">${result.time}ms</span>
+      `;
+      this.list.appendChild(item);
+    });
+    
+    this.container.style.display = 'block';
+  }
+
+  hide() {
+    this.container.style.display = 'none';
+  }
+
+  async copyResults() {
+    const results = Array.from(this.list.children).map(item => item.textContent).join('\n');
+    
+    try {
+      await navigator.clipboard.writeText(results);
+      this.showCopyFeedback();
+    } catch (error) {
+      console.error('Failed to copy results:', error);
+    }
+  }
+
+  showCopyFeedback() {
+    const originalText = this.copyButton.textContent;
+    this.copyButton.textContent = 'Copied!';
+    this.copyButton.classList.add('copied');
+    
+    setTimeout(() => {
+      this.copyButton.textContent = originalText;
+      this.copyButton.classList.remove('copied');
+    }, 2000);
+  }
+
+  handleKeyboardShortcut(event) {
+    if ((event.metaKey || event.ctrlKey) && event.key === 'c' && this.container.style.display !== 'none') {
+      if (window.getSelection().toString() === '') {
+        event.preventDefault();
+        this.copyResults();
+      }
+    }
+  }
+}
+
+describe('UI Components', () => {
+  let timerDisplay, progressDisplay, optionsPanel, problemDisplay, resultsDisplay;
+
+  beforeEach(() => {
+    // Reset DOM state
+    document.getElementById('timer-display').textContent = '00:00';
+    document.getElementById('session-progress').textContent = '0 / 10';
+    document.getElementById('results-container').style.display = 'none';
+    
+    // Reset component instances
+    timerDisplay = new TimerDisplay();
+    progressDisplay = new ProgressDisplay();
+    optionsPanel = new OptionsPanel();
+    problemDisplay = new ProblemDisplay();
+    resultsDisplay = new ResultsDisplay();
+    
+    // Clear any intervals
+    jest.clearAllTimers();
+    jest.useFakeTimers();
+  });
+
+  describe('TimerDisplay', () => {
+    test('should display initial time as 00:00', () => {
+      expect(timerDisplay.element.textContent).toBe('00:00');
+    });
+
+    test('should start counting when start() is called', () => {
+      timerDisplay.start();
+      
+      // Fast-forward time
+      jest.advanceTimersByTime(5000);
+      
+      expect(timerDisplay.element.textContent).toBe('00:05');
+    });
+
+    test('should stop counting when stop() is called', () => {
+      timerDisplay.start();
+      jest.advanceTimersByTime(3000);
+      
+      const timeAfterThreeSeconds = timerDisplay.element.textContent;
+      timerDisplay.stop();
+      
+      jest.advanceTimersByTime(2000);
+      expect(timerDisplay.element.textContent).toBe(timeAfterThreeSeconds);
+    });
+
+    test('should reset to 00:00 when reset() is called', () => {
+      timerDisplay.start();
+      jest.advanceTimersByTime(10000);
+      
+      timerDisplay.reset();
+      expect(timerDisplay.element.textContent).toBe('00:00');
+    });
+
+    test('should format time correctly for minutes and seconds', () => {
+      timerDisplay.start();
+      
+      jest.advanceTimersByTime(65000); // 1 minute 5 seconds
+      expect(timerDisplay.element.textContent).toBe('01:05');
+      
+      jest.advanceTimersByTime(600000); // Additional 10 minutes
+      expect(timerDisplay.element.textContent).toBe('11:05');
+    });
+  });
+
+  describe('ProgressDisplay', () => {
+    test('should display initial progress as 0 / 10', () => {
+      expect(progressDisplay.element.textContent).toBe('0 / 10');
+    });
+
+    test('should update progress correctly', () => {
+      progressDisplay.update(5);
+      expect(progressDisplay.element.textContent).toBe('5 / 10');
+    });
+
+    test('should update with custom total', () => {
+      progressDisplay.update(3, 20);
+      expect(progressDisplay.element.textContent).toBe('3 / 20');
+    });
+
+    test('should reset to 0 / 10', () => {
+      progressDisplay.update(7);
+      progressDisplay.reset();
+      expect(progressDisplay.element.textContent).toBe('0 / 10');
+    });
+  });
+
+  describe('OptionsPanel', () => {
+    test('should return null values when no options selected', () => {
+      const options = optionsPanel.getSelectedOptions();
+      expect(options).toEqual({
+        key: null,
+        type: null,
+        stringSet: null
+      });
+    });
+
+    test('should return selected options', () => {
+      optionsPanel.keySelect.value = 'C';
+      optionsPanel.typeSelect.value = 'maj7';
+      optionsPanel.stringSetSelect.value = '1';
+      
+      const options = optionsPanel.getSelectedOptions();
+      expect(options).toEqual({
+        key: 'C',
+        type: 'maj7',
+        stringSet: 1
+      });
+    });
+
+    test('should set options programmatically', () => {
+      optionsPanel.setOptions({
+        key: 'D',
+        type: 'min7',
+        stringSet: 2
+      });
+      
+      expect(optionsPanel.keySelect.value).toBe('D');
+      expect(optionsPanel.typeSelect.value).toBe('min7');
+      expect(optionsPanel.stringSetSelect.value).toBe('2');
+    });
+
+    test('should reset all options', () => {
+      optionsPanel.setOptions({ key: 'E', type: 'dom7', stringSet: 1 });
+      optionsPanel.reset();
+      
+      const options = optionsPanel.getSelectedOptions();
+      expect(options).toEqual({
+        key: null,
+        type: null,
+        stringSet: null
+      });
+    });
+  });
+
+  describe('ProblemDisplay', () => {
+    test('should display initial state with dashes', () => {
+      expect(problemDisplay.stringSetField.textContent).toBe('--');
+      expect(problemDisplay.rootField.textContent).toBe('--');
+      expect(problemDisplay.keyField.textContent).toBe('--');
+      expect(problemDisplay.typeField.textContent).toBe('--');
+    });
+
+    test('should display problem correctly', () => {
+      const problem = {
+        stringSet: 1,
+        root: 3,
+        key: 'F#',
+        type: 'maj7'
+      };
+      
+      problemDisplay.displayProblem(problem);
+      
+      expect(problemDisplay.stringSetField.textContent).toBe('SS1');
+      expect(problemDisplay.rootField.textContent).toBe('R/3');
+      expect(problemDisplay.keyField.textContent).toBe('F#');
+      expect(problemDisplay.typeField.textContent).toBe('maj7');
+    });
+
+    test('should clear display', () => {
+      const problem = { stringSet: 2, root: 4, key: 'Bb', type: 'min7' };
+      problemDisplay.displayProblem(problem);
+      
+      problemDisplay.clear();
+      
+      expect(problemDisplay.stringSetField.textContent).toBe('--');
+      expect(problemDisplay.rootField.textContent).toBe('--');
+      expect(problemDisplay.keyField.textContent).toBe('--');
+      expect(problemDisplay.typeField.textContent).toBe('--');
+    });
+  });
+
+  describe('ResultsDisplay', () => {
+    const mockResults = [
+      { stringSet: 1, root: 2, key: 'D', type: 'maj7', time: 2500 },
+      { stringSet: 2, root: 3, key: 'F', type: 'min7', time: 3200 },
+      { stringSet: 1, root: 4, key: 'A', type: 'dom7', time: 1800 }
+    ];
+
+    test('should be hidden initially', () => {
+      expect(resultsDisplay.container.style.display).toBe('none');
+    });
+
+    test('should show results when show() is called', () => {
+      resultsDisplay.show(mockResults);
+      
+      expect(resultsDisplay.container.style.display).toBe('block');
+      expect(resultsDisplay.list.children).toHaveLength(3);
+    });
+
+    test('should format results correctly', () => {
+      resultsDisplay.show(mockResults);
+      
+      const firstItem = resultsDisplay.list.children[0];
+      expect(firstItem.textContent).toContain('SS1 R/2 D maj7');
+      expect(firstItem.textContent).toContain('2500ms');
+    });
+
+    test('should hide results when hide() is called', () => {
+      resultsDisplay.show(mockResults);
+      resultsDisplay.hide();
+      
+      expect(resultsDisplay.container.style.display).toBe('none');
+    });
+
+    test('should copy results to clipboard', async () => {
+      resultsDisplay.show(mockResults);
+      
+      await resultsDisplay.copyResults();
+      
+      expect(navigator.clipboard.writeText).toHaveBeenCalled();
+    });
+
+    test('should show copy feedback after copying', async () => {
+      resultsDisplay.show(mockResults);
+      
+      const originalText = resultsDisplay.copyButton.textContent;
+      await resultsDisplay.copyResults();
+      
+      expect(resultsDisplay.copyButton.textContent).toBe('Copied!');
+      expect(resultsDisplay.copyButton.classList.contains('copied')).toBe(true);
+      
+      // Fast-forward past feedback timeout
+      jest.advanceTimersByTime(2500);
+      
+      expect(resultsDisplay.copyButton.textContent).toBe(originalText);
+      expect(resultsDisplay.copyButton.classList.contains('copied')).toBe(false);
+    });
+
+    test('should handle keyboard shortcut for copying', async () => {
+      resultsDisplay.show(mockResults);
+      
+      // Mock getSelection to return empty string (no text selected)
+      window.getSelection = jest.fn(() => ({ toString: () => '' }));
+      
+      const event = new KeyboardEvent('keydown', {
+        key: 'c',
+        metaKey: true,
+        bubbles: true
+      });
+      
+      const preventDefaultSpy = jest.spyOn(event, 'preventDefault');
+      document.dispatchEvent(event);
+      
+      expect(preventDefaultSpy).toHaveBeenCalled();
+      expect(navigator.clipboard.writeText).toHaveBeenCalled();
+    });
+
+    test('should not interfere with normal copy when text is selected', () => {
+      resultsDisplay.show(mockResults);
+      
+      // Mock getSelection to return selected text
+      window.getSelection = jest.fn(() => ({ toString: () => 'selected text' }));
+      
+      const event = new KeyboardEvent('keydown', {
+        key: 'c',
+        metaKey: true,
+        bubbles: true
+      });
+      
+      const preventDefaultSpy = jest.spyOn(event, 'preventDefault');
+      document.dispatchEvent(event);
+      
+      expect(preventDefaultSpy).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('Component Integration', () => {
+    test('should work together in a complete session flow', () => {
+      // Start session
+      timerDisplay.start();
+      progressDisplay.update(1);
+      problemDisplay.displayProblem({
+        stringSet: 1,
+        root: 2,
+        key: 'C',
+        type: 'maj7'
+      });
+      
+      // Advance time
+      jest.advanceTimersByTime(3000);
+      
+      // Complete session
+      timerDisplay.stop();
+      progressDisplay.update(10);
+      problemDisplay.clear();
+      resultsDisplay.show(mockResults);
+      
+      expect(timerDisplay.element.textContent).toBe('00:03');
+      expect(progressDisplay.element.textContent).toBe('10 / 10');
+      expect(problemDisplay.stringSetField.textContent).toBe('--');
+      expect(resultsDisplay.container.style.display).toBe('block');
+    });
+
+    test('should reset all components for new session', () => {
+      // Set up some state
+      timerDisplay.start();
+      jest.advanceTimersByTime(5000);
+      progressDisplay.update(5);
+      problemDisplay.displayProblem({ stringSet: 2, root: 3, key: 'F', type: 'min7' });
+      resultsDisplay.show(mockResults);
+      
+      // Reset everything
+      timerDisplay.reset();
+      progressDisplay.reset();
+      problemDisplay.clear();
+      resultsDisplay.hide();
+      
+      expect(timerDisplay.element.textContent).toBe('00:00');
+      expect(progressDisplay.element.textContent).toBe('0 / 10');
+      expect(problemDisplay.stringSetField.textContent).toBe('--');
+      expect(resultsDisplay.container.style.display).toBe('none');
+    });
+  });
+});

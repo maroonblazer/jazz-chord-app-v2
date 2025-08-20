@@ -1,0 +1,82 @@
+[
+  {
+    "time": 2500,
+    "stringSet": 1,
+    "root": 2,
+    "key": "D",
+    "type": "maj7",
+    "timestamp": "2024-01-15T10:30:00Z"
+  },
+  {
+    "time": 3200,
+    "stringSet": 2,
+    "root": 3,
+    "key": "F",
+    "type": "min7",
+    "timestamp": "2024-01-15T10:30:03Z"
+  },
+  {
+    "time": 1800,
+    "stringSet": 1,
+    "root": 4,
+    "key": "A",
+    "type": "dom7",
+    "timestamp": "2024-01-15T10:30:05Z"
+  },
+  {
+    "time": 4100,
+    "stringSet": 2,
+    "root": 5,
+    "key": "Bb",
+    "type": "min7",
+    "timestamp": "2024-01-15T10:30:09Z"
+  },
+  {
+    "time": 2900,
+    "stringSet": 1,
+    "root": 1,
+    "key": "C",
+    "type": "maj7",
+    "timestamp": "2024-01-15T10:30:12Z"
+  },
+  {
+    "time": 3500,
+    "stringSet": 2,
+    "root": 2,
+    "key": "Eb",
+    "type": "maj7",
+    "timestamp": "2024-01-15T10:30:16Z"
+  },
+  {
+    "time": 2200,
+    "stringSet": 1,
+    "root": 3,
+    "key": "G",
+    "type": "dom7",
+    "timestamp": "2024-01-15T10:30:18Z"
+  },
+  {
+    "time": 3800,
+    "stringSet": 2,
+    "root": 4,
+    "key": "F#",
+    "type": "min7",
+    "timestamp": "2024-01-15T10:30:22Z"
+  },
+  {
+    "time": 2600,
+    "stringSet": 1,
+    "root": 2,
+    "key": "E",
+    "type": "maj7",
+    "timestamp": "2024-01-15T10:30:25Z"
+  },
+  {
+    "time": 3100,
+    "stringSet": 2,
+    "root": 3,
+    "key": "Ab",
+    "type": "dom7",
+    "timestamp": "2024-01-15T10:30:28Z"
+  }
+]

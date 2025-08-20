@@ -16,3 +16,4 @@ scratch.js
 /playwright/.cache/
 demo-todo-app.spec.ts
 data/
+coverage/
