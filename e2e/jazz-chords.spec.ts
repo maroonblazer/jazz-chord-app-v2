@@ -119,3 +119,160 @@ test('Jazz Chords App - Refactored Architecture', async ({ page }) => {
   const chordShapesHeader = page.getByRole('heading', { name: 'Drill These Chord Shapes:' });
   await expect(chordShapesHeader).toBeVisible({ timeout: 10000 });
 });
+
+test('Options Menu Functionality', async ({ page }) => {
+  // Navigate to the refactored version
+  await page.goto('http://localhost:3000?arch=refactored');
+  
+  // Wait for the page to load
+  await page.waitForTimeout(2000);
+
+  // Check that options button exists and click it to open menu
+  const optionsButton = page.locator('#options-button');
+  await expect(optionsButton).toBeVisible();
+  await optionsButton.click();
+
+  // Wait for options menu to be visible
+  const optionsMenu = page.locator('.options-menu');
+  await expect(optionsMenu).toBeVisible();
+
+  // Test Key selection dropdown
+  const keySelect = page.locator('#key-select');
+  await expect(keySelect).toBeVisible();
+  await keySelect.selectOption('C');
+  
+  const selectedKey = await keySelect.inputValue();
+  expect(selectedKey).toBe('C');
+
+  // Test Type selection dropdown
+  const typeSelect = page.locator('#type-select');
+  await expect(typeSelect).toBeVisible();
+  await typeSelect.selectOption('maj7');
+  
+  const selectedType = await typeSelect.inputValue();
+  expect(selectedType).toBe('maj7');
+
+  // Test String Set selection dropdown
+  const stringSetSelect = page.locator('#string-set-select');
+  await expect(stringSetSelect).toBeVisible();
+  await stringSetSelect.selectOption('1');
+  
+  const selectedStringSet = await stringSetSelect.inputValue();
+  expect(selectedStringSet).toBe('1');
+
+  // Test Reset All Options button
+  const resetButton = page.locator('#reset-options-button');
+  await expect(resetButton).toBeVisible();
+  await resetButton.click();
+
+  // Verify all options are reset to "Random" (empty value)
+  const keyAfterReset = await keySelect.inputValue();
+  const typeAfterReset = await typeSelect.inputValue();
+  const stringSetAfterReset = await stringSetSelect.inputValue();
+  
+  expect(keyAfterReset).toBe('');
+  expect(typeAfterReset).toBe('');
+  expect(stringSetAfterReset).toBe('');
+});
+
+test('Options Menu Affects Chord Generation', async ({ page }) => {
+  // Navigate to the refactored version
+  await page.goto('http://localhost:3000?arch=refactored');
+  await page.waitForTimeout(2000);
+
+  // Open options menu
+  await page.locator('#options-button').click();
+  
+  // Set specific options
+  await page.locator('#key-select').selectOption('C');
+  await page.locator('#type-select').selectOption('maj7');
+  await page.locator('#string-set-select').selectOption('1');
+
+  // Close options menu (click button again)
+  await page.locator('#options-button').click();
+
+  // Start a chord session
+  const startButton = page.locator('#start-stop-button');
+  await startButton.click();
+
+  // Wait for chord to be generated
+  await page.waitForFunction(() => {
+    const keyField = document.getElementById('keyTextField');
+    const typeField = document.getElementById('typeTextField');
+    const stringSetField = document.getElementById('stringSetTextField');
+    return keyField && typeField && stringSetField && 
+           keyField.textContent !== '--' && 
+           typeField.textContent !== '--' && 
+           stringSetField.textContent !== '--';
+  }, { timeout: 5000 });
+
+  // Verify the generated chord matches our selected options
+  const keyText = await page.locator('#keyTextField').textContent();
+  const typeText = await page.locator('#typeTextField').textContent();
+  const stringSetText = await page.locator('#stringSetTextField').textContent();
+
+  expect(keyText).toBe('C');
+  expect(typeText).toBe('maj7');
+  expect(stringSetText).toBe('1');
+
+  // Stop the current chord
+  await startButton.click();
+
+  // Start another chord to verify consistency
+  await startButton.click();
+
+  // Wait for new chord generation
+  await page.waitForTimeout(1000);
+
+  // Verify the second chord also matches our options
+  const keyText2 = await page.locator('#keyTextField').textContent();
+  const typeText2 = await page.locator('#typeTextField').textContent();
+  const stringSetText2 = await page.locator('#stringSetTextField').textContent();
+
+  expect(keyText2).toBe('C');
+  expect(typeText2).toBe('maj7');
+  expect(stringSetText2).toBe('1');
+});
+
+test('Options Menu Partial Selection Works', async ({ page }) => {
+  // Navigate to the refactored version
+  await page.goto('http://localhost:3000?arch=refactored');
+  await page.waitForTimeout(2000);
+
+  // Open options menu and set only the key
+  await page.locator('#options-button').click();
+  await page.locator('#key-select').selectOption('F#');
+  await page.locator('#options-button').click();
+
+  // Generate multiple chords to verify only key is fixed
+  const chords = [];
+  for (let i = 0; i < 5; i++) {
+    await page.locator('#start-stop-button').click();
+    
+    await page.waitForFunction(() => {
+      const keyField = document.getElementById('keyTextField');
+      return keyField && keyField.textContent !== '--';
+    }, { timeout: 5000 });
+    
+    const key = await page.locator('#keyTextField').textContent();
+    const type = await page.locator('#typeTextField').textContent();
+    const stringSet = await page.locator('#stringSetTextField').textContent();
+    
+    chords.push({ key, type, stringSet });
+    
+    await page.locator('#start-stop-button').click();
+    await page.waitForTimeout(500);
+  }
+
+  // Verify all chords have the same key but different types/string sets
+  chords.forEach(chord => {
+    expect(chord.key).toBe('F#');
+  });
+
+  // Verify there's variation in types and string sets (not all the same)
+  const uniqueTypes = new Set(chords.map(c => c.type));
+  const uniqueStringSets = new Set(chords.map(c => c.stringSet));
+  
+  // With 5 chords and random selection, we should get some variation
+  expect(uniqueTypes.size).toBeGreaterThan(1);
+});
