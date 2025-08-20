@@ -134,10 +134,12 @@ function analyzeChordProblems(filePath, topN = 3) {
         results.push(row);
       })
       .on('end', () => {
+        // Only analyze the last 10 entries (most recent session)
+        const lastTenResults = results.slice(-10);
         // Group by chord combination and calculate average time
         const chordGroups = {};
         
-        results.forEach(row => {
+        lastTenResults.forEach(row => {
           const chordKey = `SS${row.SS}, R/${row.Root}, ${row.Key} ${row.Quality}`;
           const time = parseFloat(row.Time);
           

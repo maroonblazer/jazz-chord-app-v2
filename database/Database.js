@@ -228,6 +228,7 @@ export class Database {
         COUNT(*) as attempts
       FROM session_results 
       WHERE solve_time_seconds < 999999  -- Exclude marked wrong answers
+        AND session_id = (SELECT MAX(id) FROM sessions WHERE completed_at IS NOT NULL)
       GROUP BY string_set, root, key_signature, chord_type
       ORDER BY AVG(solve_time_seconds) DESC 
       LIMIT ?
