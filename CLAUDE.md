@@ -108,3 +108,4 @@ chordShapes[`SS${stringSet}`][`R/${root}`][type] = [fret1, fret2, fret3, fret4, 
 - SVG manipulation for chord diagrams
 - Express serves static files from `public/` directory
 - Session data persists across server restarts via CSV files
+- Always push to origin after making a commit
