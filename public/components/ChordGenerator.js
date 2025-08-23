@@ -108,39 +108,31 @@ export class ChordGenerator {
     return array[Math.floor(Math.random() * array.length)];
   }
 
+  getValidRoots(stringSet) {
+    return stringSet === "1" ? ["1", "2", "3", "4"] : ["2", "3", "4", "5"];
+  }
+
   generateRandomProblem() {
     const state = this.stateManager.getState();
     const { selectedKey, selectedType, selectedStringSet } = state.options;
     
-    const stringSet = selectedStringSet ? [selectedStringSet] : ["1", "2"];
-    const roots = ["1", "2", "3", "4", "5"];
-    
     const key = selectedKey || this.chooseRandomFromArray(this.musicalKeys);
     const type = selectedType || this.chooseRandomFromArray(this.chordTypes);
-    const chosenStringSet = this.chooseRandomFromArray(stringSet);
+    const chosenStringSet = selectedStringSet || this.chooseRandomFromArray(["1", "2"]);
     
-    let chosenRoot;
-    let attempts = 0;
+    const validRoots = this.getValidRoots(chosenStringSet);
     const recentProblems = state.results.recentProblems;
     
-    do {
-      chosenRoot = this.chooseRandomFromArray(roots);
-      attempts++;
-      
-      // Adjust for invalid combinations
-      if (chosenStringSet === "1" && chosenRoot === "5") {
-        chosenRoot = "2";
-      } else if (chosenStringSet === "2" && chosenRoot === "1") {
-        chosenRoot = "2";
-      }
-      
-      if (attempts > 100) {
-        console.error("Unable to find valid root after 100 attempts");
-        break;
-      }
-    } while (recentProblems.includes(`${chosenStringSet} ${chosenRoot}`));
+    // Filter out recent combinations
+    const availableRoots = validRoots.filter(root => 
+      !recentProblems.includes(`${chosenStringSet} ${root}`)
+    );
     
-    // Update recent problems
+    // Use available roots, fallback to all valid roots if none available
+    const chosenRoot = availableRoots.length > 0 
+      ? this.chooseRandomFromArray(availableRoots)
+      : this.chooseRandomFromArray(validRoots);
+    
     this.stateManager.addRecentProblem(`${chosenStringSet} ${chosenRoot}`);
     
     return {

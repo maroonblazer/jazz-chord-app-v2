@@ -1,50 +1,12 @@
 import { test, expect, describe, beforeEach } from '@jest/globals';
 
-// Test chord generation using Jest's built-in jsdom environment
-describe('Chord Generation with DOM', () => {
-  // Mock chord shapes data structure for testing
-  const chordShapes = {
-    SS1: {
-      'R/1': {
-        'maj7': [0, 2, 1, 1, 0, 2],
-        'min7': [0, 2, 0, 1, 0, 2],
-        'dom7': [0, 2, 1, 3, 0, 2]
-      },
-      'R/2': {
-        'maj7': [2, 0, 1, 1, 2, 0],
-        'min7': [2, 0, 0, 1, 2, 0]
-      },
-      'R/3': {
-        'maj7': [1, 3, 2, 2, 1, 3],
-        'min7': [1, 3, 1, 2, 1, 3]
-      },
-      'R/4': {
-        'maj7': [3, 1, 2, 2, 3, 1],
-        'min7': [3, 1, 1, 2, 3, 1]
-      }
-    },
-    SS2: {
-      'R/2': {
-        'maj7': [1, 1, 1, 2, 1, 1],
-        'min7': [1, 1, 0, 2, 1, 1]
-      },
-      'R/3': {
-        'maj7': [2, 2, 1, 3, 2, 2],
-        'min7': [2, 2, 0, 3, 2, 2]
-      },
-      'R/4': {
-        'maj7': [3, 3, 2, 0, 3, 3],
-        'min7': [3, 3, 1, 0, 3, 3]
-      },
-      'R/5': {
-        'maj7': [0, 0, 3, 1, 0, 0],
-        'min7': [0, 0, 2, 1, 0, 0]
-      }
-    }
-  };
+// Import the refactored ChordGenerator class
+import { ChordGenerator } from '../../public/components/ChordGenerator.js';
+import { SessionStateManager } from '../../public/state/SessionStateManager.js';
 
-  const keys = ['C', 'Db', 'D', 'Eb', 'E', 'F', 'Gb', 'G', 'Ab', 'A', 'Bb', 'B'];
-  const types = ['maj7', 'maj9', 'min7', 'min9', 'dom7', 'm7b5', 'alt dom', 'dom13'];
+describe('Refactored ChordGenerator Tests', () => {
+  let stateManager;
+  let chordGenerator;
 
   beforeEach(() => {
     // Set up DOM structure for chord display
@@ -57,56 +19,12 @@ describe('Chord Generation with DOM', () => {
       <svg id="fretboard"></svg>
     `;
     
-    // Make chord data globally available
-    global.chordShapes = chordShapes;
-    global.keys = keys;
-    global.types = types;
+    // Initialize state manager and chord generator
+    stateManager = new SessionStateManager();
+    chordGenerator = new ChordGenerator(stateManager);
   });
 
-  // Chord generation functions
-  function getRandomStringSet() {
-    return Math.random() < 0.5 ? 1 : 2;
-  }
-
-  function getRandomRoot(stringSet) {
-    return stringSet === 1 ? Math.floor(Math.random() * 4) + 1 : Math.floor(Math.random() * 4) + 2;
-  }
-
-  function getRandomKey() {
-    return keys[Math.floor(Math.random() * keys.length)];
-  }
-
-  function getRandomType() {
-    return types[Math.floor(Math.random() * types.length)];
-  }
-
-  function isValidChordShape(stringSet, root, type) {
-    const ss = `SS${stringSet}`;
-    const rootKey = `R/${root}`;
-    const shapes = global.chordShapes || chordShapes;
-    return !!(shapes[ss] && shapes[ss][rootKey] && shapes[ss][rootKey][type]);
-  }
-
-  function generateChordProblem(options = {}) {
-    let stringSet, root, key, type;
-    let attempts = 0;
-    const maxAttempts = 100;
-
-    do {
-      stringSet = options.stringSet || getRandomStringSet();
-      root = options.root || getRandomRoot(stringSet);
-      key = options.key || getRandomKey();
-      type = options.type || getRandomType();
-      attempts++;
-    } while (!isValidChordShape(stringSet, root, type) && attempts < maxAttempts);
-
-    if (attempts >= maxAttempts) {
-      throw new Error('Could not generate valid chord after maximum attempts');
-    }
-
-    return { stringSet, root, key, type };
-  }
-
+  // Helper functions
   function displayChordProblem(problem) {
     document.getElementById('stringSetTextField').textContent = `SS${problem.stringSet}`;
     document.getElementById('rootTextField').textContent = `R/${problem.root}`;
@@ -121,90 +39,114 @@ describe('Chord Generation with DOM', () => {
     document.getElementById('typeTextField').textContent = '--';
   }
 
-  describe('Random Generation Functions', () => {
-    test('should generate valid string sets', () => {
-      for (let i = 0; i < 50; i++) {
-        const result = getRandomStringSet();
-        expect([1, 2]).toContain(result);
+  describe('ChordGenerator Validation', () => {
+    test('getValidRoots should return correct roots for each string set', () => {
+      expect(chordGenerator.getValidRoots('1')).toEqual(['1', '2', '3', '4']);
+      expect(chordGenerator.getValidRoots('2')).toEqual(['2', '3', '4', '5']);
+    });
+
+    test('chooseRandomFromArray should work correctly', () => {
+      const testArray = ['a', 'b', 'c'];
+      for (let i = 0; i < 20; i++) {
+        const result = chordGenerator.chooseRandomFromArray(testArray);
+        expect(testArray).toContain(result);
       }
     });
 
-    test('should generate valid roots for string sets', () => {
-      // Test string set 1 (roots 1-4)
-      for (let i = 0; i < 20; i++) {
-        const result = getRandomRoot(1);
-        expect(result).toBeGreaterThanOrEqual(1);
-        expect(result).toBeLessThanOrEqual(4);
-      }
-
-      // Test string set 2 (roots 2-5)
-      for (let i = 0; i < 20; i++) {
-        const result = getRandomRoot(2);
-        expect(result).toBeGreaterThanOrEqual(2);
-        expect(result).toBeLessThanOrEqual(5);
-      }
-    });
-
-    test('should generate valid keys and types', () => {
-      for (let i = 0; i < 10; i++) {
-        expect(keys).toContain(getRandomKey());
-        expect(types).toContain(getRandomType());
-      }
+    test('chooseRandomFromArray should handle edge cases', () => {
+      expect(chordGenerator.chooseRandomFromArray([])).toBe(null);
+      expect(chordGenerator.chooseRandomFromArray(null)).toBe(null);
+      expect(chordGenerator.chooseRandomFromArray(['single'])).toBe('single');
     });
   });
 
-  describe('Chord Validation', () => {
-    test('should validate existing chord shapes', () => {
-      expect(isValidChordShape(1, 1, 'maj7')).toBe(true);
-      expect(isValidChordShape(1, 2, 'min7')).toBe(true);
-      expect(isValidChordShape(2, 3, 'maj7')).toBe(true);
-      expect(isValidChordShape(2, 5, 'min7')).toBe(true);
+  describe('Chord Shape Validation', () => {
+    test('getFretPositions should return valid shapes for existing combinations', () => {
+      const shape = chordGenerator.getFretPositions('1', '1', 'maj7');
+      expect(Array.isArray(shape)).toBe(true);
+      expect(shape.length).toBe(6);
     });
 
-    test('should reject invalid chord shapes', () => {
-      expect(isValidChordShape(1, 5, 'maj7')).toBe(false); // Invalid root for SS1
-      expect(isValidChordShape(3, 1, 'maj7')).toBe(false); // Invalid string set
-      expect(isValidChordShape(1, 1, 'invalid')).toBe(false); // Invalid type
-      expect(isValidChordShape(2, 1, 'maj7')).toBe(false); // Root 1 not valid for SS2
+    test('getFretPositions should handle invalid combinations', () => {
+      const shape = chordGenerator.getFretPositions('1', '5', 'maj7'); // Invalid: SS1 doesn't have R/5
+      expect(shape).toEqual([null, null, null, null, null, null]);
+    });
+
+    test('generateSVG should create valid SVG string', () => {
+      const fretPositions = [null, null, 4, 4, 3, 3];
+      const svg = chordGenerator.generateSVG(fretPositions);
+      expect(typeof svg).toBe('string');
+      expect(svg.startsWith('<svg')).toBe(true);
+      expect(svg.endsWith('</svg>')).toBe(true);
     });
   });
 
   describe('Chord Problem Generation', () => {
-    test('should generate valid chord problems', () => {
+    test('should generate valid chord problems with no options', () => {
       for (let i = 0; i < 10; i++) {
-        const chord = generateChordProblem();
-        expect([1, 2]).toContain(chord.stringSet);
-        expect(keys).toContain(chord.key);
-        expect(types).toContain(chord.type);
-        expect(isValidChordShape(chord.stringSet, chord.root, chord.type)).toBe(true);
+        const problem = chordGenerator.generateRandomProblem();
+        expect(['1', '2']).toContain(problem.stringSet);
+        expect(chordGenerator.musicalKeys).toContain(problem.key);
+        expect(chordGenerator.chordTypes).toContain(problem.type);
+        
+        const validRoots = chordGenerator.getValidRoots(problem.stringSet);
+        expect(validRoots).toContain(problem.root);
       }
     });
 
-    test('should respect provided options', () => {
-      const options = { stringSet: 1, key: 'C', type: 'maj7' };
-      const chord = generateChordProblem(options);
-      expect(chord.stringSet).toBe(1);
-      expect(chord.key).toBe('C');
-      expect(chord.type).toBe('maj7');
-      expect(isValidChordShape(chord.stringSet, chord.root, chord.type)).toBe(true);
+    test('should respect user options when provided', () => {
+      // Set specific options in state
+      stateManager.updateOptions({
+        selectedKey: 'C',
+        selectedType: 'maj7',
+        selectedStringSet: '1'
+      });
+      
+      const problem = chordGenerator.generateRandomProblem();
+      expect(problem.key).toBe('C');
+      expect(problem.type).toBe('maj7');
+      expect(problem.stringSet).toBe('1');
+      expect(['1', '2', '3', '4']).toContain(problem.root); // Valid roots for SS1
     });
 
-    test('should throw error if no valid chord can be generated', () => {
-      // Mock an impossible scenario
-      const originalChordShapes = global.chordShapes;
-      global.chordShapes = { SS1: {}, SS2: {} };
+    test('should respect partial options', () => {
+      // Set only key option
+      stateManager.updateOptions({
+        selectedKey: 'F#',
+        selectedType: null,
+        selectedStringSet: null
+      });
       
-      expect(() => {
-        generateChordProblem();
-      }).toThrow('Could not generate valid chord after maximum attempts');
+      const problem = chordGenerator.generateRandomProblem();
+      expect(problem.key).toBe('F#');
+      expect(['1', '2']).toContain(problem.stringSet);
+      expect(chordGenerator.chordTypes).toContain(problem.type);
+    });
+
+    test('should avoid recent problems when possible', () => {
+      // Add some recent problems
+      stateManager.addRecentProblem('1 2');
+      stateManager.addRecentProblem('1 3');
+      stateManager.addRecentProblem('2 4');
       
-      global.chordShapes = originalChordShapes;
+      // Generate several problems and verify they avoid recent ones when possible
+      const problems = [];
+      for (let i = 0; i < 5; i++) {
+        problems.push(chordGenerator.generateRandomProblem());
+      }
+      
+      const problemStrings = problems.map(p => `${p.stringSet} ${p.root}`);
+      const recentProblems = ['1 2', '1 3', '2 4'];
+      
+      // At least some problems should avoid the recent ones
+      const nonRecentProblems = problemStrings.filter(p => !recentProblems.includes(p));
+      expect(nonRecentProblems.length).toBeGreaterThan(0);
     });
   });
 
   describe('DOM Display Functions', () => {
     test('should display chord problem correctly', () => {
-      const problem = { stringSet: 1, root: 2, key: 'F#', type: 'maj7' };
+      const problem = { stringSet: '1', root: '2', key: 'F#', type: 'maj7' };
       displayChordProblem(problem);
       
       expect(document.getElementById('stringSetTextField').textContent).toBe('SS1');
@@ -215,7 +157,7 @@ describe('Chord Generation with DOM', () => {
 
     test('should clear chord display', () => {
       // First set some values
-      const problem = { stringSet: 2, root: 3, key: 'Bb', type: 'min7' };
+      const problem = { stringSet: '2', root: '3', key: 'Bb', type: 'min7' };
       displayChordProblem(problem);
       
       // Then clear them
@@ -226,24 +168,9 @@ describe('Chord Generation with DOM', () => {
       expect(document.getElementById('keyTextField').textContent).toBe('--');
       expect(document.getElementById('typeTextField').textContent).toBe('--');
     });
-
-    test('should handle multiple chord displays', () => {
-      const chords = [
-        { stringSet: 1, root: 1, key: 'C', type: 'maj7' },
-        { stringSet: 2, root: 4, key: 'G', type: 'min7' },
-        { stringSet: 1, root: 3, key: 'E', type: 'dom7' }
-      ];
-
-      chords.forEach(chord => {
-        displayChordProblem(chord);
-        expect(document.getElementById('stringSetTextField').textContent).toBe(`SS${chord.stringSet}`);
-        expect(document.getElementById('keyTextField').textContent).toBe(chord.key);
-        expect(document.getElementById('typeTextField').textContent).toBe(chord.type);
-      });
-    });
   });
 
-  describe('Integration with DOM Elements', () => {
+  describe('Integration Tests', () => {
     test('should verify required DOM elements exist', () => {
       expect(document.getElementById('stringSetTextField')).toBeTruthy();
       expect(document.getElementById('rootTextField')).toBeTruthy();
@@ -254,8 +181,11 @@ describe('Chord Generation with DOM', () => {
     });
 
     test('should handle complete chord generation and display flow', () => {
+      // Set specific options for predictable testing
+      stateManager.updateOptions({ selectedStringSet: '1' });
+      
       // Generate a chord
-      const chord = generateChordProblem({ stringSet: 1 });
+      const chord = chordGenerator.generateRandomProblem();
       
       // Display it
       displayChordProblem(chord);
@@ -263,12 +193,23 @@ describe('Chord Generation with DOM', () => {
       // Verify it's displayed correctly
       expect(document.getElementById('stringSetTextField').textContent).toBe('SS1');
       expect(document.getElementById('rootTextField').textContent).toMatch(/^R\/[1-4]$/);
-      expect(keys).toContain(document.getElementById('keyTextField').textContent);
-      expect(types).toContain(document.getElementById('typeTextField').textContent);
+      expect(chordGenerator.musicalKeys).toContain(document.getElementById('keyTextField').textContent);
+      expect(chordGenerator.chordTypes).toContain(document.getElementById('typeTextField').textContent);
       
       // Clear and verify
       clearChordDisplay();
       expect(document.getElementById('stringSetTextField').textContent).toBe('--');
+    });
+
+    test('should generate valid SVG for chord shapes', () => {
+      const problem = chordGenerator.generateRandomProblem();
+      const fretPositions = chordGenerator.getFretPositions(problem.stringSet, problem.root, problem.type);
+      const svg = chordGenerator.generateSVG(fretPositions);
+      
+      expect(typeof svg).toBe('string');
+      expect(svg.includes('<svg')).toBe(true);
+      expect(svg.includes('</svg>')).toBe(true);
+      expect(svg.includes('fretboard-base')).toBe(true);
     });
   });
 });
