@@ -3,7 +3,6 @@ import path from 'path';
 import express from 'express';
 import fs from 'fs';
 import cors from 'cors';
-// import { query } from './qa.js';
 import csvParser from 'csv-parser';
 
 const app = express();
@@ -96,33 +95,6 @@ app.post('/append-session-data', (req, res) => {
   }
 });
 
-app.post('/get-assistant-feedback', async (req, res) => {
-  console.log('Received Post request for assistant feedback');
-  try {
-    const data = await query('session-data-last-10.csv', 10);
-    res.json(data);
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: 'Error querying data' });
-  }
-});
-
-app.post('/send-message', async (req, res) => {
-  console.log('Received Post request for follow-up feedback...');
-  try {
-    const rows = fs
-      .readFileSync('session-data.csv', 'utf8')
-      .split('\n')
-      .filter(row => row !== '').length;
-    const question = req.body.message;
-    console.log('Question from client:', question);
-    const data = await query('session-data.csv', rows, question);
-    res.json(data);
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: 'Error querying data' });
-  }
-});
 
 function analyzeChordProblems(filePath, topN = 3) {
   return new Promise((resolve, reject) => {

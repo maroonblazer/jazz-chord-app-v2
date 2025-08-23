@@ -179,7 +179,7 @@ The new architecture enables several potential improvements:
 
 1. **Real-time Analytics**: WebSocket-based live performance tracking
 2. **User Accounts**: Multi-user support with personal progress tracking
-3. **Advanced AI Features**: Better integration with LangChain and OpenAI
+3. **Enhanced Analytics**: More sophisticated performance analysis and reporting
 4. **Mobile App**: Components can be adapted for React Native
 5. **Plugin System**: Extensible architecture for custom chord types or analysis
 

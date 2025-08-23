@@ -699,49 +699,6 @@ function convertArrayToCSV(array) {
   return csvContent;
 }
 
-function handleSendButtonClick() {
-  // Get the message from the input field
-  const message = messageInput.value;
-
-  // send the message to the server
-  fetch('/send-message', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({ message: message }),
-  })
-    .then(response => {
-      console.log('Received response:', response);
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      console.log('Response is OK, parsing as JSON...');
-      return response.json(); // Parse the response as JSON
-    })
-    .then(data => {
-      console.log('Received data:', data);
-      console.log(
-        `logging the result promise from send-message-${data.answer}`
-      ); // Access the message property of the data
-      // Create a new paragraph element
-      const p = document.createElement('p');
-
-      // Set the text of the paragraph to the answer
-      p.textContent = data.answer;
-
-      // Append the paragraph to the body of the document
-      document.getElementById('fretboard-container').innerHTML = p.textContent;
-      // Clear the input field
-      messageInput.value = '';
-    })
-    .catch(error => {
-      console.error('Error:', error);
-    });
-
-  // Clear the input field
-  messageInput.value = '';
-}
 
 // Attach the handleButtonClick function to the button click event
 startButton.addEventListener('click', handleStartButtonClick);

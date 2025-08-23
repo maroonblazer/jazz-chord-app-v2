@@ -40,12 +40,11 @@ Access refactored version: `http://localhost:3000?arch=refactored`
 - **Data Persistence**: Dual CSV file system:
   - `session-data.csv` - All historical session data
   - `session-data-last-10.csv` - Recent sessions for analysis
-- **AI Integration**: OpenAI + LangChain for performance analysis (some features commented out)
+- **Performance Analysis**: Local CSV analysis for identifying problematic chord patterns
 
 ### Key Endpoints
 - `POST /append-session-data` - Store session results to CSV
 - `GET /analyze-session-data` - Get analysis of slowest chord problems
-- `POST /send-message` - Custom AI queries on session data
 
 ### Chord System
 The app uses a two-tier chord representation:
@@ -69,7 +68,7 @@ chordShapes[`SS${stringSet}`][`R/${root}`][type] = [fret1, fret2, fret3, fret4, 
 2. Timer measures recognition time
 3. After 10 iterations, results sent to backend
 4. Backend appends to CSV files
-5. AI analysis identifies problematic patterns
+5. Local analysis identifies problematic patterns
 6. Results displayed with copy functionality
 
 ### Important Implementation Details
@@ -96,11 +95,11 @@ chordShapes[`SS${stringSet}`][`R/${root}`][type] = [fret1, fret2, fret3, fret4, 
 - **Puppeteer**: Development testing in `tests/test.js`
 - Tests cover session flow, timing, and results display
 
-### AI Features (`qa.js`, `openai.js`)
-- LangChain document loading from CSV data
-- Vector embeddings for similarity search
-- GPT-3.5-turbo generates practice recommendations
-- Custom question-answering on practice history
+### Performance Analysis
+- CSV data processing for chord problem identification
+- Statistical analysis of practice times and patterns
+- Automated identification of problematic chord combinations
+- Results formatted for easy review and practice focus
 
 ### Development Notes
 - Pure vanilla JavaScript - no build step required for core functionality
