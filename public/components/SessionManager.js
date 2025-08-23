@@ -214,6 +214,27 @@ export class SessionManager {
     this.stateManager.updateState('session.isRunning', false);
   }
 
+  cancelSession() {
+    console.log('Cancelling session...');
+    
+    // Use the state manager's cancel method which handles state transitions and cleanup
+    const cancelled = this.stateManager.cancel();
+    
+    if (cancelled) {
+      // Clear any displayed chord
+      const container = document.getElementById("fretboard-container");
+      if (container) {
+        container.innerHTML = "";
+      }
+      
+      console.log('Session cancelled successfully');
+    } else {
+      console.warn('Failed to cancel session - invalid state transition');
+    }
+    
+    return cancelled;
+  }
+
   formatResultsForClipboard(results) {
     return results
       .map((result, index) => `${index + 1} ${result.chordInfo} ${result.timeInfo}`)

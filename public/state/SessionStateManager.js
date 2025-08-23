@@ -2,7 +2,7 @@ export class SessionStateManager {
   constructor() {
     this.state = {
       session: {
-        status: 'STOPPED', // STOPPED, RUNNING, PAUSED, LAST, END
+        status: 'STOPPED', // STOPPED, RUNNING, PAUSED, CANCELLED, LAST, END
         iterationCount: 0,
         maxIterations: 10,
         isRunning: false
@@ -36,8 +36,9 @@ export class SessionStateManager {
     this.listeners = new Map();
     this.validTransitions = {
       STOPPED: ['RUNNING'],
-      RUNNING: ['PAUSED', 'LAST'],
-      PAUSED: ['RUNNING', 'STOPPED'],
+      RUNNING: ['PAUSED', 'LAST', 'CANCELLED'],
+      PAUSED: ['RUNNING', 'STOPPED', 'CANCELLED'],
+      CANCELLED: ['STOPPED'],
       LAST: ['END', 'STOPPED'],
       END: ['STOPPED']
     };
@@ -143,6 +144,25 @@ export class SessionStateManager {
     }
     
     this.updateState('session.status', newStatus);
+    return true;
+  }
+
+  cancel() {
+    if (!this.canTransitionTo('CANCELLED')) {
+      console.warn(`Cannot cancel session from ${this.state.session.status} state`);
+      return false;
+    }
+    
+    this.transitionTo('CANCELLED');
+    
+    // Clear any running timer
+    if (this.state.timing.timerId) {
+      clearInterval(this.state.timing.timerId);
+    }
+    
+    // Reset to clean state
+    this.reset();
+    
     return true;
   }
 

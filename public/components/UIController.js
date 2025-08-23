@@ -18,6 +18,7 @@ export class UIController {
       typeTextField: document.getElementById("typeTextField"),
       fretboardContainer: document.getElementById("fretboard-container"),
       markWrongButton: document.getElementById('mark-wrong-button'),
+      cancelButton: document.getElementById('cancel-button'),
       optionsButton: document.getElementById('options-button'),
       optionsMenu: document.querySelector('.options-menu'),
       keySelect: document.getElementById('key-select'),
@@ -57,6 +58,11 @@ export class UIController {
         event.preventDefault();
         this.sessionManager.handleStartStopClick();
       }
+    });
+
+    // Cancel button
+    this.elements.cancelButton.addEventListener('click', () => {
+      this.sessionManager.cancelSession();
     });
 
     // Mark wrong button
@@ -284,6 +290,15 @@ export class UIController {
         if (!hasResultsHeader) {
           this.clearProblemDisplay();
         }
+      }
+    });
+
+    // Show/hide cancel button based on session status
+    this.stateManager.subscribe('session.status', (status) => {
+      if (status === 'RUNNING' || status === 'PAUSED') {
+        this.elements.cancelButton.classList.remove('hidden');
+      } else {
+        this.elements.cancelButton.classList.add('hidden');
       }
     });
 

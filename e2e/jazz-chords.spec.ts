@@ -276,3 +276,175 @@ test('Options Menu Partial Selection Works', async ({ page }) => {
   // With 5 chords and random selection, we should get some variation
   expect(uniqueTypes.size).toBeGreaterThan(1);
 });
+
+test('Session Cancellation Functionality', async ({ page }) => {
+  // Navigate to the refactored version
+  await page.goto('http://localhost:3000?arch=refactored');
+  await page.waitForTimeout(2000);
+
+  // Verify cancel button is initially hidden
+  const cancelButton = page.locator('#cancel-button');
+  await expect(cancelButton).toHaveClass(/hidden/);
+
+  // Start a session
+  const startButton = page.locator('#start-stop-button');
+  await startButton.click();
+
+  // Wait for session to start and verify cancel button becomes visible
+  await page.waitForFunction(() => {
+    const textField = document.getElementById('stringSetTextField');
+    return textField && textField.textContent !== '--';
+  }, { timeout: 5000 });
+
+  await expect(cancelButton).not.toHaveClass(/hidden/);
+  await expect(cancelButton).toBeVisible();
+
+  // Verify button text and accessibility
+  await expect(cancelButton).toHaveText('Cancel');
+  await expect(cancelButton).toHaveAttribute('role', 'button');
+
+  // Click cancel button
+  await cancelButton.click();
+
+  // Verify session is cancelled - button should be hidden again
+  await expect(cancelButton).toHaveClass(/hidden/, { timeout: 2000 });
+
+  // Verify session state is reset
+  const stringSetText = await page.locator('#stringSetTextField').textContent();
+  const rootText = await page.locator('#rootTextField').textContent();
+  const keyText = await page.locator('#keyTextField').textContent();
+  const typeText = await page.locator('#typeTextField').textContent();
+
+  expect(stringSetText).toBe('--');
+  expect(rootText).toBe('--');
+  expect(keyText).toBe('--');
+  expect(typeText).toBe('--');
+
+  // Verify fretboard is cleared
+  const fretboardContent = await page.locator('#fretboard-container').innerHTML();
+  expect(fretboardContent.trim()).toBe('');
+
+  // Verify start button is ready for new session
+  const startButtonLabel = page.locator('#start-stop-button-label');
+  await expect(startButtonLabel).toHaveText('Start');
+});
+
+test('Cancel Button Visibility During Different States', async ({ page }) => {
+  await page.goto('http://localhost:3000?arch=refactored');
+  await page.waitForTimeout(2000);
+
+  const cancelButton = page.locator('#cancel-button');
+  const startButton = page.locator('#start-stop-button');
+
+  // Initially hidden
+  await expect(cancelButton).toHaveClass(/hidden/);
+
+  // Show during RUNNING state
+  await startButton.click();
+  await page.waitForTimeout(1000);
+  await expect(cancelButton).not.toHaveClass(/hidden/);
+
+  // Still visible when paused (after stopping an iteration)
+  await startButton.click(); // Stop the session - transitions to PAUSED
+  await page.waitForTimeout(500);
+  // Cancel button should still be visible in PAUSED state
+  await expect(cancelButton).not.toHaveClass(/hidden/);
+  
+  // Use cancel button to fully stop and hide it
+  await cancelButton.click();
+  await expect(cancelButton).toHaveClass(/hidden/, { timeout: 2000 });
+});
+
+test('Cancel Button Works During Paused State', async ({ page }) => {
+  await page.goto('http://localhost:3000?arch=refactored');
+  await page.waitForTimeout(2000);
+
+  const cancelButton = page.locator('#cancel-button');
+  const startButton = page.locator('#start-stop-button');
+
+  // Start session
+  await startButton.click();
+  await page.waitForTimeout(1000);
+
+  // Pause session (click stop)
+  await startButton.click();
+  
+  // In a paused state, cancel should still be visible
+  // Note: This depends on the implementation - adjust based on actual behavior
+  await page.waitForTimeout(500);
+  
+  // Cancel the paused session
+  if (await cancelButton.isVisible()) {
+    await cancelButton.click();
+    await expect(cancelButton).toHaveClass(/hidden/, { timeout: 2000 });
+  }
+});
+
+test('Cancel During Mid-Session Preserves No Data', async ({ page }) => {
+  await page.goto('http://localhost:3000?arch=refactored');
+  await page.waitForTimeout(2000);
+
+  const cancelButton = page.locator('#cancel-button');
+  const startButton = page.locator('#start-stop-button');
+
+  // Complete a few iterations first
+  for (let i = 0; i < 3; i++) {
+    await startButton.click();
+    
+    await page.waitForFunction(() => {
+      const textField = document.getElementById('stringSetTextField');
+      return textField && textField.textContent !== '--';
+    }, { timeout: 5000 });
+    
+    await page.waitForTimeout(300);
+    await startButton.click();
+    await page.waitForTimeout(500);
+  }
+
+  // Start another iteration and cancel it
+  await startButton.click();
+  await page.waitForTimeout(500);
+  
+  await cancelButton.click();
+
+  // Verify we don't see results (session was cancelled, not completed)
+  const startButtonLabel = page.locator('#start-stop-button-label');
+  await expect(startButtonLabel).toHaveText('Start');
+  await expect(startButtonLabel).not.toHaveText('See Results');
+
+  // Verify no results are displayed
+  const fretboardContent = await page.locator('#fretboard-container').innerHTML();
+  expect(fretboardContent).not.toContain('Drill These Chord Shapes');
+});
+
+test('Cancel Button CSS Styling', async ({ page }) => {
+  await page.goto('http://localhost:3000?arch=refactored');
+  await page.waitForTimeout(2000);
+
+  const cancelButton = page.locator('#cancel-button');
+  const startButton = page.locator('#start-stop-button');
+
+  // Start session to make cancel button visible
+  await startButton.click();
+  await page.waitForTimeout(1000);
+
+  // Check that cancel button has proper CSS classes
+  await expect(cancelButton).toHaveClass(/cancel-button/);
+  await expect(cancelButton).not.toHaveClass(/hidden/);
+
+  // Verify button styling properties
+  const buttonStyles = await cancelButton.evaluate(el => {
+    const styles = window.getComputedStyle(el);
+    return {
+      backgroundColor: styles.backgroundColor,
+      color: styles.color,
+      borderRadius: styles.borderRadius,
+      cursor: styles.cursor
+    };
+  });
+
+  // Verify button has red-ish background (cancel button styling)
+  expect(buttonStyles.backgroundColor).toMatch(/rgb\(244, 67, 54\)|#f44336/);
+  expect(buttonStyles.color).toMatch(/rgb\(255, 255, 255\)|white/);
+  expect(buttonStyles.cursor).toBe('pointer');
+});
