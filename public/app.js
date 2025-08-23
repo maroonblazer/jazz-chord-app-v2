@@ -1,11 +1,11 @@
 export const maxIterations = 10; // Maximum number of iterations for a session
 
 const SessionState = {
-  STOPPED: "STOPPED",
-  RUNNING: "RUNNING",
-  PAUSED: "PAUSED",
-  LAST: "LAST",
-  END: "END",
+  STOPPED: 'STOPPED',
+  RUNNING: 'RUNNING',
+  PAUSED: 'PAUSED',
+  LAST: 'LAST',
+  END: 'END',
 };
 
 let currentState = SessionState.STOPPED;
@@ -15,12 +15,12 @@ let isSessionRunning = false;
 let iterationCount = 0; // Variable to store the session count
 
 // Get the button, text field, and elapsed time elements
-const startButton = document.getElementById("start-stop-button");
-const startStopButtonLabel = document.getElementById("start-stop-button-label");
-const stringSetTextField = document.getElementById("stringSetTextField");
-const rootTextField = document.getElementById("rootTextField");
-const keyTextField = document.getElementById("keyTextField");
-const typeTextField = document.getElementById("typeTextField"); // Add this line
+const startButton = document.getElementById('start-stop-button');
+const startStopButtonLabel = document.getElementById('start-stop-button-label');
+const stringSetTextField = document.getElementById('stringSetTextField');
+const rootTextField = document.getElementById('rootTextField');
+const keyTextField = document.getElementById('keyTextField');
+const typeTextField = document.getElementById('typeTextField'); // Add this line
 // const elapsedTime = document.getElementById("elapsedTime");
 // const inputContainer = document.getElementById('input-container');
 // inputContainer.style.display = 'none';
@@ -30,7 +30,7 @@ let startTime; // Variable to store the start time
 let chordsToForget = []; // Queue to store the last two strings
 
 // select the div container that will hold the svg image
-const fretboardContainer = document.getElementById("fretboard-container");
+const fretboardContainer = document.getElementById('fretboard-container');
 
 // Add these to your global variables
 const keySelect = document.getElementById('key-select');
@@ -46,10 +46,12 @@ optionsButton.addEventListener('click', () => {
 });
 
 // Close menu when clicking outside
-document.addEventListener('click', (event) => {
-  if (!optionsMenu.hidden && 
-      !optionsMenu.contains(event.target) && 
-      !optionsButton.contains(event.target)) {
+document.addEventListener('click', event => {
+  if (
+    !optionsMenu.hidden &&
+    !optionsMenu.contains(event.target) &&
+    !optionsButton.contains(event.target)
+  ) {
     optionsButton.setAttribute('aria-expanded', 'false');
     optionsMenu.hidden = true;
   }
@@ -61,14 +63,14 @@ const WRONG_ANSWER_TIME = 999999; // Large number to ensure it appears in result
 
 function newChord(fretPositions, options = {}) {
   // Default values
-  const { width = 339, height = 806, circleColor = "black" } = options;
+  const { width = 339, height = 806, circleColor = 'black' } = options;
 
   // Ensure fretPositions is always an array
   if (!Array.isArray(fretPositions)) {
-    throw new Error("fretPositions must be an array");
+    throw new Error('fretPositions must be an array');
   }
 
-  console.log("Input fretPositions:", fretPositions);
+  console.log('Input fretPositions:', fretPositions);
 
   // Generate SVG string
   let svg = `<svg width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" fill="none" xmlns="http://www.w3.org/2000/svg">`;
@@ -114,7 +116,7 @@ function newChord(fretPositions, options = {}) {
   svg += `</g>`;
 
   // Close SVG tag
-  svg += "</svg>";
+  svg += '</svg>';
 
   return svg;
 }
@@ -123,88 +125,88 @@ function getFretPositions(stringSet, root, type) {
   // Define chord shapes
   const chordShapes = {
     SS1: {
-      "R/1": {
+      'R/1': {
         maj7: [null, null, 4, 4, 3, 3],
         min7: [null, null, 3, 3, 3, 3],
         dom7: [null, null, 3, 4, 3, 3],
         min7b5: [null, null, 3, 3, 2, 3],
-        "alt dom": [null, null, 3, 4, 4, 4],
+        'alt dom': [null, null, 3, 4, 4, 4],
         maj9: [null, null, 4, 4, 5, 5],
         min9: [null, null, 3, 3, 3, 5],
         dom13: [null, null, 3, 3, 4, 5],
       },
-      "R/2": {
+      'R/2': {
         maj7: [null, null, 3, 5, 2, 4],
         min7: [null, null, 2, 4, 2, 4],
         dom7: [null, null, 3, 4, 2, 4],
         dom7: [null, null, 3, 4, 2, 4],
         min7b5: [null, null, 2, 4, 2, 3],
-        "alt dom": [null, null, 3, 4, 3, 5],
+        'alt dom': [null, null, 3, 4, 3, 5],
         maj9: [null, null, 3, 5, 4, 4],
         min9: [null, null, 2, 4, 4, 4],
         dom13: [null, null, 3, 4, 4, 4],
       },
-      "R/3": {
+      'R/3': {
         maj7: [null, null, 2, 4, 2, 4],
         min7: [null, null, 3, 3, 2, 4],
         dom7: [null, null, 3, 3, 3, 4],
         min7b5: [null, null, 2, 3, 2, 4],
-        "alt dom": [null, null, 4, 4, 3, 4],
+        'alt dom': [null, null, 4, 4, 3, 4],
         maj9: [null, null, 3, 3, 3, 5],
         min9: [null, null, 3, 5, 2, 4],
         dom13: [null, null, 3, 5, 3, 4],
       },
-      "R/4": {
+      'R/4': {
         maj7: [null, null, 3, 5, 5, 5],
         min7: [null, null, 3, 5, 4, 4],
         dom7: [null, null, 3, 5, 4, 5],
         min7b5: [null, null, 3, 4, 4, 4],
-        "alt dom": [null, null, 3, 5, 3, 4],
+        'alt dom': [null, null, 3, 5, 3, 4],
         maj9: [null, null, 3, 5, 5, 5],
         min9: [null, null, 3, 3, 4, 4],
         dom13: [null, null, 1, 5, 2, 3],
       },
     },
     SS2: {
-      "R/2": {
-        maj7: [null, 3,3,1,2, null],
+      'R/2': {
+        maj7: [null, 3, 3, 1, 2, null],
         min7: [null, 3, 3, 2, 3, null],
         dom7: [null, 3, 4, 2, 3, null],
         min7b5: [null, 3, 3, 1, 3, null],
-        "alt dom": [null, 3,4,3,4, null],
-        maj9: [null, 4,4,4,5, null],
-        min9: [null, 2,2,1,4, null],
-        dom13: [null, 3,4,4,5, null],
+        'alt dom': [null, 3, 4, 3, 4, null],
+        maj9: [null, 4, 4, 4, 5, null],
+        min9: [null, 2, 2, 1, 4, null],
+        dom13: [null, 3, 4, 4, 5, null],
       },
-      "R/3": {
-        maj7: [null, 3,5,1,4, null],
-        min7: [null, 2,4,1,4, null],
-        dom7: [null, 3,4,1,4, null],
-        min7b5: [null, 2,4,1,3, null],
-        "alt dom": [null, 3,4,2,5, null],
-        maj9: [null, 2,2,2,3, null],
-        min9: [null, 2,4,3,2, null],
-        dom13: [null, 3,4,3,4, null],
+      'R/3': {
+        maj7: [null, 3, 5, 1, 4, null],
+        min7: [null, 2, 4, 1, 4, null],
+        dom7: [null, 3, 4, 1, 4, null],
+        min7b5: [null, 2, 4, 1, 3, null],
+        'alt dom': [null, 3, 4, 2, 5, null],
+        maj9: [null, 2, 2, 2, 3, null],
+        min9: [null, 2, 4, 3, 2, null],
+        dom13: [null, 3, 4, 3, 4, null],
       },
-      "R/4": {
-        maj7: [null, 2,2,1,4, null],
-        min7: [null, 3,3,1,4, null],
-        dom7: [null, 3,3,2,4, null],
-        min7b5: [null, 2,3,1,4, null],
-        "alt dom": [null, 4,4,2,4, null],
-        maj9: [null, 2,4,1,4, null],
-        min9: [null, 3,5,1,4, null],
-        dom13: [null, 3,5,2,4, null],
+      'R/4': {
+        maj7: [null, 2, 2, 1, 4, null],
+        min7: [null, 3, 3, 1, 4, null],
+        dom7: [null, 3, 3, 2, 4, null],
+        min7b5: [null, 2, 3, 1, 4, null],
+        'alt dom': [null, 4, 4, 2, 4, null],
+        maj9: [null, 2, 4, 1, 4, null],
+        min9: [null, 3, 5, 1, 4, null],
+        dom13: [null, 3, 5, 2, 4, null],
       },
-      "R/5": {
-        maj7: [null, 3,5,4,5, null],
-        min7: [null, 3,5,3,4, null],
-        dom7: [null, 3,5,3,5, null],
-        min7b5: [null, 3,4,3,4, null],
-        "alt dom": [null, 3,5,2,4, null],
-        maj9: [null, 3,5,4,5, null],
-        min9: [null, 3,3,3,4, null],
-        dom13: [null, 1,5,1,3, null],
+      'R/5': {
+        maj7: [null, 3, 5, 4, 5, null],
+        min7: [null, 3, 5, 3, 4, null],
+        dom7: [null, 3, 5, 3, 5, null],
+        min7b5: [null, 3, 4, 3, 4, null],
+        'alt dom': [null, 3, 5, 2, 4, null],
+        maj9: [null, 3, 5, 4, 5, null],
+        min9: [null, 3, 3, 3, 4, null],
+        dom13: [null, 1, 5, 1, 3, null],
       },
     },
   };
@@ -226,10 +228,10 @@ function testChordShape(stringSet, root, type) {
 
   // Clear previous content and display the new chord
   fretboardContainer.innerHTML = svgString;
-  fretboardContainer.style.visibility = "visible";
+  fretboardContainer.style.visibility = 'visible';
 
   console.log(`Displaying chord: SS${stringSet} R/${root} ${type}`);
-  console.log("Fret positions:", fretPositions);
+  console.log('Fret positions:', fretPositions);
 }
 
 // Make testChordShape available globally for console testing
@@ -237,14 +239,14 @@ window.testChordShape = testChordShape;
 
 function cycleChordShapes(stringSet, root) {
   const chordTypes = [
-    "maj7",
-    "min7",
-    "dom7",
-    "min7b5",
-    "alt dom",
-    "maj9",
-    "min9",
-    "dom13"
+    'maj7',
+    'min7',
+    'dom7',
+    'min7b5',
+    'alt dom',
+    'maj9',
+    'min9',
+    'dom13',
   ];
 
   let index = 0;
@@ -257,7 +259,7 @@ function cycleChordShapes(stringSet, root) {
       index++;
       setTimeout(displayNextChord, 3000); // Wait for 3 seconds before showing the next chord
     } else {
-      console.log("Finished cycling through all chord types.");
+      console.log('Finished cycling through all chord types.');
     }
   }
 
@@ -269,7 +271,7 @@ window.cycleChordShapes = cycleChordShapes;
 
 function chooseRandomString(strings) {
   if (!Array.isArray(strings) || strings.length === 0) {
-    console.error("Invalid input to chooseRandomString:", strings);
+    console.error('Invalid input to chooseRandomString:', strings);
     return null;
   }
   return strings[Math.floor(Math.random() * strings.length)];
@@ -278,38 +280,52 @@ function chooseRandomString(strings) {
 // Add these arrays as global constants at the top of app.js
 const musicalKeys = [
   // Natural keys
-  "C", "D", "E", "F", "G", "A", "B",
+  'C',
+  'D',
+  'E',
+  'F',
+  'G',
+  'A',
+  'B',
   // Sharp keys
-  "C#", "D#", "F#", "G#", "A#",
+  'C#',
+  'D#',
+  'F#',
+  'G#',
+  'A#',
   // Flat keys
-  "Db", "Eb", "Gb", "Ab", "Bb"
+  'Db',
+  'Eb',
+  'Gb',
+  'Ab',
+  'Bb',
 ];
 
 const chordTypes = [
-  "maj7",
-  "min7",
-  "dom7",
-  "min7b5",
-  "alt dom",
-  "maj9",
-  "min9",
-  "dom13"
+  'maj7',
+  'min7',
+  'dom7',
+  'min7b5',
+  'alt dom',
+  'maj9',
+  'min9',
+  'dom13',
 ];
 
 // Function to concatenate two strings returned from chooseRandomString. If 'SS1' is chosen, then 'R/5' should not be chosen. If 'SS2' is chosen, then 'R/1' should not be chosen.
 function selectStringAndRootWithKey() {
   const selectedStringSet = document.getElementById('string-set-select').value;
-  const stringSet = selectedStringSet ? [selectedStringSet] : ["1", "2"];
-  const roots = ["1", "2", "3", "4", "5"];
-  
+  const stringSet = selectedStringSet ? [selectedStringSet] : ['1', '2'];
+  const roots = ['1', '2', '3', '4', '5'];
+
   const selectedKey = keySelect.value || chooseRandomString(musicalKeys);
   const selectedType = typeSelect.value || chooseRandomString(chordTypes);
   const chosenString = chooseRandomString(stringSet);
 
-  console.log("Selecting string and root with key");
-  console.log("Chosen key:", selectedKey);
-  console.log("Chosen type:", selectedType);
-  console.log("Chosen string:", chosenString);
+  console.log('Selecting string and root with key');
+  console.log('Chosen key:', selectedKey);
+  console.log('Chosen type:', selectedType);
+  console.log('Chosen string:', chosenString);
 
   let chosenRoot;
   let attempts = 0;
@@ -319,12 +335,12 @@ function selectStringAndRootWithKey() {
     console.log(`Attempt ${attempts}: Trying root ${chosenRoot}`);
 
     // Adjust chosenRoot if it's an invalid combination
-    if (chosenString === "1" && chosenRoot === "5") {
-      chosenRoot = "2";
-      console.log("Adjusted root to 2 for string set 1");
-    } else if (chosenString === "2" && chosenRoot === "1") {
-      chosenRoot = "2";
-      console.log("Adjusted root to 2 for string set 2");
+    if (chosenString === '1' && chosenRoot === '5') {
+      chosenRoot = '2';
+      console.log('Adjusted root to 2 for string set 1');
+    } else if (chosenString === '2' && chosenRoot === '1') {
+      chosenRoot = '2';
+      console.log('Adjusted root to 2 for string set 2');
     }
 
     console.log(
@@ -333,13 +349,13 @@ function selectStringAndRootWithKey() {
     );
 
     if (attempts > 100) {
-      console.error("Unable to find valid root after 100 attempts");
+      console.error('Unable to find valid root after 100 attempts');
       break;
     }
   } while (chordsToForget.includes(`${chosenString} ${chosenRoot}`));
 
-  console.log("Final chosen root:", chosenRoot);
-  console.log("Attempts made:", attempts);
+  console.log('Final chosen root:', chosenRoot);
+  console.log('Attempts made:', attempts);
 
   // Update the queue of the last five strings
   if (chordsToForget.length >= 5) {
@@ -347,7 +363,7 @@ function selectStringAndRootWithKey() {
   }
   chordsToForget.push(`${chosenString} ${chosenRoot}`);
 
-  console.log("Updated chordsToForget:", chordsToForget);
+  console.log('Updated chordsToForget:', chordsToForget);
 
   return {
     stringSet: chosenString,
@@ -376,7 +392,10 @@ function stopTimer() {
 function handleSpacebarEvent(event) {
   if (event.keyCode === 32) {
     // Don't handle spacebar if user is typing in an input or textarea
-    if (event.target.tagName === 'INPUT' || event.target.tagName === 'TEXTAREA') {
+    if (
+      event.target.tagName === 'INPUT' ||
+      event.target.tagName === 'TEXTAREA'
+    ) {
       return;
     }
     // Check if the pressed key is the spacebar5
@@ -386,10 +405,10 @@ function handleSpacebarEvent(event) {
 }
 
 let sessionData = {
-  stringSet: "",
-  root: "",
-  key: "",
-  type: "",
+  stringSet: '',
+  root: '',
+  key: '',
+  type: '',
 };
 
 function updateSessionData(stringSet, root, key, type) {
@@ -400,7 +419,7 @@ function updateSessionData(stringSet, root, key, type) {
 }
 
 function clearSessionData() {
-  sessionData = { cp: "", key: "", type: "" };
+  sessionData = { cp: '', key: '', type: '' };
 }
 
 function resetSession() {
@@ -410,23 +429,23 @@ function resetSession() {
   clearSessionData();
 
   // Clear all display fields
-  stringSetTextField.textContent = "--";
-  rootTextField.textContent = "--";
-  keyTextField.textContent = "--";
-  typeTextField.textContent = "--"; // Use the global reference here
+  stringSetTextField.textContent = '--';
+  rootTextField.textContent = '--';
+  keyTextField.textContent = '--';
+  typeTextField.textContent = '--'; // Use the global reference here
   // elapsedTime.textContent = "";
-  
+
   // Remove see-results styling
   startStopButton.classList.remove('see-results');
   startStopButtonLabel.classList.remove('see-results');
 
-  console.log("Session reset - Iteration count:", iterationCount);
-  console.log("Session reset - Current state:", currentState);
+  console.log('Session reset - Iteration count:', iterationCount);
+  console.log('Session reset - Current state:', currentState);
 }
 
 function handleStartButtonClick() {
-  console.log("Current state:", currentState);
-  console.log("Iteration count:", iterationCount);
+  console.log('Current state:', currentState);
+  console.log('Iteration count:', iterationCount);
 
   if (currentState === SessionState.STOPPED) {
     resetSession();
@@ -435,35 +454,35 @@ function handleStartButtonClick() {
   switch (currentState) {
     case SessionState.STOPPED:
     case SessionState.PAUSED:
-      console.log("Starting iteration");
+      console.log('Starting iteration');
       startIteration();
       break;
     case SessionState.RUNNING:
-      console.log("Stopping iteration and displaying solution");
+      console.log('Stopping iteration and displaying solution');
       stopIteratingAndDisplaySolution();
       break;
     case SessionState.LAST:
-      console.log("Ending session and displaying results");
+      console.log('Ending session and displaying results');
       stopIteratingAndDisplayResults();
       break;
     default:
-      console.log("Unexpected state:", currentState);
+      console.log('Unexpected state:', currentState);
   }
 
-  console.log("After switch - Current state:", currentState);
-  console.log("After switch - Iteration count:", iterationCount);
+  console.log('After switch - Current state:', currentState);
+  console.log('After switch - Iteration count:', iterationCount);
 }
 
 function stopIteratingAndDisplayResults() {
   endSessionAndDisplayAndStoreResultsOnServer();
   cpsAndTimes = []; // Reset the array so that the results don't get appended to the previous session's results
-  document.addEventListener("keydown", handleSpacebarEvent);
+  document.addEventListener('keydown', handleSpacebarEvent);
   currentState = SessionState.STOPPED;
   console.log(currentState);
 }
 
 function stopIteratingAndDisplaySolution() {
-  console.log("Stopping iteration and displaying solution");
+  console.log('Stopping iteration and displaying solution');
   stopTimer();
   const currentTime = new Date().getTime();
   const elapsedTimeInMilliseconds = currentTime - startTime;
@@ -489,8 +508,8 @@ function stopIteratingAndDisplaySolution() {
   let svgString = newChord(fretPositions);
 
   fretboardContainer.innerHTML = svgString;
-  fretboardContainer.style.visibility = "visible";
-  
+  fretboardContainer.style.visibility = 'visible';
+
   // Show the mark wrong button
   markWrongButton.classList.remove('hidden');
 
@@ -501,20 +520,20 @@ function stopIteratingAndDisplaySolution() {
     markWrongButton.classList.add('hidden');
     markWrongButton.removeEventListener('click', handleMarkWrong);
   };
-  
+
   markWrongButton.addEventListener('click', handleMarkWrong);
 
-  console.log("Before state update - Iteration count:", iterationCount);
-  console.log("Before state update - Current state:", currentState);
+  console.log('Before state update - Iteration count:', iterationCount);
+  console.log('Before state update - Current state:', currentState);
 
   if (iterationCount >= maxIterations) {
-    console.log("Maximum iterations reached. Transitioning to LAST state.");
-    startStopButtonLabel.textContent = "See Results";
+    console.log('Maximum iterations reached. Transitioning to LAST state.');
+    startStopButtonLabel.textContent = 'See Results';
     startStopButton.classList.add('see-results');
     startStopButtonLabel.classList.add('see-results');
     currentState = SessionState.LAST;
   } else {
-    startStopButtonLabel.textContent = "Start";
+    startStopButtonLabel.textContent = 'Start';
     startStopButton.classList.remove('see-results');
     startStopButtonLabel.classList.remove('see-results');
     currentState = SessionState.PAUSED;
@@ -523,34 +542,34 @@ function stopIteratingAndDisplaySolution() {
 }
 
 function startIteration() {
-  console.log("Starting iteration - Current count:", iterationCount);
+  console.log('Starting iteration - Current count:', iterationCount);
 
   if (iterationCount >= maxIterations) {
-    console.log("Maximum iterations reached. Ending session.");
+    console.log('Maximum iterations reached. Ending session.');
     stopIteratingAndDisplayResults();
     return;
   }
 
-  console.log("Clearing previous iteration data");
+  console.log('Clearing previous iteration data');
   // document.getElementById("resultsContainer").innerHTML = "";
-  fretboardContainer.innerHTML = "";
+  fretboardContainer.innerHTML = '';
   // document.getElementById("assistant-response-text").innerHTML = "";
 
-  console.log("Selecting new chord data");
+  console.log('Selecting new chord data');
   const cpData = selectStringAndRootWithKey();
-  console.log("Selected chord data:", cpData);
+  console.log('Selected chord data:', cpData);
 
-  console.log("Updating UI with new chord data");
+  console.log('Updating UI with new chord data');
   stringSetTextField.textContent = cpData.stringSet;
   rootTextField.textContent = cpData.root;
   keyTextField.textContent = cpData.key;
-  document.getElementById("typeTextField").textContent = cpData.type;
-  startStopButtonLabel.textContent = "Stop";
+  document.getElementById('typeTextField').textContent = cpData.type;
+  startStopButtonLabel.textContent = 'Stop';
 
-  console.log("Starting timer");
+  console.log('Starting timer');
   startTimer();
 
-  console.log("Updating session data");
+  console.log('Updating session data');
   updateSessionData(cpData.stringSet, cpData.root, cpData.key, cpData.type);
 
   iterationCount++;
@@ -559,48 +578,48 @@ function startIteration() {
   // Hide the mark wrong button when starting new iteration
   markWrongButton.classList.add('hidden');
 
-  console.log("After starting iteration - Iteration count:", iterationCount);
-  console.log("After starting iteration - Current state:", currentState);
+  console.log('After starting iteration - Iteration count:', iterationCount);
+  console.log('After starting iteration - Current state:', currentState);
 }
 
 function endSessionAndDisplayAndStoreResultsOnServer() {
-  console.log("Iteration count:", iterationCount);
-  document.removeEventListener("keydown", handleSpacebarEvent);
+  console.log('Iteration count:', iterationCount);
+  document.removeEventListener('keydown', handleSpacebarEvent);
 
-  stringSetTextField.textContent = "--";
-  rootTextField.textContent = "--";
-  keyTextField.textContent = "--";
-  typeTextField.textContent = "--";
-  fretboardContainer.innerHTML = "";
+  stringSetTextField.textContent = '--';
+  rootTextField.textContent = '--';
+  keyTextField.textContent = '--';
+  typeTextField.textContent = '--';
+  fretboardContainer.innerHTML = '';
 
   isSessionRunning = false;
   iterationCount = 0;
 
   let resultsHTML =
     '<table class="myTable"><tr><th>SS</th><th>Root</th><th>Key</th><th>Quality</th><th>Time (seconds)</th><th>Date</th></tr>';
-  cpsAndTimes.forEach((item) => {
-    let rowColor = item.quality.includes("min7")
+  cpsAndTimes.forEach(item => {
+    let rowColor = item.quality.includes('min7')
       ? ' style="background-color: #efeded;"'
-      : "";
+      : '';
     resultsHTML += `<tr${rowColor}><td>${item.stringSet}</td><td>${item.root}</td><td>${item.key}</td><td>${item.quality}</td><td>${item.time}</td><td>${item.date}</td></tr>`;
   });
-  resultsHTML += "</table>";
+  resultsHTML += '</table>';
   console.table(cpsAndTimes);
 
-  const feedbackMessage = document.createElement("p");
-  feedbackMessage.textContent = "Generating feedback...";
-  const container = document.getElementById("fretboard-container");
-  container.innerHTML = "";
+  const feedbackMessage = document.createElement('p');
+  feedbackMessage.textContent = 'Generating feedback...';
+  const container = document.getElementById('fretboard-container');
+  container.innerHTML = '';
   container.appendChild(feedbackMessage);
 
-  fetch("/append-session-data", {
-    method: "POST",
+  fetch('/append-session-data', {
+    method: 'POST',
     headers: {
-      "Content-Type": "application/json",
+      'Content-Type': 'application/json',
     },
     body: JSON.stringify({ data: cpsAndTimes }),
   })
-    .then((response) => {
+    .then(response => {
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
@@ -608,25 +627,25 @@ function endSessionAndDisplayAndStoreResultsOnServer() {
     })
     .then(() => {
       // Fetch the analysis results from the server
-      return fetch("/analyze-session-data", {
-        method: "GET",
+      return fetch('/analyze-session-data', {
+        method: 'GET',
       });
     })
-    .then((response) => response.json())
-    .then((data) => {
-      const container = document.getElementById("fretboard-container");
-      container.innerHTML = "";
+    .then(response => response.json())
+    .then(data => {
+      const container = document.getElementById('fretboard-container');
+      container.innerHTML = '';
 
-      const header = document.createElement("h3");
-      header.textContent = "Drill These Chord Shapes:";
+      const header = document.createElement('h3');
+      header.textContent = 'Drill These Chord Shapes:';
       container.appendChild(header);
 
-      const list = document.createElement("ul");
+      const list = document.createElement('ul');
       list.setAttribute('tabindex', '0'); // Make the list focusable
       list.style.cursor = 'text'; // Show text cursor on hover
-      
+
       data.results.forEach((result, index) => {
-        const item = document.createElement("li");
+        const item = document.createElement('li');
         item.innerHTML = `
           <span class="problem-number">${index + 1}</span>
           <span class="chord-info">${result.chordInfo}</span>
@@ -636,11 +655,12 @@ function endSessionAndDisplayAndStoreResultsOnServer() {
       });
 
       // Add copy event listener
-      list.addEventListener('keydown', (e) => {
+      list.addEventListener('keydown', e => {
         if ((e.metaKey || e.ctrlKey) && e.key === 'c') {
           e.preventDefault();
           const clipboardText = formatResultsForClipboard(data.results);
-          navigator.clipboard.writeText(clipboardText)
+          navigator.clipboard
+            .writeText(clipboardText)
             .then(() => {
               console.log('Copy successful, applying visual feedback');
               const items = list.querySelectorAll('li');
@@ -655,14 +675,14 @@ function endSessionAndDisplayAndStoreResultsOnServer() {
       });
 
       container.appendChild(list);
-      startStopButtonLabel.textContent = "Start";
+      startStopButtonLabel.textContent = 'Start';
       startStopButton.classList.remove('see-results');
       startStopButtonLabel.classList.remove('see-results');
     })
-    .catch((error) => {
-      console.error("Error:", error);
-      const container = document.getElementById("fretboard-container");
-      container.innerHTML = "Error analyzing session data. Please try again.";
+    .catch(error => {
+      console.error('Error:', error);
+      const container = document.getElementById('fretboard-container');
+      container.innerHTML = 'Error analyzing session data. Please try again.';
     });
 }
 
@@ -670,9 +690,9 @@ function endSessionAndDisplayAndStoreResultsOnServer() {
 
 // Function to convert data to CSV format
 function convertArrayToCSV(array) {
-  let csvContent = "ss,root,,key,time,type,date\n"; // Add 'date' to the header
+  let csvContent = 'ss,root,,key,time,type,date\n'; // Add 'date' to the header
 
-  array.forEach((item) => {
+  array.forEach(item => {
     csvContent += `${item.stringSet},${item.root},${item.key},${item.time},${item.type},${item.date}\n`; // Add item.date to each row
   });
 
@@ -684,51 +704,50 @@ function handleSendButtonClick() {
   const message = messageInput.value;
 
   // send the message to the server
-  fetch("/send-message", {
-    method: "POST",
+  fetch('/send-message', {
+    method: 'POST',
     headers: {
-      "Content-Type": "application/json",
+      'Content-Type': 'application/json',
     },
     body: JSON.stringify({ message: message }),
   })
-    .then((response) => {
-      console.log("Received response:", response);
+    .then(response => {
+      console.log('Received response:', response);
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
-      console.log("Response is OK, parsing as JSON...");
+      console.log('Response is OK, parsing as JSON...');
       return response.json(); // Parse the response as JSON
     })
-    .then((data) => {
-      console.log("Received data:", data);
+    .then(data => {
+      console.log('Received data:', data);
       console.log(
         `logging the result promise from send-message-${data.answer}`
       ); // Access the message property of the data
       // Create a new paragraph element
-      const p = document.createElement("p");
+      const p = document.createElement('p');
 
       // Set the text of the paragraph to the answer
       p.textContent = data.answer;
 
       // Append the paragraph to the body of the document
-      document.getElementById("fretboard-container").innerHTML =
-        p.textContent;
+      document.getElementById('fretboard-container').innerHTML = p.textContent;
       // Clear the input field
-      messageInput.value = "";
+      messageInput.value = '';
     })
-    .catch((error) => {
-      console.error("Error:", error);
+    .catch(error => {
+      console.error('Error:', error);
     });
 
   // Clear the input field
-  messageInput.value = "";
+  messageInput.value = '';
 }
 
 // Attach the handleButtonClick function to the button click event
-startButton.addEventListener("click", handleStartButtonClick);
+startButton.addEventListener('click', handleStartButtonClick);
 
 // Add keydown event listener to the document
-document.addEventListener("keydown", handleSpacebarEvent);
+document.addEventListener('keydown', handleSpacebarEvent);
 
 // Update the sendDataToServer function
 function sendDataToServer() {
@@ -747,15 +766,16 @@ const resetOptionsButton = document.getElementById('reset-options-button');
 
 resetOptionsButton.addEventListener('click', () => {
   // Reset all selects to their default ("") value
-  document.getElementById('key-select').value = "";
-  document.getElementById('type-select').value = "";
-  document.getElementById('string-set-select').value = "";
+  document.getElementById('key-select').value = '';
+  document.getElementById('type-select').value = '';
+  document.getElementById('string-set-select').value = '';
 });
 
 // Add this function near the top with other utility functions
 function formatResultsForClipboard(results) {
   return results
-    .map((result, index) => `${index + 1} ${result.chordInfo} ${result.timeInfo}`)
+    .map(
+      (result, index) => `${index + 1} ${result.chordInfo} ${result.timeInfo}`
+    )
     .join('\n');
 }
-
