@@ -109,3 +109,4 @@ chordShapes[`SS${stringSet}`][`R/${root}`][type] = [fret1, fret2, fret3, fret4, 
 - Express serves static files from `public/` directory
 - Session data persists across server restarts via CSV files
 - Always push to origin after making a commit
+- Remind me to use good Git 'hygiene'. I.e., don't let too many changes happen before reminding me to commit. Also, don't let me get too far with branching without merging back into main.
