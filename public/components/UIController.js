@@ -51,8 +51,8 @@ export class UIController {
     // Spacebar for start/stop
     document.addEventListener("keydown", (event) => {
       if (event.code === 'Space') {
-        // Don't handle spacebar if user is typing in an input or textarea
-        if (event.target.tagName === 'INPUT' || event.target.tagName === 'TEXTAREA') {
+        // Don't handle spacebar if user is typing in an input, textarea, or focused on a button
+        if (event.target.tagName === 'INPUT' || event.target.tagName === 'TEXTAREA' || event.target.tagName === 'BUTTON') {
           return;
         }
         event.preventDefault();

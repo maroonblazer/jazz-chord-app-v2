@@ -448,3 +448,76 @@ test('Cancel Button CSS Styling', async ({ page }) => {
   expect(buttonStyles.color).toMatch(/rgb\(255, 255, 255\)|white/);
   expect(buttonStyles.cursor).toBe('pointer');
 });
+
+test('Delete All Data Modal - Spacebar Should Activate Button Not Start Session', async ({ page }) => {
+  await page.goto('http://localhost:3000?arch=refactored');
+  await page.waitForTimeout(2000);
+
+  // Open options menu to access wipe database button
+  const optionsButton = page.locator('#options-button');
+  await optionsButton.click();
+
+  // Click the wipe database button to open modal
+  const wipeDatabaseButton = page.locator('#wipe-database-button');
+  await expect(wipeDatabaseButton).toBeVisible();
+  await wipeDatabaseButton.click();
+
+  // Wait for modal to appear
+  const modal = page.locator('.modal');
+  await expect(modal).toBeVisible();
+
+  // Verify modal content
+  const modalTitle = page.locator('.modal-title');
+  await expect(modalTitle).toHaveText('Delete All Session Data');
+
+  // Find the confirmation input and "Delete All Data" button
+  const confirmationInput = page.locator('#confirmation-input');
+  const deleteAllButton = page.locator('#confirm-wipe-button');
+  
+  await expect(confirmationInput).toBeVisible();
+  await expect(deleteAllButton).toBeVisible();
+  await expect(deleteAllButton).toBeDisabled();
+
+  // Type the confirmation text
+  await confirmationInput.fill('DELETE ALL MY DATA');
+  
+  // Wait for button to become enabled
+  await expect(deleteAllButton).toBeEnabled();
+
+  // Focus the "Delete All Data" button directly
+  await deleteAllButton.focus();
+  
+  // Verify the button is focused
+  await expect(deleteAllButton).toBeFocused();
+
+  // Record the initial state - no session should be running
+  const startButtonLabel = page.locator('#start-stop-button-label');
+  const initialButtonText = await startButtonLabel.textContent();
+  expect(initialButtonText).toBe('Start');
+
+  // Press spacebar while the "Delete All Data" button is focused
+  // This should activate the button (close the modal), NOT start a new session
+  await page.keyboard.press('Space');
+
+  // Wait a moment for any modal closing animation
+  await page.waitForTimeout(500);
+
+  // Verify the modal is closed
+  await expect(modal).not.toBeVisible();
+
+  // Most importantly: verify that pressing spacebar did NOT start a new session
+  // The start button should still say "Start", not "Stop"
+  const finalButtonText = await startButtonLabel.textContent();
+  expect(finalButtonText).toBe('Start');
+
+  // Also verify that no chord problem fields are populated (would indicate session started)
+  const stringSetText = await page.locator('#stringSetTextField').textContent();
+  const rootText = await page.locator('#rootTextField').textContent();
+  const keyText = await page.locator('#keyTextField').textContent();
+  const typeText = await page.locator('#typeTextField').textContent();
+
+  expect(stringSetText).toBe('--');
+  expect(rootText).toBe('--');
+  expect(keyText).toBe('--');
+  expect(typeText).toBe('--');
+});
