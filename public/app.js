@@ -390,7 +390,7 @@ function stopTimer() {
 }
 
 function handleSpacebarEvent(event) {
-  if (event.keyCode === 32) {
+  if (event.code === 'Space') {
     // Don't handle spacebar if user is typing in an input, textarea, or focused on a button
     if (
       event.target.tagName === 'INPUT' ||
@@ -399,7 +399,7 @@ function handleSpacebarEvent(event) {
     ) {
       return;
     }
-    // Check if the pressed key is the spacebar5
+    // Check if the pressed key is the spacebar
     event.preventDefault();
     handleStartButtonClick();
   }
