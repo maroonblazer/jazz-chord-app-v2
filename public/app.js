@@ -391,10 +391,11 @@ function stopTimer() {
 
 function handleSpacebarEvent(event) {
   if (event.keyCode === 32) {
-    // Don't handle spacebar if user is typing in an input or textarea
+    // Don't handle spacebar if user is typing in an input, textarea, or focused on a button
     if (
       event.target.tagName === 'INPUT' ||
-      event.target.tagName === 'TEXTAREA'
+      event.target.tagName === 'TEXTAREA' ||
+      event.target.tagName === 'BUTTON'
     ) {
       return;
     }
