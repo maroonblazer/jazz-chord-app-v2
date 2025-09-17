@@ -1,16 +1,16 @@
 import { test, expect } from '@playwright/test';
 import path from 'path';
+import os from 'os';
 import fs from 'fs/promises';
 import { spawn, ChildProcessWithoutNullStreams } from 'child_process';
 import { Database } from '../database/Database.js';
 
-const TEST_PORT = 3200;
-const BASE_URL = `http://127.0.0.1:${TEST_PORT}`;
-const DB_PATH = path.join(process.cwd(), 'e2e', 'tmp', 'refactored-e2e.db');
-
 let serverProcess: ChildProcessWithoutNullStreams | undefined;
+let dbPath: string;
+let testPort: number;
+let baseUrl: string;
 
-async function waitForServer(processRef: ChildProcessWithoutNullStreams): Promise<void> {
+async function waitForServer(processRef: ChildProcessWithoutNullStreams, port: number): Promise<void> {
   return new Promise((resolve, reject) => {
     const timeout = setTimeout(() => {
       cleanup();
@@ -19,7 +19,7 @@ async function waitForServer(processRef: ChildProcessWithoutNullStreams): Promis
 
     const handleOutput = (data: Buffer) => {
       const text = data.toString();
-      if (text.includes(`Server listening on port ${TEST_PORT}`)) {
+      if (text.includes(`Server listening on port ${port}`)) {
         cleanup();
         resolve();
       }
@@ -36,11 +36,15 @@ async function waitForServer(processRef: ChildProcessWithoutNullStreams): Promis
   });
 }
 
-test.beforeAll(async () => {
-  await fs.mkdir(path.dirname(DB_PATH), { recursive: true });
-  await fs.rm(DB_PATH, { force: true });
+test.beforeAll(async (_, workerInfo) => {
+  const tempRoot = await fs.mkdtemp(path.join(os.tmpdir(), `jazz-refactored-${workerInfo.workerIndex}-`));
+  dbPath = path.join(tempRoot, 'refactored-e2e.db');
+  testPort = 3200 + workerInfo.workerIndex;
+  baseUrl = `http://127.0.0.1:${testPort}`;
 
-  const seededDb = new Database(DB_PATH);
+  await fs.rm(dbPath, { force: true });
+
+  const seededDb = new Database(dbPath);
   await seededDb.init();
   await seededDb.wipeAllData();
 
@@ -56,14 +60,14 @@ test.beforeAll(async () => {
   serverProcess = spawn('node', ['server-refactored.js'], {
     env: {
       ...process.env,
-      PORT: String(TEST_PORT),
-      DB_PATH,
+      PORT: String(testPort),
+      DB_PATH: dbPath,
       JAZZ_DISABLE_AUTO_LISTEN: ''
     },
     stdio: ['ignore', 'pipe', 'pipe']
   });
 
-  await waitForServer(serverProcess);
+  await waitForServer(serverProcess, testPort);
 });
 
 test.afterAll(async () => {
@@ -73,11 +77,14 @@ test.afterAll(async () => {
       serverProcess!.kill();
     });
   }
-  await fs.rm(DB_PATH, { force: true });
+  if (dbPath) {
+    await fs.rm(dbPath, { force: true });
+    await fs.rm(path.dirname(dbPath), { recursive: true, force: true });
+  }
 });
 
 test('refactored architecture persists results with a seeded database', async ({ page, request }) => {
-  await page.goto(`${BASE_URL}?arch=refactored`);
+  await page.goto(`${baseUrl}?arch=refactored`);
 
   // Reduce the number of required iterations for a faster test run
   await page.evaluate(() => {
@@ -102,7 +109,7 @@ test('refactored architecture persists results with a seeded database', async ({
   const resultsHeader = page.getByRole('heading', { name: 'Drill These Chord Shapes:' });
   await expect(resultsHeader).toBeVisible({ timeout: 10000 });
 
-  const performanceResponse = await request.get(`${BASE_URL}/performance-summary`);
+  const performanceResponse = await request.get(`${baseUrl}/performance-summary`);
   const performanceJson = await performanceResponse.json();
 
   expect(performanceJson.stats.total_sessions).toBeGreaterThanOrEqual(2);
