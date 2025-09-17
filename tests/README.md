@@ -43,6 +43,11 @@ Tests UI components and user interactions:
 - **UI Controller**: Wiring between DOM controls and the real session/state managers
 - **Options Panel**: Key/type/string set selection and reset flow
 - **Button States**: Start/stop/cancel presentation across session phases
+- **Status Messaging**: Error/status feedback surfaced through the new status bar
+
+### End-to-End Tests (`e2e/`)
+- **jazz-chords.spec.ts**: Cross-architecture smoke tests and interaction flows
+- **refactored-database.spec.ts**: Seeds a dedicated SQLite database and verifies the refactored stack persists and reports session analytics
 
 ### Performance Tests (`tests/performance/`)
 Tests app performance under various conditions:

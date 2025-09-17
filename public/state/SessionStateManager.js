@@ -24,7 +24,9 @@ export class SessionStateManager {
       },
       ui: {
         fretboardVisible: false,
-        markWrongVisible: false
+        markWrongVisible: false,
+        statusMessage: null,
+        errorMessage: null
       },
       options: {
         selectedKey: null,
@@ -132,6 +134,11 @@ export class SessionStateManager {
     this.updateState('results.cpsAndTimes', []);
   }
 
+  clearMessages() {
+    this.updateState('ui.statusMessage', null);
+    this.updateState('ui.errorMessage', null);
+  }
+
   canTransitionTo(newStatus) {
     const currentStatus = this.state.session.status;
     return this.validTransitions[currentStatus]?.includes(newStatus) || false;
@@ -187,5 +194,8 @@ export class SessionStateManager {
     });
     
     this.clearResults();
+    this.updateState('ui.markWrongVisible', false);
+    this.updateState('ui.fretboardVisible', false);
+    this.clearMessages();
   }
 }

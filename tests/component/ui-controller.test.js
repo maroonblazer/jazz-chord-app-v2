@@ -31,6 +31,11 @@ const createDom = () => {
         <button id="mark-wrong-button" class="hidden" role="button">Mark Wrong</button>
       </div>
 
+      <div class="status-bar">
+        <p id="status-message"></p>
+        <p id="error-message"></p>
+      </div>
+
       <button id="options-button" aria-expanded="false">Options</button>
       <div class="options-menu" hidden>
         <select id="key-select">
@@ -62,6 +67,10 @@ describe('UIController integration with real managers', () => {
         json: async () => ({ results: [] })
       })
     );
+
+    navigator.clipboard = {
+      writeText: jest.fn().mockResolvedValue()
+    };
 
     stateManager = new SessionStateManager();
     const timerManager = new TimerManager(stateManager);
@@ -135,5 +144,25 @@ describe('UIController integration with real managers', () => {
 
     stateManager.updateState('ui.markWrongVisible', false);
     expect(markWrongButton.classList.contains('hidden')).toBe(true);
+  });
+
+  test('status and error messages update the status bar', () => {
+    const status = document.getElementById('status-message');
+    const error = document.getElementById('error-message');
+
+    expect(status.getAttribute('aria-hidden')).toBe('true');
+    expect(error.classList.contains('visible')).toBe(false);
+
+    stateManager.updateState('ui.statusMessage', 'Uploading results...');
+    expect(status.textContent).toBe('Uploading results...');
+    expect(status.getAttribute('aria-hidden')).toBe('false');
+
+    stateManager.updateState('ui.errorMessage', 'Something went wrong');
+    expect(error.textContent).toBe('Something went wrong');
+    expect(error.classList.contains('visible')).toBe(true);
+
+    stateManager.updateState('ui.errorMessage', null);
+    expect(error.textContent).toBe('');
+    expect(error.classList.contains('visible')).toBe(false);
   });
 });

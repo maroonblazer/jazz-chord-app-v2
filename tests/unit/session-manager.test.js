@@ -3,6 +3,8 @@ import { SessionStateManager } from '../../public/state/SessionStateManager.js';
 import { TimerManager } from '../../public/components/TimerManager.js';
 import { ChordGenerator } from '../../public/components/ChordGenerator.js';
 import { SessionManager } from '../../public/components/SessionManager.js';
+import { FretboardView } from '../../public/components/views/FretboardView.js';
+import { ResultsView } from '../../public/components/views/ResultsView.js';
 
 let stateManager;
 let sessionManager;
@@ -25,10 +27,19 @@ describe('SessionManager behaviours', () => {
       })
     );
 
+    navigator.clipboard = {
+      writeText: jest.fn().mockResolvedValue()
+    };
+
     stateManager = new SessionStateManager();
     const timerManager = new TimerManager(stateManager);
     const chordGenerator = new ChordGenerator(stateManager);
     sessionManager = new SessionManager(stateManager, timerManager, chordGenerator);
+
+    const container = document.getElementById('fretboard-container');
+    const fretboardView = new FretboardView(container);
+    const resultsView = new ResultsView(container, stateManager);
+    sessionManager.setViews({ fretboardView, resultsView });
   });
 
   test('markCurrentAsWrong updates the most recent result', () => {
@@ -61,16 +72,16 @@ describe('SessionManager behaviours', () => {
     expect(container.style.visibility).toBe('visible');
   });
 
-  test('formatResultsForClipboard returns numbered rows', () => {
-    const rows = [
+  test('displayResults delegates rendering to the results view', () => {
+    const results = [
       { chordInfo: 'SS1, R/2, C maj7', timeInfo: '3.5s' },
       { chordInfo: 'SS2, R/4, Bb dom7', timeInfo: '7.1s' }
     ];
 
-    const formatted = sessionManager.formatResultsForClipboard(rows);
-    const lines = formatted.split('\n');
+    sessionManager.displayResults(results);
 
-    expect(lines).toHaveLength(2);
-    expect(lines[0]).toContain('1 SS1, R/2, C maj7 3.5s');
+    const container = document.getElementById('fretboard-container');
+    expect(container.querySelectorAll('li')).toHaveLength(2);
+    expect(stateManager.getState().session.status).toBe('END');
   });
 });
