@@ -11,16 +11,17 @@ app.use(cors());
 app.use(express.json()); // for parsing application/json
 
 const PORT = process.env.PORT || 3000;
+const SESSION_DATA_FILE = process.env.SESSION_DATA_FILE
+  ? path.resolve(process.env.SESSION_DATA_FILE)
+  : path.join(process.cwd(), 'session-data.csv');
+const SESSION_DATA_LAST_10_FILE = process.env.SESSION_DATA_LAST_10_FILE
+  ? path.resolve(process.env.SESSION_DATA_LAST_10_FILE)
+  : path.join(process.cwd(), 'session-data-last-10.csv');
 
 app.use(express.static(path.join(process.cwd(), 'public')));
 
-// Define routes here
-app.listen(PORT, () => {
-  console.log(`Server listening on port ${PORT}`);
-});
-
 app.get('/', (req, res) => {
-  res.sendFile(path.join(process.cwd(), 'index.html'));
+  res.sendFile(path.join(process.cwd(), 'public', 'index.html'));
 });
 
 // Write an endpoint to handle data from the client
@@ -33,8 +34,8 @@ app.post('/append-session-data', (req, res) => {
     )
     .join('\n');
 
-  const filePath = path.join(process.cwd(), 'session-data.csv');
-  const secondFilePath = path.join(process.cwd(), 'session-data-last-10.csv');
+  const filePath = SESSION_DATA_FILE;
+  const secondFilePath = SESSION_DATA_LAST_10_FILE;
 
   fs.access(filePath, fs.constants.F_OK, err => {
     // If file does not exist, write the headers
@@ -155,11 +156,56 @@ function analyzeChordProblems(filePath, topN = 3) {
 // Example usage or endpoint
 app.get('/analyze-session-data', async (req, res) => {
   try {
-    const filePath = path.join(process.cwd(), 'session-data-last-10.csv');
-    const results = await analyzeChordProblems(filePath);
+    const results = await analyzeChordProblems(SESSION_DATA_LAST_10_FILE);
     res.json({ results });
   } catch (error) {
     console.error('Error analyzing session data:', error);
     res.status(500).json({ error: 'Failed to analyze session data' });
   }
 });
+
+let serverInstance = null;
+
+function startServer(port = PORT) {
+  return new Promise((resolve, reject) => {
+    if (serverInstance) {
+      return resolve(serverInstance);
+    }
+
+    serverInstance = app.listen(port, () => {
+      console.log(`Server listening on port ${port}`);
+      resolve(serverInstance);
+    });
+
+    serverInstance.on('error', (err) => {
+      serverInstance = null;
+      reject(err);
+    });
+  });
+}
+
+function stopServer() {
+  return new Promise((resolve, reject) => {
+    if (!serverInstance) {
+      return resolve();
+    }
+
+    serverInstance.close((err) => {
+      if (err) {
+        reject(err);
+      } else {
+        serverInstance = null;
+        resolve();
+      }
+    });
+  });
+}
+
+if (!process.env.JAZZ_DISABLE_AUTO_LISTEN) {
+  startServer().catch((err) => {
+    console.error('Failed to start server:', err);
+    process.exit(1);
+  });
+}
+
+export { app, startServer, stopServer, analyzeChordProblems };

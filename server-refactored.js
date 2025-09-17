@@ -1,10 +1,8 @@
 // START THE SERVER WITH `node server-refactored.js`
 import path from 'path';
 import express from 'express';
-import fs from 'fs';
 import cors from 'cors';
 // import { query } from './qa.js';
-import csvParser from 'csv-parser';
 import { Database } from './database/Database.js';
 
 const app = express();
@@ -17,8 +15,19 @@ const PORT = process.env.PORT || 3000;
 app.use(express.static(path.join(process.cwd(), 'public')));
 
 // Initialize database
-const db = new Database();
-let currentSessionId = null;
+const DB_PATH = process.env.DB_PATH
+  ? process.env.DB_PATH
+  : path.join(process.cwd(), 'data', 'jazz-chords.db');
+const db = new Database(DB_PATH);
+
+let isDatabaseInitialized = false;
+
+async function initializeDatabase() {
+  if (!isDatabaseInitialized) {
+    await db.init();
+    isDatabaseInitialized = true;
+  }
+}
 
 // Define routes first
 app.get('/', (req, res) => {
@@ -28,6 +37,7 @@ app.get('/', (req, res) => {
 // Enhanced endpoint to handle data from the client
 app.post('/append-session-data', async (req, res) => {
   try {
+    await initializeDatabase();
     const { data } = req.body; // Assuming data is an array of objects
     
     console.log('Received session data:', data.length, 'results');
@@ -64,6 +74,7 @@ app.post('/append-session-data', async (req, res) => {
 // Enhanced analysis endpoint using database queries
 app.get('/analyze-session-data', async (req, res) => {
   try {
+    await initializeDatabase();
     const results = await db.getWorstPerformingChords(3);
     
     console.log('Analysis results:', results);
@@ -85,6 +96,7 @@ app.get('/analyze-session-data', async (req, res) => {
 // New endpoint for performance summary
 app.get('/performance-summary', async (req, res) => {
   try {
+    await initializeDatabase();
     const summary = await db.getPerformanceSummary();
     const stats = await db.getSessionStats();
     
@@ -106,6 +118,7 @@ app.get('/performance-summary', async (req, res) => {
 // Export data as CSV (backward compatibility)
 app.get('/export-csv', async (req, res) => {
   try {
+    await initializeDatabase();
     const csvData = await db.exportToCSV();
     
     res.setHeader('Content-Type', 'text/csv');
@@ -125,6 +138,7 @@ app.get('/export-csv', async (req, res) => {
 app.post('/get-assistant-feedback', async (req, res) => {
   console.log('Received Post request for assistant feedback (legacy endpoint)');
   try {
+    await initializeDatabase();
     const recentResults = await db.getRecentSessionResults(10);
     
     // Convert to legacy format if needed
@@ -147,6 +161,7 @@ app.post('/get-assistant-feedback', async (req, res) => {
 app.post('/send-message', async (req, res) => {
   console.log('Received Post request for follow-up feedback...');
   try {
+    await initializeDatabase();
     const question = req.body.message;
     console.log('Question from client:', question);
     
@@ -166,6 +181,7 @@ app.post('/send-message', async (req, res) => {
 // Database wipe endpoint - requires confirmation
 app.post('/wipe-database', async (req, res) => {
   try {
+    await initializeDatabase();
     const { confirmation } = req.body;
     
     // Require exact confirmation text for safety
@@ -198,6 +214,7 @@ app.post('/wipe-database', async (req, res) => {
 // Health check endpoint
 app.get('/health', async (req, res) => {
   try {
+    await initializeDatabase();
     const stats = await db.getSessionStats();
     res.json({
       status: 'healthy',
@@ -215,34 +232,68 @@ app.get('/health', async (req, res) => {
   }
 });
 
-// Initialize database and start server
-async function startServer() {
-  try {
-    await db.init();
-    console.log('Database initialized successfully');
-    
-    app.listen(PORT, () => {
-      console.log(`Server listening on port ${PORT}`);
+let serverInstance = null;
+
+async function startServer(port = PORT) {
+  await initializeDatabase();
+
+  if (serverInstance) {
+    return serverInstance;
+  }
+
+  return new Promise((resolve, reject) => {
+    serverInstance = app.listen(port, () => {
+      console.log(`Server listening on port ${port}`);
       console.log('Using refactored architecture with database layer');
+      resolve(serverInstance);
     });
-  } catch (error) {
-    console.error('Failed to initialize database:', error);
-    process.exit(1);
+
+    serverInstance.on('error', (err) => {
+      serverInstance = null;
+      reject(err);
+    });
+  });
+}
+
+async function stopServer() {
+  if (!serverInstance) {
+    return;
+  }
+
+  await new Promise((resolve, reject) => {
+    serverInstance.close((err) => {
+      if (err) {
+        reject(err);
+      } else {
+        serverInstance = null;
+        resolve();
+      }
+    });
+  });
+}
+
+async function closeDatabase() {
+  if (isDatabaseInitialized) {
+    await db.close();
+    isDatabaseInitialized = false;
   }
 }
 
-// Start the server
-startServer();
+if (!process.env.JAZZ_DISABLE_AUTO_LISTEN) {
+  startServer().catch((error) => {
+    console.error('Failed to start server:', error);
+    process.exit(1);
+  });
 
-// Graceful shutdown
-process.on('SIGINT', async () => {
-  console.log('Shutting down gracefully...');
-  await db.close();
-  process.exit(0);
-});
+  const shutdown = async () => {
+    console.log('Shutting down gracefully...');
+    await stopServer();
+    await closeDatabase();
+    process.exit(0);
+  };
 
-process.on('SIGTERM', async () => {
-  console.log('Shutting down gracefully...');
-  await db.close();
-  process.exit(0);
-});
+  process.on('SIGINT', shutdown);
+  process.on('SIGTERM', shutdown);
+}
+
+export { app, startServer, stopServer, initializeDatabase, closeDatabase, db };

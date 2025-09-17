@@ -7,12 +7,12 @@ This directory contains a comprehensive test suite for the Jazz Chord Practice A
 ```
 tests/
 ├── unit/                     # Unit tests for individual functions
-│   ├── chord-generation.test.js   # Chord generation logic
-│   └── state-machine.test.js      # Session state management
+│   ├── chord-generation-fixed.test.js   # Refactored chord generator logic
+│   └── session-manager.test.js          # Session manager behaviour
 ├── integration/              # API and backend integration tests
-│   └── api-endpoints.test.js      # REST API endpoints
+│   └── api-endpoints.test.js          # REST API endpoints
 ├── component/                # UI component tests
-│   └── ui-components.test.js      # Frontend UI interactions
+│   └── ui-controller.test.js         # Actual UI controller interactions
 ├── performance/              # Performance and load tests
 │   └── performance.test.js        # Rendering, memory, network
 ├── accessibility/            # WCAG compliance and a11y tests
@@ -27,8 +27,8 @@ tests/
 ### Unit Tests (`tests/unit/`)
 Tests individual functions and logic in isolation:
 - **Chord Generation**: Random chord creation, validation, filtering
-- **State Machine**: Session state transitions, timing calculations
-- **Data Validation**: Chord shape verification, user input validation
+- **Session Manager**: Result bookkeeping, clipboard formatting, solution rendering
+- **State Machine (skip examples)**: Reference implementations for future expansion
 
 ### Integration Tests (`tests/integration/`)
 Tests API endpoints and data flow:
@@ -40,12 +40,9 @@ Tests API endpoints and data flow:
 
 ### Component Tests (`tests/component/`)
 Tests UI components and user interactions:
-- **Timer Display**: Start/stop/reset functionality, time formatting
-- **Progress Tracking**: Session iteration display
-- **Options Panel**: Key/type/string set selection
-- **Problem Display**: Chord information presentation  
-- **Results Display**: Copy functionality, keyboard shortcuts
-- **Component Integration**: Complete session workflow
+- **UI Controller**: Wiring between DOM controls and the real session/state managers
+- **Options Panel**: Key/type/string set selection and reset flow
+- **Button States**: Start/stop/cancel presentation across session phases
 
 ### Performance Tests (`tests/performance/`)
 Tests app performance under various conditions:
