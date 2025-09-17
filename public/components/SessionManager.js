@@ -181,7 +181,10 @@ export class SessionManager {
     }
 
     // Now transition to END state - results are displayed
-    this.stateManager.transitionTo('END');
+    const transitioned = this.stateManager.transitionTo('END');
+    if (!transitioned) {
+      this.stateManager.updateState('session.status', 'END');
+    }
     this.stateManager.updateState('session.isRunning', false);
   }
 
