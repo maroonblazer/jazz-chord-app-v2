@@ -36,7 +36,7 @@ async function waitForServer(processRef: ChildProcessWithoutNullStreams, port: n
   });
 }
 
-test.beforeAll(async (_, workerInfo) => {
+test.beforeAll(async ({}, workerInfo) => {
   const tempRoot = await fs.mkdtemp(path.join(os.tmpdir(), `jazz-refactored-${workerInfo.workerIndex}-`));
   dbPath = path.join(tempRoot, 'refactored-e2e.db');
   testPort = 3200 + workerInfo.workerIndex;
