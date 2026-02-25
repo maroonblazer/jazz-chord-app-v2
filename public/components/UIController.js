@@ -1,9 +1,14 @@
+import { FretboardView } from './views/FretboardView.js';
+import { ResultsView } from './views/ResultsView.js';
+import { StatusView } from './views/StatusView.js';
+
 export class UIController {
   constructor(stateManager, sessionManager) {
     this.stateManager = stateManager;
     this.sessionManager = sessionManager;
     this.elements = {};
     this.setupElements();
+    this.initializeViews();
     this.setupEventListeners();
     this.setupStateSubscriptions();
   }
@@ -25,7 +30,9 @@ export class UIController {
       typeSelect: document.getElementById('type-select'),
       stringSetSelect: document.getElementById('string-set-select'),
       resetOptionsButton: document.getElementById('reset-options-button'),
-      wipeDatabaseButton: document.getElementById('wipe-database-button')
+      wipeDatabaseButton: document.getElementById('wipe-database-button'),
+      statusMessage: document.getElementById('status-message'),
+      errorMessage: document.getElementById('error-message')
     };
     
     // Validate all required DOM elements exist
@@ -40,6 +47,20 @@ export class UIController {
       console.error('UIController: Missing DOM elements:', missingElements);
       throw new Error(`Missing required DOM elements: ${missingElements.join(', ')}`);
     }
+  }
+
+  initializeViews() {
+    this.fretboardView = new FretboardView(this.elements.fretboardContainer);
+    this.resultsView = new ResultsView(this.elements.fretboardContainer, this.stateManager);
+    this.statusView = new StatusView(this.elements.statusMessage, this.elements.errorMessage);
+
+    this.sessionManager.setViews({
+      fretboardView: this.fretboardView,
+      resultsView: this.resultsView
+    });
+
+    this.statusView.setStatus(null);
+    this.statusView.setError(null);
   }
 
   setupEventListeners() {
@@ -323,6 +344,18 @@ export class UIController {
       } else if (status === 'RUNNING') {
         // Clear fretboard when starting a new iteration
         this.elements.fretboardContainer.innerHTML = "";
+      }
+    });
+
+    this.stateManager.subscribe('ui.statusMessage', (message) => {
+      if (this.statusView) {
+        this.statusView.setStatus(message);
+      }
+    });
+
+    this.stateManager.subscribe('ui.errorMessage', (message) => {
+      if (this.statusView) {
+        this.statusView.setError(message);
       }
     });
   }

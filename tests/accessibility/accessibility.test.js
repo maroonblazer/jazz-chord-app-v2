@@ -27,7 +27,7 @@ describe('Accessibility Tests', () => {
   describe('WCAG Compliance', () => {
     beforeEach(async () => {
       page = await browser.newPage();
-      await page.goto('http://localhost:3000?arch=refactored');
+      await page.goto('http://localhost:3000');
     });
 
     afterEach(async () => {
@@ -79,7 +79,7 @@ describe('Accessibility Tests', () => {
   describe('Keyboard Navigation', () => {
     beforeEach(async () => {
       page = await browser.newPage();
-      await page.goto('http://localhost:3000?arch=refactored');
+      await page.goto('http://localhost:3000');
     });
 
     afterEach(async () => {
@@ -194,7 +194,7 @@ describe('Accessibility Tests', () => {
   describe('Screen Reader Support', () => {
     beforeEach(async () => {
       page = await browser.newPage();
-      await page.goto('http://localhost:3000?arch=refactored');
+      await page.goto('http://localhost:3000');
     });
 
     afterEach(async () => {
@@ -261,7 +261,7 @@ describe('Accessibility Tests', () => {
   describe('Color and Contrast', () => {
     beforeEach(async () => {
       page = await browser.newPage();
-      await page.goto('http://localhost:3000?arch=refactored');
+      await page.goto('http://localhost:3000');
     });
 
     afterEach(async () => {
@@ -326,7 +326,7 @@ describe('Accessibility Tests', () => {
     beforeEach(async () => {
       page = await browser.newPage();
       await page.setViewport({ width: 375, height: 667 }); // iPhone viewport
-      await page.goto('http://localhost:3000?arch=refactored');
+      await page.goto('http://localhost:3000');
     });
 
     afterEach(async () => {
@@ -390,7 +390,7 @@ describe('Accessibility Tests', () => {
   describe('Focus Management', () => {
     beforeEach(async () => {
       page = await browser.newPage();
-      await page.goto('http://localhost:3000?arch=refactored');
+      await page.goto('http://localhost:3000');
     });
 
     afterEach(async () => {

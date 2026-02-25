@@ -15,5 +15,5 @@ scratch.js
 /blob-report/
 /playwright/.cache/
 demo-todo-app.spec.ts
-data/
+/data/
 coverage/

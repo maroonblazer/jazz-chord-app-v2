@@ -4,16 +4,21 @@ export class SessionManager {
     this.timerManager = timerManager;
     this.chordGenerator = chordGenerator;
     this.WRONG_ANSWER_TIME = 999999;
+    this.fretboardView = null;
+    this.resultsView = null;
+  }
+
+  setViews({ fretboardView, resultsView } = {}) {
+    this.fretboardView = fretboardView || null;
+    this.resultsView = resultsView || null;
   }
 
   startSession() {
-    // Clear fretboard container when starting new session
-    const container = document.getElementById("fretboard-container");
-    if (container) {
-      container.innerHTML = "";
-      container.style.visibility = "visible";
+    if (this.fretboardView) {
+      this.fretboardView.clear();
+      this.fretboardView.show();
     }
-    
+
     this.stateManager.reset();
     this.startIteration();
   }
@@ -24,6 +29,11 @@ export class SessionManager {
     if (state.session.iterationCount >= state.session.maxIterations) {
       this.endSession();
       return;
+    }
+
+    if (this.fretboardView) {
+      this.fretboardView.clear();
+      this.fretboardView.show();
     }
 
     // Update session state first
@@ -101,36 +111,35 @@ export class SessionManager {
   displaySolution() {
     const state = this.stateManager.getState();
     const { currentProblem } = state;
-    
+
     const fretPositions = this.chordGenerator.getFretPositions(
       currentProblem.stringSet,
       currentProblem.root,
       currentProblem.type
     );
-    
+
     const svgString = this.chordGenerator.generateSVG(fretPositions);
-    
-    // This would be handled by UI component in full implementation
-    const container = document.getElementById("fretboard-container");
-    if (container) {
-      container.innerHTML = svgString;
-      container.style.visibility = "visible";
+    if (this.fretboardView) {
+      this.fretboardView.render(svgString);
     }
-    
+
     this.stateManager.updateState('ui.fretboardVisible', true);
   }
 
   endSession() {
     // Send results to server and display them
+    this.stateManager.updateState('ui.statusMessage', 'Calculating analysis...');
     this.sendResultsToServer();
   }
 
   async sendResultsToServer() {
     const state = this.stateManager.getState();
     const results = state.results.cpsAndTimes;
-    
+
     console.log('Sending results to server:', results.length, 'results');
-    
+    this.stateManager.updateState('ui.statusMessage', 'Sending results...');
+    this.stateManager.updateState('ui.errorMessage', null);
+
     try {
       const response = await fetch("/append-session-data", {
         method: "POST",
@@ -145,100 +154,58 @@ export class SessionManager {
       }
       
       console.log('Results sent successfully, fetching analysis...');
-      
+
       // Get analysis
       const analysisResponse = await fetch("/analyze-session-data");
+      if (!analysisResponse.ok) {
+        throw new Error(`HTTP error! status: ${analysisResponse.status}`);
+      }
       const analysisData = await analysisResponse.json();
-      
+
       console.log('Analysis received:', analysisData);
-      
+
       this.displayResults(analysisData.results);
-      
+      this.stateManager.updateState('ui.statusMessage', 'Analysis updated');
+      this.stateManager.updateState('ui.errorMessage', null);
+
     } catch (error) {
       console.error("Error sending results to server:", error);
+      this.stateManager.updateState('ui.errorMessage', 'Failed to save results. Please try again.');
+      this.stateManager.updateState('ui.statusMessage', null);
     }
   }
 
   displayResults(analysisResults) {
-    console.log('displayResults called with:', analysisResults);
-    
-    // This would be handled by ResultsDisplay component in full implementation
-    const container = document.getElementById("fretboard-container");
-    if (!container) {
-      console.error('displayResults: fretboard-container not found');
-      return;
+    if (this.resultsView) {
+      this.resultsView.render(analysisResults);
     }
-    
-    console.log('displayResults: clearing container and building results...');
-    container.innerHTML = "";
-    
-    const header = document.createElement("h3");
-    header.textContent = "Drill These Chord Shapes:";
-    container.appendChild(header);
-    
-    const list = document.createElement("ul");
-    list.setAttribute('tabindex', '0');
-    list.style.cursor = 'text';
-    
-    analysisResults.forEach((result, index) => {
-      const item = document.createElement("li");
-      item.innerHTML = `
-        <span class="problem-number">${index + 1}</span>
-        <span class="chord-info">${result.chordInfo}</span>
-        <span class="time-info">${result.timeInfo}</span>
-      `;
-      list.appendChild(item);
-    });
-    
-    // Add copy functionality
-    list.addEventListener('keydown', (e) => {
-      if ((e.metaKey || e.ctrlKey) && e.key === 'c') {
-        e.preventDefault();
-        const clipboardText = this.formatResultsForClipboard(analysisResults);
-        navigator.clipboard.writeText(clipboardText)
-          .then(() => {
-            const items = list.querySelectorAll('li');
-            items.forEach(item => item.classList.add('copy-flash'));
-            setTimeout(() => {
-              items.forEach(item => item.classList.remove('copy-flash'));
-            }, 300);
-          })
-          .catch(err => console.error('Failed to copy:', err));
-      }
-    });
-    
-    container.appendChild(list);
-    
+
     // Now transition to END state - results are displayed
-    this.stateManager.transitionTo('END');
+    const transitioned = this.stateManager.transitionTo('END');
+    if (!transitioned) {
+      this.stateManager.updateState('session.status', 'END');
+    }
     this.stateManager.updateState('session.isRunning', false);
   }
 
   cancelSession() {
     console.log('Cancelling session...');
-    
+
     // Use the state manager's cancel method which handles state transitions and cleanup
     const cancelled = this.stateManager.cancel();
-    
+
     if (cancelled) {
-      // Clear any displayed chord
-      const container = document.getElementById("fretboard-container");
-      if (container) {
-        container.innerHTML = "";
+      if (this.fretboardView) {
+        this.fretboardView.clear();
+        this.fretboardView.hide();
       }
-      
+      this.stateManager.clearMessages();
       console.log('Session cancelled successfully');
     } else {
       console.warn('Failed to cancel session - invalid state transition');
     }
-    
-    return cancelled;
-  }
 
-  formatResultsForClipboard(results) {
-    return results
-      .map((result, index) => `${index + 1} ${result.chordInfo} ${result.timeInfo}`)
-      .join('\n');
+    return cancelled;
   }
 
   handleStartStopClick() {

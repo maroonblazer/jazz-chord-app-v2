@@ -5,10 +5,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Commands
 
 ### Development
-- `npm start` - Start the legacy Express server on port 3000
-- `npm run start:refactored` - Start the refactored server with database layer
-- `node server.js` - Alternative way to start legacy server
-- `node server-refactored.js` - Alternative way to start refactored server
+- `npm start` - Start the Express server on port 3000
+- `node server.js` - Alternative way to start server
 
 ### Testing
 - `npx playwright test` - Run E2E tests across all browsers
@@ -22,35 +20,32 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 This is a full-stack jazz chord practice app built with vanilla JavaScript frontend and Express backend. The app presents timed chord identification challenges and tracks performance data.
 
-**Two Architecture Versions Available:**
-1. **Legacy Architecture** (`app.js`, `server.js`) - Original monolithic implementation
-2. **Refactored Architecture** (`app-refactored.js`, `server-refactored.js`) - Modular, component-based with database layer
-
-Access refactored version: `http://localhost:3000?arch=refactored`
-
 ### Frontend Architecture (`public/app.js`)
-- **State Machine**: Uses `SessionState` enum (STOPPED, RUNNING, PAUSED, LAST, END)
+- **Component-Based**: Modular ES module architecture with SessionStateManager, ChordGenerator, TimerManager, SessionManager, UIController
+- **State Machine**: Uses `SessionState` enum (STOPPED, RUNNING, PAUSED, LAST, END) via centralized SessionStateManager
 - **Session Management**: Tracks 10 iterations per session with timing data
-- **Chord Generation**: Dynamic SVG chord diagrams via `newChord()` function
+- **Chord Data**: Centralized in `public/data/chordData.js` — single source of truth for shapes, keys, types
+- **Chord Generation**: Dynamic SVG chord diagrams via ChordGenerator component
 - **Options System**: User can filter by key, chord type, and string set
 - **Results Display**: Copy-friendly results list with keyboard shortcuts (Cmd+C)
 
 ### Backend Architecture (`server.js`)
 - **REST API**: Express server with JSON endpoints
-- **Data Persistence**: Dual CSV file system:
-  - `session-data.csv` - All historical session data
-  - `session-data-last-10.csv` - Recent sessions for analysis
-- **Performance Analysis**: Local CSV analysis for identifying problematic chord patterns
+- **Data Persistence**: SQLite database via `database/Database.js` with migration system
 
 ### Key Endpoints
-- `POST /append-session-data` - Store session results to CSV
+- `POST /append-session-data` - Store session results to SQLite
 - `GET /analyze-session-data` - Get analysis of slowest chord problems
+- `GET /performance-summary` - Comprehensive performance analytics
+- `GET /export-csv` - Backward-compatible CSV export
+- `POST /wipe-database` - Clear all data (localhost only)
+- `GET /health` - System health and statistics
 
 ### Chord System
-The app uses a two-tier chord representation:
+The app uses dynamic SVG chord diagram generation:
 
-1. **Static SVG Symbols** (`public/index.html`): Pre-built chord diagrams for complex shapes
-2. **Dynamic Generation** (`public/app.js`): Programmatic SVG creation using chord shape data
+1. **Chord Data** (`public/data/chordData.js`): Single source of truth for all chord shapes, keys, types
+2. **Dynamic Generation** (`public/components/ChordGenerator.js`): Programmatic SVG creation using chord shape data
 
 **Chord Problem Structure:**
 - **String Set**: 1 (E,B,G,D strings) or 2 (B,G,D,A strings)
@@ -67,16 +62,16 @@ chordShapes[`SS${stringSet}`][`R/${root}`][type] = [fret1, fret2, fret3, fret4, 
 1. Frontend generates random chord problems
 2. Timer measures recognition time
 3. After 10 iterations, results sent to backend
-4. Backend appends to CSV files
-5. Local analysis identifies problematic patterns
+4. Backend stores in SQLite database with session tracking
+5. Database analysis identifies problematic patterns
 6. Results displayed with copy functionality
 
 ### Important Implementation Details
 
 **State Management:**
-- Global variables track session state, timing, and chord data
-- `cpsAndTimes` array stores session results before server submission
-- `chordsToForget` queue prevents recent chord repetition
+- Centralized SessionStateManager with observable pattern and batch updates
+- Components subscribe to specific state paths for efficient updates
+- State transitions validated (STOPPED → RUNNING → PAUSED/LAST → END)
 
 **Timing System:**
 - Precise timing using `performance.now()`
@@ -96,7 +91,7 @@ chordShapes[`SS${stringSet}`][`R/${root}`][type] = [fret1, fret2, fret3, fret4, 
 - Tests cover session flow, timing, and results display
 
 ### Performance Analysis
-- CSV data processing for chord problem identification
+- SQLite database queries for chord problem identification
 - Statistical analysis of practice times and patterns
 - Automated identification of problematic chord combinations
 - Results formatted for easy review and practice focus
@@ -106,6 +101,6 @@ chordShapes[`SS${stringSet}`][`R/${root}`][type] = [fret1, fret2, fret3, fret4, 
 - CSS uses modern features (custom properties, grid layout)
 - SVG manipulation for chord diagrams
 - Express serves static files from `public/` directory
-- Session data persists across server restarts via CSV files
+- Session data persists across server restarts via SQLite database
 - Always push to origin after making a commit
 - Periodically remind me of the complete Git workflow steps.

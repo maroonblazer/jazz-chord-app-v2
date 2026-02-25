@@ -1,25 +1,17 @@
 import { test, expect } from '@playwright/test';
 
-test('Jazz Chords App - Legacy Architecture', async ({ page }) => {
-  // Navigate to the legacy version
+test('Jazz Chords App - Page loads successfully', async ({ page }) => {
   await page.goto('http://localhost:3000');
-
-  // Check that the title is correct
   await expect(page).toHaveTitle('Jazz Chords Practice');
-
-  // Check that legacy architecture is loaded
-  await page.waitForFunction(() => {
-    return window.console.log === console.log; // Simple check that JS is loaded
-  });
 });
 
-test('Jazz Chords App - Refactored Architecture', async ({ page }) => {
+test('Jazz Chords App - Full session workflow', async ({ page }) => {
   // Listen for console messages and errors to debug
   page.on('console', msg => console.log('PAGE LOG:', msg.text()));
   page.on('pageerror', error => console.log('PAGE ERROR:', error.message));
 
-  // Navigate to the refactored version
-  await page.goto('http://localhost:3000?arch=refactored');
+  // Navigate to the app
+  await page.goto('http://localhost:3000');
 
   // Check that the title is correct
   await expect(page).toHaveTitle('Jazz Chords Practice');
@@ -121,8 +113,8 @@ test('Jazz Chords App - Refactored Architecture', async ({ page }) => {
 });
 
 test('Options Menu Functionality', async ({ page }) => {
-  // Navigate to the refactored version
-  await page.goto('http://localhost:3000?arch=refactored');
+  // Navigate to the app
+  await page.goto('http://localhost:3000');
   
   // Wait for the page to load
   await page.waitForTimeout(2000);
@@ -176,8 +168,8 @@ test('Options Menu Functionality', async ({ page }) => {
 });
 
 test('Options Menu Affects Chord Generation', async ({ page }) => {
-  // Navigate to the refactored version
-  await page.goto('http://localhost:3000?arch=refactored');
+  // Navigate to the app
+  await page.goto('http://localhost:3000');
   await page.waitForTimeout(2000);
 
   // Open options menu
@@ -235,8 +227,8 @@ test('Options Menu Affects Chord Generation', async ({ page }) => {
 });
 
 test('Options Menu Partial Selection Works', async ({ page }) => {
-  // Navigate to the refactored version
-  await page.goto('http://localhost:3000?arch=refactored');
+  // Navigate to the app
+  await page.goto('http://localhost:3000');
   await page.waitForTimeout(2000);
 
   // Open options menu and set only the key
@@ -278,8 +270,8 @@ test('Options Menu Partial Selection Works', async ({ page }) => {
 });
 
 test('Session Cancellation Functionality', async ({ page }) => {
-  // Navigate to the refactored version
-  await page.goto('http://localhost:3000?arch=refactored');
+  // Navigate to the app
+  await page.goto('http://localhost:3000');
   await page.waitForTimeout(2000);
 
   // Verify cancel button is initially hidden
@@ -330,7 +322,7 @@ test('Session Cancellation Functionality', async ({ page }) => {
 });
 
 test('Cancel Button Visibility During Different States', async ({ page }) => {
-  await page.goto('http://localhost:3000?arch=refactored');
+  await page.goto('http://localhost:3000');
   await page.waitForTimeout(2000);
 
   const cancelButton = page.locator('#cancel-button');
@@ -356,7 +348,7 @@ test('Cancel Button Visibility During Different States', async ({ page }) => {
 });
 
 test('Cancel Button Works During Paused State', async ({ page }) => {
-  await page.goto('http://localhost:3000?arch=refactored');
+  await page.goto('http://localhost:3000');
   await page.waitForTimeout(2000);
 
   const cancelButton = page.locator('#cancel-button');
@@ -381,7 +373,7 @@ test('Cancel Button Works During Paused State', async ({ page }) => {
 });
 
 test('Cancel During Mid-Session Preserves No Data', async ({ page }) => {
-  await page.goto('http://localhost:3000?arch=refactored');
+  await page.goto('http://localhost:3000');
   await page.waitForTimeout(2000);
 
   const cancelButton = page.locator('#cancel-button');
@@ -418,7 +410,7 @@ test('Cancel During Mid-Session Preserves No Data', async ({ page }) => {
 });
 
 test('Cancel Button CSS Styling', async ({ page }) => {
-  await page.goto('http://localhost:3000?arch=refactored');
+  await page.goto('http://localhost:3000');
   await page.waitForTimeout(2000);
 
   const cancelButton = page.locator('#cancel-button');
@@ -450,7 +442,7 @@ test('Cancel Button CSS Styling', async ({ page }) => {
 });
 
 test('Delete All Data Modal - Spacebar Should Activate Button Not Start Session', async ({ page }) => {
-  await page.goto('http://localhost:3000?arch=refactored');
+  await page.goto('http://localhost:3000');
   await page.waitForTimeout(2000);
 
   // Open options menu to access wipe database button

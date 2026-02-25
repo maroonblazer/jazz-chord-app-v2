@@ -1,343 +1,162 @@
-import { test, expect, describe, beforeAll, afterAll, beforeEach } from '@jest/globals';
+import { describe, test, expect, beforeAll, afterAll, beforeEach } from '@jest/globals';
 import request from 'supertest';
-import express from 'express';
-import fs from 'fs';
+import fs from 'fs/promises';
 import path from 'path';
 
-// Import the server app (we'll need to modify server.js to export the app)
-// For now, we'll create a simplified version for testing
-function createTestApp() {
-  const app = express();
-  app.use(express.json());
-  app.use(express.static('public'));
+process.env.JAZZ_DISABLE_AUTO_LISTEN = 'true';
 
-  // Mock session data endpoint
-  app.post('/append-session-data', (req, res) => {
-    try {
-      const { sessionData } = req.body;
-      
-      if (!sessionData || !Array.isArray(sessionData)) {
-        return res.status(400).json({ error: 'Invalid session data format' });
-      }
+let app;
+let initializeDatabase;
+let closeDatabase;
+let db;
 
-      // Validate session data structure
-      const isValid = sessionData.every(item => 
-        typeof item.time === 'number' &&
-        typeof item.stringSet === 'number' &&
-        typeof item.root === 'number' &&
-        typeof item.key === 'string' &&
-        typeof item.type === 'string'
-      );
+const fixturesDir = path.join(process.cwd(), 'tests', 'tmp');
+const sqliteFile = path.join(fixturesDir, 'integration.sqlite');
 
-      if (!isValid) {
-        return res.status(400).json({ error: 'Invalid session data structure' });
-      }
+beforeAll(async () => {
+  await fs.mkdir(fixturesDir, { recursive: true });
 
-      // In real implementation, this would write to CSV
-      // For testing, we'll just validate and return success
-      res.json({ 
-        success: true, 
-        message: 'Session data saved successfully',
-        recordsProcessed: sessionData.length 
-      });
-    } catch (error) {
-      res.status(500).json({ error: 'Internal server error' });
-    }
+  process.env.DB_PATH = sqliteFile;
+
+  ({ app, initializeDatabase, closeDatabase, db } = await import('../../server.js'));
+
+  await initializeDatabase();
+});
+
+afterAll(async () => {
+  await closeDatabase();
+  await fs.rm(fixturesDir, { recursive: true, force: true });
+});
+
+beforeEach(async () => {
+  await closeDatabase();
+  await fs.rm(sqliteFile, { force: true });
+  await initializeDatabase();
+});
+
+describe('SQLite-backed server', () => {
+  test('POST /append-session-data persists a session', async () => {
+    const payload = {
+      data: [
+        { stringSet: '1', root: '2', key: 'C', quality: 'maj7', time: '3.4', date: new Date().toISOString(), wasMarkedWrong: false },
+        { stringSet: '2', root: '3', key: 'F', quality: 'min7', time: '4.8', date: new Date().toISOString(), wasMarkedWrong: true }
+      ]
+    };
+
+    const response = await request(app)
+      .post('/append-session-data')
+      .send(payload)
+      .expect(200);
+
+    expect(response.body.resultsCount).toBe(2);
+    expect(response.body.sessionId).toBeGreaterThan(0);
   });
 
-  // Mock analysis endpoint
-  app.get('/analyze-session-data', (req, res) => {
-    try {
-      // Mock analysis response
-      const mockAnalysis = {
-        slowestChords: [
-          { stringSet: 1, root: 3, key: 'F#', type: 'maj7', avgTime: 4500 },
-          { stringSet: 2, root: 5, key: 'Bb', type: 'min7', avgTime: 4200 },
-          { stringSet: 1, root: 4, key: 'Eb', type: 'dom7', avgTime: 3800 }
-        ],
-        totalSessions: 15,
-        averageTime: 2800,
-        improvementSuggestions: [
-          'Practice F# maj7 on SS1 R/3',
-          'Work on Bb min7 chord shapes'
-        ]
-      };
+  test('GET /analyze-session-data returns aggregated chord data', async () => {
+    const payload = {
+      data: [
+        { stringSet: '1', root: '2', key: 'C', quality: 'maj7', time: '3.4', date: new Date().toISOString(), wasMarkedWrong: false },
+        { stringSet: '1', root: '2', key: 'C', quality: 'maj7', time: '7.1', date: new Date().toISOString(), wasMarkedWrong: false },
+        { stringSet: '2', root: '3', key: 'F', quality: 'min7', time: '5.0', date: new Date().toISOString(), wasMarkedWrong: false }
+      ]
+    };
 
-      res.json(mockAnalysis);
-    } catch (error) {
-      res.status(500).json({ error: 'Analysis failed' });
-    }
+    await request(app).post('/append-session-data').send(payload).expect(200);
+
+    const response = await request(app).get('/analyze-session-data').expect(200);
+    expect(Array.isArray(response.body.results)).toBe(true);
+    expect(response.body.results.length).toBeGreaterThan(0);
+    expect(response.body.results[0]).toHaveProperty('chordInfo');
+  });
+});
+
+describe('Input validation', () => {
+  test('POST /append-session-data rejects empty data array', async () => {
+    const response = await request(app)
+      .post('/append-session-data')
+      .send({ data: [] })
+      .expect(400);
+
+    expect(response.body.message).toContain('non-empty');
   });
 
-  // Mock custom message endpoint
-  app.post('/send-message', (req, res) => {
-    try {
-      const { message } = req.body;
-      
-      if (!message || typeof message !== 'string') {
-        return res.status(400).json({ error: 'Message is required' });
-      }
+  test('POST /append-session-data rejects missing data field', async () => {
+    const response = await request(app)
+      .post('/append-session-data')
+      .send({ foo: 'bar' })
+      .expect(400);
 
-      // Mock AI response
-      const mockResponse = {
-        response: `Mock AI response to: "${message}"`,
-        timestamp: new Date().toISOString(),
-        model: 'gpt-3.5-turbo'
-      };
-
-      res.json(mockResponse);
-    } catch (error) {
-      res.status(500).json({ error: 'Message processing failed' });
-    }
+    expect(response.body.message).toContain('non-empty');
   });
 
-  return app;
-}
+  test('POST /append-session-data rejects invalid stringSet', async () => {
+    const response = await request(app)
+      .post('/append-session-data')
+      .send({ data: [{ stringSet: '9', root: '2', key: 'C', quality: 'maj7', time: '3.0', date: new Date().toISOString() }] })
+      .expect(400);
 
-describe('API Endpoints Integration Tests', () => {
-  let app;
-  const testDataDir = path.join(process.cwd(), 'tests', 'fixtures');
-  const testSessionFile = path.join(testDataDir, 'test-session-data.csv');
-
-  beforeAll(async () => {
-    app = createTestApp();
-    
-    // Create test fixtures directory
-    if (!fs.existsSync(testDataDir)) {
-      fs.mkdirSync(testDataDir, { recursive: true });
-    }
+    expect(response.body.errors[0]).toContain('stringSet');
   });
 
-  afterAll(async () => {
-    // Clean up test files
-    if (fs.existsSync(testSessionFile)) {
-      fs.unlinkSync(testSessionFile);
-    }
+  test('POST /append-session-data rejects invalid key', async () => {
+    const response = await request(app)
+      .post('/append-session-data')
+      .send({ data: [{ stringSet: '1', root: '2', key: 'Z#', quality: 'maj7', time: '3.0', date: new Date().toISOString() }] })
+      .expect(400);
+
+    expect(response.body.errors[0]).toContain('key');
   });
 
-  beforeEach(() => {
-    // Reset any state between tests
+  test('POST /append-session-data rejects invalid quality', async () => {
+    const response = await request(app)
+      .post('/append-session-data')
+      .send({ data: [{ stringSet: '1', root: '2', key: 'C', quality: 'sus4', time: '3.0', date: new Date().toISOString() }] })
+      .expect(400);
+
+    expect(response.body.errors[0]).toContain('quality');
   });
 
-  describe('POST /append-session-data', () => {
-    test('should accept valid session data', async () => {
-      const sessionData = [
-        {
-          time: 2500,
-          stringSet: 1,
-          root: 2,
-          key: 'D',
-          type: 'maj7'
-        },
-        {
-          time: 3200,
-          stringSet: 2,
-          root: 3,
-          key: 'F',
-          type: 'min7'
-        }
-      ];
+  test('POST /append-session-data rejects negative time', async () => {
+    const response = await request(app)
+      .post('/append-session-data')
+      .send({ data: [{ stringSet: '1', root: '2', key: 'C', quality: 'maj7', time: '-5', date: new Date().toISOString() }] })
+      .expect(400);
 
-      const response = await request(app)
-        .post('/append-session-data')
-        .send({ sessionData })
-        .expect(200);
-
-      expect(response.body.success).toBe(true);
-      expect(response.body.recordsProcessed).toBe(2);
-    });
-
-    test('should reject invalid session data format', async () => {
-      const response = await request(app)
-        .post('/append-session-data')
-        .send({ sessionData: 'invalid' })
-        .expect(400);
-
-      expect(response.body.error).toBe('Invalid session data format');
-    });
-
-    test('should reject session data with missing fields', async () => {
-      const sessionData = [
-        {
-          time: 2500,
-          // missing stringSet, root, key, type
-        }
-      ];
-
-      const response = await request(app)
-        .post('/append-session-data')
-        .send({ sessionData })
-        .expect(400);
-
-      expect(response.body.error).toBe('Invalid session data structure');
-    });
-
-    test('should reject session data with wrong field types', async () => {
-      const sessionData = [
-        {
-          time: 'invalid', // Should be number
-          stringSet: 1,
-          root: 2,
-          key: 'D',
-          type: 'maj7'
-        }
-      ];
-
-      const response = await request(app)
-        .post('/append-session-data')
-        .send({ sessionData })
-        .expect(400);
-
-      expect(response.body.error).toBe('Invalid session data structure');
-    });
-
-    test('should handle empty session data array', async () => {
-      const response = await request(app)
-        .post('/append-session-data')
-        .send({ sessionData: [] })
-        .expect(200);
-
-      expect(response.body.success).toBe(true);
-      expect(response.body.recordsProcessed).toBe(0);
-    });
-
-    test('should handle large session data sets', async () => {
-      const sessionData = Array.from({ length: 100 }, (_, i) => ({
-        time: 2000 + i * 10,
-        stringSet: (i % 2) + 1,
-        root: (i % 4) + 1,
-        key: ['C', 'D', 'E', 'F'][i % 4],
-        type: ['maj7', 'min7', 'dom7'][i % 3]
-      }));
-
-      const response = await request(app)
-        .post('/append-session-data')
-        .send({ sessionData })
-        .expect(200);
-
-      expect(response.body.success).toBe(true);
-      expect(response.body.recordsProcessed).toBe(100);
-    });
+    expect(response.body.errors[0]).toContain('time');
   });
 
-  describe('GET /analyze-session-data', () => {
-    test('should return analysis data', async () => {
-      const response = await request(app)
-        .get('/analyze-session-data')
-        .expect(200);
+  test('POST /append-session-data rejects excessive time values', async () => {
+    const response = await request(app)
+      .post('/append-session-data')
+      .send({ data: [{ stringSet: '1', root: '2', key: 'C', quality: 'maj7', time: '999', date: new Date().toISOString(), wasMarkedWrong: false }] })
+      .expect(400);
 
-      expect(response.body).toHaveProperty('slowestChords');
-      expect(response.body).toHaveProperty('totalSessions');
-      expect(response.body).toHaveProperty('averageTime');
-      expect(response.body).toHaveProperty('improvementSuggestions');
-      
-      expect(Array.isArray(response.body.slowestChords)).toBe(true);
-      expect(Array.isArray(response.body.improvementSuggestions)).toBe(true);
-      expect(typeof response.body.totalSessions).toBe('number');
-      expect(typeof response.body.averageTime).toBe('number');
-    });
-
-    test('should return properly formatted slowest chords', async () => {
-      const response = await request(app)
-        .get('/analyze-session-data')
-        .expect(200);
-
-      const { slowestChords } = response.body;
-      expect(slowestChords.length).toBeGreaterThan(0);
-      
-      slowestChords.forEach(chord => {
-        expect(chord).toHaveProperty('stringSet');
-        expect(chord).toHaveProperty('root');
-        expect(chord).toHaveProperty('key');
-        expect(chord).toHaveProperty('type');
-        expect(chord).toHaveProperty('avgTime');
-        expect(typeof chord.avgTime).toBe('number');
-      });
-    });
+    expect(response.body.errors[0]).toContain('time');
   });
 
-  describe('POST /send-message', () => {
-    test('should process valid message', async () => {
-      const message = 'What are my slowest chord changes?';
-      
-      const response = await request(app)
-        .post('/send-message')
-        .send({ message })
-        .expect(200);
+  test('POST /append-session-data accepts marked-wrong entries with sentinel time', async () => {
+    const response = await request(app)
+      .post('/append-session-data')
+      .send({ data: [{ stringSet: '1', root: '2', key: 'C', quality: 'maj7', time: '999999', date: new Date().toISOString(), wasMarkedWrong: true }] })
+      .expect(200);
 
-      expect(response.body).toHaveProperty('response');
-      expect(response.body).toHaveProperty('timestamp');
-      expect(response.body.response).toContain(message);
-    });
-
-    test('should reject empty message', async () => {
-      const response = await request(app)
-        .post('/send-message')
-        .send({ message: '' })
-        .expect(400);
-
-      expect(response.body.error).toBe('Message is required');
-    });
-
-    test('should reject non-string message', async () => {
-      const response = await request(app)
-        .post('/send-message')
-        .send({ message: 123 })
-        .expect(400);
-
-      expect(response.body.error).toBe('Message is required');
-    });
-
-    test('should handle long messages', async () => {
-      const longMessage = 'A'.repeat(1000);
-      
-      const response = await request(app)
-        .post('/send-message')
-        .send({ message: longMessage })
-        .expect(200);
-
-      expect(response.body.response).toBeTruthy();
-    });
+    expect(response.body.resultsCount).toBe(1);
   });
 
-  describe('Error Handling', () => {
-    test('should handle 404 for unknown endpoints', async () => {
-      await request(app)
-        .get('/unknown-endpoint')
-        .expect(404);
-    });
+  test('POST /wipe-database rejects without valid confirmation', async () => {
+    const response = await request(app)
+      .post('/wipe-database')
+      .send({ confirmation: 'WRONG TEXT' })
+      .expect(400);
 
-    test('should handle malformed JSON', async () => {
-      await request(app)
-        .post('/append-session-data')
-        .set('Content-Type', 'application/json')
-        .send('{ malformed json }')
-        .expect(400);
-    });
+    expect(response.body.success).toBe(false);
   });
 
-  describe('Content Type Validation', () => {
-    test('should require JSON content type for POST endpoints', async () => {
-      await request(app)
-        .post('/append-session-data')
-        .set('Content-Type', 'text/plain')
-        .send('plain text data')
-        .expect(400);
-    });
-  });
+  test('GET /health returns server status', async () => {
+    const response = await request(app)
+      .get('/health')
+      .expect(200);
 
-  describe('Performance Tests', () => {
-    test('should respond within reasonable time', async () => {
-      const startTime = Date.now();
-      
-      await request(app)
-        .get('/analyze-session-data')
-        .expect(200);
-      
-      const endTime = Date.now();
-      const responseTime = endTime - startTime;
-      
-      expect(responseTime).toBeLessThan(1000); // Should respond within 1 second
-    });
+    expect(response.body).toHaveProperty('status');
   });
 });

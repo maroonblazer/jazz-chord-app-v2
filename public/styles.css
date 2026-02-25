@@ -197,10 +197,33 @@ body {
   letter-spacing: -0.02em;
 }
 
-#message {
+.status-bar {
+  margin: 0 1.5rem 1.5rem;
+  min-height: 1.5rem;
+  display: grid;
+  gap: 0.35rem;
+}
+
+#status-message,
+#error-message {
   font-family: var(--font-family);
-  font-size: 1rem;
-  line-height: 1.5;
+  font-size: var(--font-size-small);
+  line-height: 1.4;
+  margin: 0;
+}
+
+#status-message[aria-hidden="true"] {
+  display: none;
+}
+
+#error-message {
+  color: #b71c1c;
+  font-weight: 600;
+  display: none;
+}
+
+#error-message.visible {
+  display: block;
 }
 
 .options-container {
