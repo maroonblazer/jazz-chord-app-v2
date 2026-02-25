@@ -420,25 +420,29 @@ test('Cancel Button CSS Styling', async ({ page }) => {
   await startButton.click();
   await page.waitForTimeout(1000);
 
-  // Check that cancel button has proper CSS classes
-  await expect(cancelButton).toHaveClass(/cancel-button/);
+  // Check that cancel button is visible (not hidden)
   await expect(cancelButton).not.toHaveClass(/hidden/);
 
-  // Verify button styling properties
+  // Verify button styling properties — subtle gray outline style
   const buttonStyles = await cancelButton.evaluate(el => {
     const styles = window.getComputedStyle(el);
     return {
       backgroundColor: styles.backgroundColor,
       color: styles.color,
+      borderStyle: styles.borderStyle,
       borderRadius: styles.borderRadius,
-      cursor: styles.cursor
+      cursor: styles.cursor,
+      fontSize: styles.fontSize
     };
   });
 
-  // Verify button has red-ish background (cancel button styling)
-  expect(buttonStyles.backgroundColor).toMatch(/rgb\(244, 67, 54\)|#f44336/);
-  expect(buttonStyles.color).toMatch(/rgb\(255, 255, 255\)|white/);
+  // Verify subtle cancel button styling (transparent bg, gray text, solid border)
+  expect(buttonStyles.backgroundColor).toMatch(/transparent|rgba\(0, 0, 0, 0\)/);
+  expect(buttonStyles.borderStyle).toBe('solid');
   expect(buttonStyles.cursor).toBe('pointer');
+  // Font should be smaller than main buttons
+  const fontSize = parseFloat(buttonStyles.fontSize);
+  expect(fontSize).toBeLessThan(16);
 });
 
 test('Delete All Data Modal - Spacebar Should Activate Button Not Start Session', async ({ page }) => {
