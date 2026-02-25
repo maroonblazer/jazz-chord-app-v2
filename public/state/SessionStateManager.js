@@ -44,10 +44,23 @@ export class SessionStateManager {
       LAST: ['END', 'STOPPED'],
       END: ['STOPPED']
     };
+
+    // Batch update tracking
+    this._batching = false;
+    this._pendingNotifications = [];
+
+    // Dirty flag for getState() clone optimization
+    this._dirty = true;
+    this._cachedState = null;
   }
 
   getState() {
-    return JSON.parse(JSON.stringify(this.state));
+    if (this._dirty || !this._cachedState) {
+      this._cachedState = JSON.parse(JSON.stringify(this.state));
+      this._dirty = false;
+    }
+    // Return a copy of the cache so callers can't mutate it
+    return JSON.parse(JSON.stringify(this._cachedState));
   }
 
   subscribe(eventPath, callback) {
@@ -68,6 +81,11 @@ export class SessionStateManager {
   }
 
   notifyListeners(path, value) {
+    if (this._batching) {
+      this._pendingNotifications.push({ path, value });
+      return;
+    }
+
     const callbacks = this.listeners.get(path) || [];
     callbacks.forEach(callback => callback(value, this.getState()));
     
@@ -76,43 +94,90 @@ export class SessionStateManager {
     wildcardCallbacks.forEach(callback => callback({ path, value }, this.getState()));
   }
 
-  updateState(path, value) {
+  /**
+   * Execute multiple state updates in a single batch.
+   * Defers notifications until all updates are applied, then fires
+   * each unique notification once. Only one deep clone occurs.
+   */
+  batchUpdate(callback) {
+    if (this._batching) {
+      // Already in a batch — just run the callback
+      callback();
+      return;
+    }
+
+    this._batching = true;
+    this._pendingNotifications = [];
+
+    try {
+      callback();
+    } finally {
+      this._batching = false;
+
+      // Deduplicate notifications by path (keep last value per path)
+      const uniqueNotifications = new Map();
+      for (const { path, value } of this._pendingNotifications) {
+        uniqueNotifications.set(path, value);
+      }
+      this._pendingNotifications = [];
+
+      // Fire each notification once
+      for (const [path, value] of uniqueNotifications) {
+        const callbacks = this.listeners.get(path) || [];
+        callbacks.forEach(cb => cb(value, this.getState()));
+        
+        const wildcardCallbacks = this.listeners.get('*') || [];
+        wildcardCallbacks.forEach(cb => cb({ path, value }, this.getState()));
+      }
+    }
+  }
+
+  _setNestedValue(path, value) {
     const pathArray = path.split('.');
-    const newState = JSON.parse(JSON.stringify(this.state));
-    
-    let current = newState;
+    let current = this.state;
     for (let i = 0; i < pathArray.length - 1; i++) {
       current = current[pathArray[i]];
     }
     current[pathArray[pathArray.length - 1]] = value;
-    
-    this.state = newState;
+    this._dirty = true;
+  }
+
+  updateState(path, value) {
+    this._setNestedValue(path, value);
     this.notifyListeners(path, value);
   }
 
   updateSession(updates) {
-    Object.keys(updates).forEach(key => {
-      this.updateState(`session.${key}`, updates[key]);
+    this.batchUpdate(() => {
+      Object.keys(updates).forEach(key => {
+        this.updateState(`session.${key}`, updates[key]);
+      });
     });
   }
 
   updateCurrentProblem(problem) {
-    Object.keys(problem).forEach(key => {
-      this.updateState(`currentProblem.${key}`, problem[key]);
+    this.batchUpdate(() => {
+      Object.keys(problem).forEach(key => {
+        this.updateState(`currentProblem.${key}`, problem[key]);
+      });
+      // Also notify about the whole currentProblem object change
+      this.notifyListeners('currentProblem', this.state.currentProblem);
     });
-    // Also notify about the whole currentProblem object change
-    this.notifyListeners('currentProblem', this.state.currentProblem);
   }
 
   updateTiming(updates) {
-    Object.keys(updates).forEach(key => {
-      this.updateState(`timing.${key}`, updates[key]);
+    this.batchUpdate(() => {
+      Object.keys(updates).forEach(key => {
+        this.updateState(`timing.${key}`, updates[key]);
+      });
     });
   }
 
   updateOptions(updates) {
-    Object.keys(updates).forEach(key => {
-      this.updateState(`options.${key}`, updates[key]);
+    this.batchUpdate(() => {
+      Object.keys(updates).forEach(key => {
+        this.updateState(`options.${key}`, updates[key]);
+      });
     });
   }
 
@@ -135,8 +200,10 @@ export class SessionStateManager {
   }
 
   clearMessages() {
-    this.updateState('ui.statusMessage', null);
-    this.updateState('ui.errorMessage', null);
+    this.batchUpdate(() => {
+      this.updateState('ui.statusMessage', null);
+      this.updateState('ui.errorMessage', null);
+    });
   }
 
   canTransitionTo(newStatus) {
@@ -174,28 +241,30 @@ export class SessionStateManager {
   }
 
   reset() {
-    this.updateSession({
-      status: 'STOPPED',
-      iterationCount: 0,
-      isRunning: false
+    this.batchUpdate(() => {
+      this.updateSession({
+        status: 'STOPPED',
+        iterationCount: 0,
+        isRunning: false
+      });
+      
+      this.updateTiming({
+        timerId: null,
+        startTime: null,
+        currentElapsed: 0
+      });
+      
+      this.updateCurrentProblem({
+        stringSet: null,
+        root: null,
+        key: null,
+        type: null
+      });
+      
+      this.clearResults();
+      this.updateState('ui.markWrongVisible', false);
+      this.updateState('ui.fretboardVisible', false);
+      this.clearMessages();
     });
-    
-    this.updateTiming({
-      timerId: null,
-      startTime: null,
-      currentElapsed: 0
-    });
-    
-    this.updateCurrentProblem({
-      stringSet: null,
-      root: null,
-      key: null,
-      type: null
-    });
-    
-    this.clearResults();
-    this.updateState('ui.markWrongVisible', false);
-    this.updateState('ui.fretboardVisible', false);
-    this.clearMessages();
   }
 }
