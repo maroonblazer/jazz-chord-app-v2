@@ -54,6 +54,43 @@ async function initializeDatabase() {
   }
 }
 
+// Input validation for session result entries
+const VALID_STRING_SETS = ['1', '2'];
+const VALID_ROOTS = ['1', '2', '3', '4', '5'];
+const VALID_KEYS = [
+  'C', 'D', 'E', 'F', 'G', 'A', 'B',
+  'C#', 'D#', 'F#', 'G#', 'A#',
+  'Db', 'Eb', 'Gb', 'Ab', 'Bb'
+];
+const VALID_QUALITIES = [
+  'maj7', 'min7', 'dom7', 'min7b5',
+  'alt dom', 'maj9', 'min9', 'dom13'
+];
+
+function validateSessionEntry(entry, index) {
+  const errors = [];
+  if (!VALID_STRING_SETS.includes(String(entry.stringSet))) {
+    errors.push(`[${index}] invalid stringSet: ${entry.stringSet}`);
+  }
+  if (!VALID_ROOTS.includes(String(entry.root))) {
+    errors.push(`[${index}] invalid root: ${entry.root}`);
+  }
+  if (!VALID_KEYS.includes(entry.key)) {
+    errors.push(`[${index}] invalid key: ${entry.key}`);
+  }
+  if (!VALID_QUALITIES.includes(entry.quality)) {
+    errors.push(`[${index}] invalid quality: ${entry.quality}`);
+  }
+  const time = parseFloat(entry.time);
+  if (isNaN(time) || time < 0 || time > 300) {
+    errors.push(`[${index}] invalid time (must be 0-300s): ${entry.time}`);
+  }
+  if (entry.date && isNaN(Date.parse(entry.date))) {
+    errors.push(`[${index}] invalid date: ${entry.date}`);
+  }
+  return errors;
+}
+
 // Define routes first
 app.get('/', (req, res) => {
   res.sendFile(path.join(process.cwd(), 'public/index.html'));
@@ -63,7 +100,20 @@ app.get('/', (req, res) => {
 app.post('/append-session-data', async (req, res) => {
   try {
     await initializeDatabase();
-    const { data } = req.body; // Assuming data is an array of objects
+    const { data } = req.body;
+    
+    if (!Array.isArray(data) || data.length === 0) {
+      return res.status(400).json({ message: 'Request body must contain a non-empty "data" array' });
+    }
+    if (data.length > 100) {
+      return res.status(400).json({ message: 'Too many results in a single request (max 100)' });
+    }
+    
+    // Validate each entry
+    const allErrors = data.flatMap((entry, i) => validateSessionEntry(entry, i));
+    if (allErrors.length > 0) {
+      return res.status(400).json({ message: 'Validation errors', errors: allErrors });
+    }
     
     console.log('Received session data:', data.length, 'results');
     

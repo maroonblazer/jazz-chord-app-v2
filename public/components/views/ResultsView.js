@@ -20,11 +20,20 @@ export class ResultsView {
 
     analysisResults.forEach((result, index) => {
       const item = document.createElement('li');
-      item.innerHTML = `
-        <span class="problem-number">${index + 1}</span>
-        <span class="chord-info">${result.chordInfo}</span>
-        <span class="time-info">${result.timeInfo}</span>
-      `;
+
+      const num = document.createElement('span');
+      num.className = 'problem-number';
+      num.textContent = index + 1;
+
+      const chord = document.createElement('span');
+      chord.className = 'chord-info';
+      chord.textContent = result.chordInfo;
+
+      const time = document.createElement('span');
+      time.className = 'time-info';
+      time.textContent = result.timeInfo;
+
+      item.append(num, chord, time);
       list.appendChild(item);
     });
 

@@ -69,3 +69,85 @@ describe('SQLite-backed server', () => {
     expect(response.body.results[0]).toHaveProperty('chordInfo');
   });
 });
+
+describe('Input validation', () => {
+  test('POST /append-session-data rejects empty data array', async () => {
+    const response = await request(app)
+      .post('/append-session-data')
+      .send({ data: [] })
+      .expect(400);
+
+    expect(response.body.message).toContain('non-empty');
+  });
+
+  test('POST /append-session-data rejects missing data field', async () => {
+    const response = await request(app)
+      .post('/append-session-data')
+      .send({ foo: 'bar' })
+      .expect(400);
+
+    expect(response.body.message).toContain('non-empty');
+  });
+
+  test('POST /append-session-data rejects invalid stringSet', async () => {
+    const response = await request(app)
+      .post('/append-session-data')
+      .send({ data: [{ stringSet: '9', root: '2', key: 'C', quality: 'maj7', time: '3.0', date: new Date().toISOString() }] })
+      .expect(400);
+
+    expect(response.body.errors[0]).toContain('stringSet');
+  });
+
+  test('POST /append-session-data rejects invalid key', async () => {
+    const response = await request(app)
+      .post('/append-session-data')
+      .send({ data: [{ stringSet: '1', root: '2', key: 'Z#', quality: 'maj7', time: '3.0', date: new Date().toISOString() }] })
+      .expect(400);
+
+    expect(response.body.errors[0]).toContain('key');
+  });
+
+  test('POST /append-session-data rejects invalid quality', async () => {
+    const response = await request(app)
+      .post('/append-session-data')
+      .send({ data: [{ stringSet: '1', root: '2', key: 'C', quality: 'sus4', time: '3.0', date: new Date().toISOString() }] })
+      .expect(400);
+
+    expect(response.body.errors[0]).toContain('quality');
+  });
+
+  test('POST /append-session-data rejects negative time', async () => {
+    const response = await request(app)
+      .post('/append-session-data')
+      .send({ data: [{ stringSet: '1', root: '2', key: 'C', quality: 'maj7', time: '-5', date: new Date().toISOString() }] })
+      .expect(400);
+
+    expect(response.body.errors[0]).toContain('time');
+  });
+
+  test('POST /append-session-data rejects excessive time values', async () => {
+    const response = await request(app)
+      .post('/append-session-data')
+      .send({ data: [{ stringSet: '1', root: '2', key: 'C', quality: 'maj7', time: '999', date: new Date().toISOString() }] })
+      .expect(400);
+
+    expect(response.body.errors[0]).toContain('time');
+  });
+
+  test('POST /wipe-database rejects without valid confirmation', async () => {
+    const response = await request(app)
+      .post('/wipe-database')
+      .send({ confirmation: 'WRONG TEXT' })
+      .expect(400);
+
+    expect(response.body.success).toBe(false);
+  });
+
+  test('GET /health returns server status', async () => {
+    const response = await request(app)
+      .get('/health')
+      .expect(200);
+
+    expect(response.body).toHaveProperty('status');
+  });
+});

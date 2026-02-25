@@ -7,7 +7,16 @@ export class FretboardView {
   }
 
   render(svgString) {
-    this.container.innerHTML = svgString;
+    // Parse SVG through DOMParser for XSS safety rather than raw innerHTML
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(svgString, 'image/svg+xml');
+    const errorNode = doc.querySelector('parsererror');
+    if (errorNode) {
+      console.error('FretboardView: invalid SVG', errorNode.textContent);
+      return;
+    }
+    this.container.innerHTML = '';
+    this.container.appendChild(doc.documentElement);
     this.show();
   }
 
