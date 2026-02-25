@@ -30,22 +30,12 @@ describe('Performance Tests', () => {
       await page.close();
     });
 
-    test('should load refactored architecture within acceptable time', async () => {
-      page = await browser.newPage();
-      
-      const startTime = Date.now();
-      await page.goto('http://localhost:3000?arch=refactored', { waitUntil: 'networkidle0' });
-      const loadTime = Date.now() - startTime;
-      
-      expect(loadTime).toBeLessThan(3000);
-      await page.close();
-    });
   });
 
   describe('SVG Rendering Performance', () => {
     beforeEach(async () => {
       page = await browser.newPage();
-      await page.goto('http://localhost:3000?arch=refactored');
+      await page.goto('http://localhost:3000');
     });
 
     afterEach(async () => {
@@ -111,7 +101,7 @@ describe('Performance Tests', () => {
   describe('Memory Usage', () => {
     test('should not have significant memory leaks during session', async () => {
       page = await browser.newPage();
-      await page.goto('http://localhost:3000?arch=refactored');
+      await page.goto('http://localhost:3000');
       
       // Get initial memory usage
       const initialMetrics = await page.metrics();
@@ -179,7 +169,7 @@ describe('Performance Tests', () => {
         }
       });
       
-      await page.goto('http://localhost:3000?arch=refactored');
+      await page.goto('http://localhost:3000');
       
       // Complete a session to trigger results
       for (let i = 0; i < 10; i++) {
@@ -209,7 +199,7 @@ describe('Performance Tests', () => {
   describe('CSS and Animation Performance', () => {
     test('should maintain smooth animations under load', async () => {
       page = await browser.newPage();
-      await page.goto('http://localhost:3000?arch=refactored');
+      await page.goto('http://localhost:3000');
       
       // Enable performance monitoring
       await page.coverage.startCSSCoverage();
@@ -261,7 +251,7 @@ describe('Performance Tests', () => {
         });
       });
       
-      await page.goto('http://localhost:3000?arch=refactored', { waitUntil: 'networkidle0' });
+      await page.goto('http://localhost:3000', { waitUntil: 'networkidle0' });
       
       const initialRequestCount = networkRequests.length;
       

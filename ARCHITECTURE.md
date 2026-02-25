@@ -61,14 +61,13 @@ The monolithic `app.js` has been decomposed into focused, single-responsibility 
 - Subscribes to state changes for UI updates
 - Handles user input and button states
 
-#### **Main Application** (`app-refactored.js`)
+#### **Main Application** (`app.js`)
 - Initializes and wires together all components
-- Provides public API for external access
-- Maintains backward compatibility with legacy methods
+- Provides public API for external access via `window.jazzChordApp`
 
 ### 3. Database Layer with Migration Support
 
-**Location**: `database/Database.js`, `server-refactored.js`
+**Location**: `database/Database.js`, `server.js`
 
 **Purpose**: Replace CSV files with proper database persistence and query capabilities.
 
@@ -102,36 +101,26 @@ performance_summary (chord_info, avg_time, attempts, wrong_answers, max_time, mi
 
 ## Usage
 
-### Running the Refactored Architecture
+### Running the Application
 
 ```bash
-# Install new dependencies
+# Install dependencies
 npm install
 
-# Start refactored server
-npm run start:refactored
-
-# Access refactored frontend
-http://localhost:3000?arch=refactored
-```
-
-### Running Legacy Architecture
-
-```bash
-# Start legacy server
+# Start server
 npm start
 
-# Access legacy frontend (default)
+# Access in browser
 http://localhost:3000
 ```
 
 ### Development and Testing
 
 ```bash
-# Run E2E tests (works with both architectures)
+# Run E2E tests
 npx playwright test
 
-# Debug in browser console (refactored architecture)
+# Debug in browser console
 window.jazzChordApp.logState()           // View current state
 window.jazzChordApp.resetApp()           // Reset to initial state
 window.testChordShape(1, 2, 'maj7')      // Test chord rendering
@@ -164,15 +153,6 @@ window.testChordShape(1, 2, 'maj7')      // Test chord rendering
 - **Foreign Key Constraints**: Referential integrity between sessions and results
 - **Migration Safety**: Schema changes are applied atomically
 
-## Migration Path
-
-The refactored architecture maintains **full backward compatibility**:
-
-1. **Gradual Migration**: Both architectures can run simultaneously
-2. **Feature Parity**: All existing functionality is preserved
-3. **Data Migration**: CSV data can be imported into the database
-4. **API Compatibility**: Legacy endpoints remain functional
-
 ## Future Enhancements
 
 The new architecture enables several potential improvements:
@@ -188,19 +168,23 @@ The new architecture enables several potential improvements:
 ```
 jazz-chord-app-v2/
 ├── public/
-│   ├── app.js                    # Legacy monolithic app
-│   ├── app-refactored.js         # New modular app entry point
+│   ├── app.js                    # Modular app entry point
+│   ├── data/
+│   │   └── chordData.js          # Single source of truth for chord data
 │   ├── state/
 │   │   └── SessionStateManager.js # Centralized state management
 │   └── components/
 │       ├── TimerManager.js       # Timing operations
 │       ├── ChordGenerator.js     # Chord logic and SVG generation
 │       ├── SessionManager.js     # Session orchestration
-│       └── UIController.js       # DOM and UI management
+│       ├── UIController.js       # DOM and UI management
+│       └── views/
+│           ├── FretboardView.js  # SVG fretboard rendering
+│           ├── ResultsView.js    # Results display
+│           └── StatusView.js     # Status bar display
 ├── database/
 │   └── Database.js               # Database layer with migrations
-├── server.js                     # Legacy server
-├── server-refactored.js          # New database-backed server
+├── server.js                     # Express server with SQLite
 └── ARCHITECTURE.md               # This document
 ```
 

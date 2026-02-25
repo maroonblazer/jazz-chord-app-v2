@@ -57,7 +57,7 @@ test.beforeAll(async ({}, workerInfo) => {
   await seededDb.completeSession(sessionId, 2);
   await seededDb.close();
 
-  serverProcess = spawn('node', ['server-refactored.js'], {
+  serverProcess = spawn('node', ['server.js'], {
     env: {
       ...process.env,
       PORT: String(testPort),
@@ -84,7 +84,7 @@ test.afterAll(async () => {
 });
 
 test('refactored architecture persists results with a seeded database', async ({ page, request }) => {
-  await page.goto(`${baseUrl}?arch=refactored`);
+  await page.goto(`${baseUrl}`);
 
   // Reduce the number of required iterations for a faster test run
   await page.evaluate(() => {
