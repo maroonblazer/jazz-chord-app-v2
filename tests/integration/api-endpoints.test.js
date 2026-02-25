@@ -128,10 +128,19 @@ describe('Input validation', () => {
   test('POST /append-session-data rejects excessive time values', async () => {
     const response = await request(app)
       .post('/append-session-data')
-      .send({ data: [{ stringSet: '1', root: '2', key: 'C', quality: 'maj7', time: '999', date: new Date().toISOString() }] })
+      .send({ data: [{ stringSet: '1', root: '2', key: 'C', quality: 'maj7', time: '999', date: new Date().toISOString(), wasMarkedWrong: false }] })
       .expect(400);
 
     expect(response.body.errors[0]).toContain('time');
+  });
+
+  test('POST /append-session-data accepts marked-wrong entries with sentinel time', async () => {
+    const response = await request(app)
+      .post('/append-session-data')
+      .send({ data: [{ stringSet: '1', root: '2', key: 'C', quality: 'maj7', time: '999999', date: new Date().toISOString(), wasMarkedWrong: true }] })
+      .expect(200);
+
+    expect(response.body.resultsCount).toBe(1);
   });
 
   test('POST /wipe-database rejects without valid confirmation', async () => {

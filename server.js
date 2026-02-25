@@ -82,8 +82,9 @@ function validateSessionEntry(entry, index) {
     errors.push(`[${index}] invalid quality: ${entry.quality}`);
   }
   const time = parseFloat(entry.time);
-  if (isNaN(time) || time < 0 || time > 300) {
-    errors.push(`[${index}] invalid time (must be 0-300s): ${entry.time}`);
+  const isWrong = entry.wasMarkedWrong === true;
+  if (isNaN(time) || time < 0 || (!isWrong && time > 300)) {
+    errors.push(`[${index}] invalid time (must be 0-300s, or marked wrong): ${entry.time}`);
   }
   if (entry.date && isNaN(Date.parse(entry.date))) {
     errors.push(`[${index}] invalid date: ${entry.date}`);

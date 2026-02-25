@@ -1,6 +1,6 @@
 <!-- FILEPATH: index.html -->
 
-<!DOCTYPE html>
+<!doctype html>
 <html>
   <head>
     <meta charset="utf-8" />
@@ -12,9 +12,7 @@
   <body>
     <div class="options-container">
       <div class="options-toggle">
-        <button id="options-button" aria-expanded="false">
-          Options
-        </button>
+        <button id="options-button" aria-expanded="false">Options</button>
       </div>
       <div class="options-menu" hidden>
         <div class="options-group">
@@ -68,7 +66,7 @@
           </button>
         </div>
         <div class="options-group danger-zone">
-          <hr class="danger-divider">
+          <hr class="danger-divider" />
           <label class="danger-label">Danger Zone</label>
           <button id="wipe-database-button" class="danger-button">
             Wipe All Session Data
@@ -87,14 +85,22 @@
         <span class="label" id="typeLabel">Type:</span>
         <span id="typeTextField">--</span>
       </div>
-      
+
       <div id="fretboard-container"></div>
-      
+
       <div class="button-container">
-        <button id="start-stop-button" role="button" aria-labelledby="start-stop-button-label"></button>
+        <button
+          id="start-stop-button"
+          role="button"
+          aria-labelledby="start-stop-button-label"
+        ></button>
         <p class="label" id="start-stop-button-label">Start</p>
-        <button id="cancel-button" class="hidden cancel-button" role="button">Cancel</button>
-        <button id="mark-wrong-button" class="hidden" role="button">Mark Wrong</button>
+        <button id="cancel-button" class="hidden cancel-button" role="button">
+          Cancel
+        </button>
+        <button id="mark-wrong-button" class="hidden" role="button">
+          Mark Wrong
+        </button>
       </div>
 
       <div class="status-bar" aria-live="polite">
@@ -102,8 +108,6 @@
         <p id="error-message" role="alert"></p>
       </div>
     </div>
-
-
 
     <script type="module" src="app.js"></script>
   </body>
