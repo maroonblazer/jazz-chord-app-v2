@@ -128,7 +128,6 @@ export class SessionManager {
 
   endSession() {
     // Send results to server and display them
-    this.stateManager.updateState('ui.statusMessage', 'Calculating analysis...');
     this.sendResultsToServer();
   }
 
@@ -137,7 +136,6 @@ export class SessionManager {
     const results = state.results.cpsAndTimes;
 
     console.log('Sending results to server:', results.length, 'results');
-    this.stateManager.updateState('ui.statusMessage', 'Sending results...');
     this.stateManager.updateState('ui.errorMessage', null);
 
     try {
@@ -165,7 +163,6 @@ export class SessionManager {
       console.log('Analysis received:', analysisData);
 
       this.displayResults(analysisData.results);
-      this.stateManager.updateState('ui.statusMessage', 'Analysis updated');
       this.stateManager.updateState('ui.errorMessage', null);
 
     } catch (error) {
