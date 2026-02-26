@@ -376,8 +376,8 @@ body {
   display: grid;
   grid-template-rows: auto 1fr;
   gap: 0.75rem;
-  visibility: hidden;
-  max-width: 320px;
+  width: 138px;
+  min-height: 316px;
   padding: 1rem;
   margin: 0 auto;
   background: var(--color-display);
@@ -388,6 +388,23 @@ body {
     0 1px 0 rgba(255, 255, 255, 0.04);
   position: relative;
   overflow: hidden;
+}
+
+/* Empty fretboard ghost — always visible behind content */
+#fretboard-container::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 100px;
+  height: 250px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 339 806' fill='none'%3E%3Cline x1='13.5' y1='2' x2='13.5' y2='806' stroke='%23333'/%3E%3Cline x1='73.5' y1='2' x2='73.5' y2='806' stroke='%23333'/%3E%3Cline x1='133.5' y1='2' x2='133.5' y2='806' stroke='%23333'/%3E%3Cline x1='193.5' y1='2' x2='193.5' y2='806' stroke='%23333'/%3E%3Cline x1='253.5' y1='2' x2='253.5' y2='806' stroke='%23333'/%3E%3Cline x1='313.5' y1='2' x2='313.5' y2='806' stroke='%23333'/%3E%3Crect x='1.5' y='1.5' width='323' height='803' stroke='%23444' stroke-width='3'/%3E%3Cline x1='3' y1='680.5' x2='323' y2='680.5' stroke='%23333' stroke-width='3'/%3E%3Cline x1='3' y1='560.5' x2='323' y2='560.5' stroke='%23333' stroke-width='3'/%3E%3Cline x1='3' y1='440.5' x2='323' y2='440.5' stroke='%23333' stroke-width='3'/%3E%3Cline x1='3' y1='300.5' x2='323' y2='300.5' stroke='%23333' stroke-width='3'/%3E%3Cline x1='3' y1='160.5' x2='323' y2='160.5' stroke='%23333' stroke-width='3'/%3E%3C/svg%3E");
+  background-size: contain;
+  background-repeat: no-repeat;
+  opacity: 0.5;
+  z-index: 0;
+  pointer-events: none;
 }
 
 /* Glass reflection overlay */
@@ -414,6 +431,8 @@ body {
   height: 250px;
   margin: 0.5rem auto 0.5rem;
   justify-self: center;
+  position: relative;
+  z-index: 1;
 }
 
 /* Theme the SVG elements */
@@ -430,6 +449,13 @@ body {
   filter: drop-shadow(0 0 6px var(--color-led-amber-glow));
 }
 
+/* Expand screen when showing results list */
+#fretboard-container:has(ul) {
+  width: auto;
+  max-width: 340px;
+  min-height: auto;
+}
+
 /* ---- Results List (in display screen) ---- */
 
 #fretboard-container h3 {
@@ -441,6 +467,8 @@ body {
   letter-spacing: 0.05em;
   margin-bottom: 0.5rem;
   text-align: center;
+  position: relative;
+  z-index: 1;
 }
 
 #fretboard-container ul {
@@ -450,6 +478,7 @@ body {
   border-radius: 4px;
   padding: 1px;
   position: relative;
+  z-index: 1;
 }
 
 #fretboard-container ul::after {
@@ -517,15 +546,39 @@ body {
 
 /* ---- Status LCD Strip ---- */
 
+/* Recessed groove — decorative when empty, LCD strip when showing messages */
 .status-bar {
-  margin: 0;
-  min-height: 1.2rem;
+  margin: 0 1rem;
+  min-height: 6px;
   display: grid;
   gap: 0.25rem;
-  background: var(--color-display);
-  border: 1px solid var(--color-display-border);
-  border-radius: 3px;
+  background: linear-gradient(
+    180deg,
+    #181818 0%,
+    #222 40%,
+    #2a2a2a 60%,
+    #1e1e1e 100%
+  );
+  border: 1px solid #1a1a1a;
+  border-top-color: #111;
+  border-radius: 2px;
+  padding: 0;
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.04),
+    0 2px 3px rgba(0, 0, 0, 0.4) inset;
+  transition: all 0.2s ease;
+  overflow: hidden;
+}
+
+/* Expand to LCD strip when there's a visible message */
+.status-bar:has(#status-message:not([aria-hidden="true"])),
+.status-bar:has(#error-message.visible) {
+  min-height: 1.2rem;
   padding: 0.4rem 0.75rem;
+  margin: 0;
+  background: var(--color-display);
+  border-color: var(--color-display-border);
+  border-radius: 3px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3) inset;
 }
 

@@ -25,10 +25,10 @@ export class FretboardView {
   }
 
   show() {
-    this.container.style.visibility = 'visible';
+    // Screen is always visible; content appears when rendered
   }
 
   hide() {
-    this.container.style.visibility = 'hidden';
+    // Screen is always visible; content cleared separately
   }
 }
