@@ -517,3 +517,45 @@ test('Delete All Data Modal - Spacebar Should Activate Button Not Start Session'
   expect(keyText).toBe('--');
   expect(typeText).toBe('--');
 });
+
+test('Theme Switching and Persistence', async ({ page }) => {
+  await page.goto('http://localhost:3000');
+  await page.waitForTimeout(2000);
+
+  // Open options
+  await page.locator('#options-button').click();
+
+  // Verify theme select exists with default value
+  const themeSelect = page.locator('#theme-select');
+  await expect(themeSelect).toBeVisible();
+  const defaultValue = await themeSelect.inputValue();
+  expect(defaultValue).toBe('classic');
+
+  // No data-theme attribute should be set for classic
+  const classicTheme = await page.evaluate(() => document.documentElement.dataset.theme);
+  expect(classicTheme).toBeUndefined();
+
+  // Select Jazz Club theme
+  await themeSelect.selectOption('jazz-club');
+
+  // Verify data-theme attribute is set
+  const jazzTheme = await page.evaluate(() => document.documentElement.dataset.theme);
+  expect(jazzTheme).toBe('jazz-club');
+
+  // Reload page and verify persistence
+  await page.reload();
+  await page.waitForTimeout(2000);
+
+  const persistedTheme = await page.evaluate(() => document.documentElement.dataset.theme);
+  expect(persistedTheme).toBe('jazz-club');
+
+  // Verify theme select shows correct value after reload
+  await page.locator('#options-button').click();
+  const selectedValue = await page.locator('#theme-select').inputValue();
+  expect(selectedValue).toBe('jazz-club');
+
+  // Switch back to classic
+  await page.locator('#theme-select').selectOption('classic');
+  const resetTheme = await page.evaluate(() => document.documentElement.dataset.theme);
+  expect(resetTheme).toBeUndefined();
+});

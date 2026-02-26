@@ -3,9 +3,10 @@ import { ResultsView } from './views/ResultsView.js';
 import { StatusView } from './views/StatusView.js';
 
 export class UIController {
-  constructor(stateManager, sessionManager) {
+  constructor(stateManager, sessionManager, themeManager) {
     this.stateManager = stateManager;
     this.sessionManager = sessionManager;
+    this.themeManager = themeManager;
     this.elements = {};
     this.setupElements();
     this.initializeViews();
@@ -31,9 +32,15 @@ export class UIController {
       stringSetSelect: document.getElementById('string-set-select'),
       resetOptionsButton: document.getElementById('reset-options-button'),
       wipeDatabaseButton: document.getElementById('wipe-database-button'),
+      themeSelect: document.getElementById('theme-select'),
       statusMessage: document.getElementById('status-message'),
       errorMessage: document.getElementById('error-message')
     };
+
+    // Set initial theme select value
+    if (this.themeManager && this.elements.themeSelect) {
+      this.elements.themeSelect.value = this.themeManager.getCurrentTheme();
+    }
     
     // Validate all required DOM elements exist
     const missingElements = [];
@@ -105,6 +112,13 @@ export class UIController {
           !this.elements.optionsButton.contains(event.target)) {
         this.elements.optionsButton.setAttribute('aria-expanded', 'false');
         this.elements.optionsMenu.hidden = true;
+      }
+    });
+
+    // Theme change
+    this.elements.themeSelect.addEventListener('change', (e) => {
+      if (this.themeManager) {
+        this.themeManager.applyTheme(e.target.value);
       }
     });
 
@@ -227,15 +241,15 @@ export class UIController {
   }
 
   showSuccessMessage(message) {
-    // Create success notification
+    const styles = getComputedStyle(document.documentElement);
     const notification = document.createElement('div');
     notification.style.cssText = `
       position: fixed;
       top: 20px;
       right: 20px;
-      background: #d4edda;
-      color: #155724;
-      border: 1px solid #c3e6cb;
+      background: ${styles.getPropertyValue('--color-success-bg').trim()};
+      color: ${styles.getPropertyValue('--color-success-text').trim()};
+      border: 1px solid ${styles.getPropertyValue('--color-success-border').trim()};
       padding: 12px 16px;
       border-radius: 4px;
       box-shadow: 0 2px 8px rgba(0,0,0,0.1);
@@ -243,9 +257,9 @@ export class UIController {
       max-width: 300px;
     `;
     notification.textContent = message;
-    
+
     document.body.appendChild(notification);
-    
+
     setTimeout(() => {
       if (document.body.contains(notification)) {
         document.body.removeChild(notification);
@@ -254,15 +268,15 @@ export class UIController {
   }
 
   showErrorMessage(message) {
-    // Create error notification
+    const styles = getComputedStyle(document.documentElement);
     const notification = document.createElement('div');
     notification.style.cssText = `
       position: fixed;
       top: 20px;
       right: 20px;
-      background: #f8d7da;
-      color: #721c24;
-      border: 1px solid #f5c6cb;
+      background: ${styles.getPropertyValue('--color-error-bg').trim()};
+      color: ${styles.getPropertyValue('--color-error-text').trim()};
+      border: 1px solid ${styles.getPropertyValue('--color-error-border').trim()};
       padding: 12px 16px;
       border-radius: 4px;
       box-shadow: 0 2px 8px rgba(0,0,0,0.1);
@@ -270,9 +284,9 @@ export class UIController {
       max-width: 300px;
     `;
     notification.textContent = message;
-    
+
     document.body.appendChild(notification);
-    
+
     setTimeout(() => {
       if (document.body.contains(notification)) {
         document.body.removeChild(notification);
