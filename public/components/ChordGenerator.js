@@ -63,34 +63,34 @@ export class ChordGenerator {
   }
 
   generateSVG(fretPositions, options = {}) {
-    const { width = 339, height = 806, circleColor = "black" } = options;
-    
+    const { width = 339, height = 806, circleColor = "black", strokeColor = "black" } = options;
+
     if (!Array.isArray(fretPositions)) {
       throw new Error("fretPositions must be an array");
     }
-    
+
     let svg = `<svg width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" fill="none" xmlns="http://www.w3.org/2000/svg">`;
-    
+
     // Add fretboard base
     svg += `
       <g id="fretboard-base">
         <g id="Frame 1">
           <g id="Strings">
-            <line id="Low E" x1="13.5" y1="2" x2="13.5" y2="806" stroke="black"/>
-            <line id="A" x1="73.5" y1="2" x2="73.5" y2="806" stroke="black"/>
-            <line id="D" x1="133.5" y1="2" x2="133.5" y2="806" stroke="black"/>
-            <line id="G" x1="193.5" y1="2" x2="193.5" y2="806" stroke="black"/>
-            <line id="B" x1="253.5" y1="2" x2="253.5" y2="806" stroke="black"/>
-            <line id="High E" x1="313.5" y1="2" x2="313.5" y2="806" stroke="black"/>
+            <line id="Low E" x1="13.5" y1="2" x2="13.5" y2="806" stroke="${strokeColor}"/>
+            <line id="A" x1="73.5" y1="2" x2="73.5" y2="806" stroke="${strokeColor}"/>
+            <line id="D" x1="133.5" y1="2" x2="133.5" y2="806" stroke="${strokeColor}"/>
+            <line id="G" x1="193.5" y1="2" x2="193.5" y2="806" stroke="${strokeColor}"/>
+            <line id="B" x1="253.5" y1="2" x2="253.5" y2="806" stroke="${strokeColor}"/>
+            <line id="High E" x1="313.5" y1="2" x2="313.5" y2="806" stroke="${strokeColor}"/>
           </g>
-          <rect id="Fretboard" x="1.5" y="1.5" width="323" height="803" stroke="black" stroke-width="3"/>
+          <rect id="Fretboard" x="1.5" y="1.5" width="323" height="803" stroke="${strokeColor}" stroke-width="3"/>
         </g>
         <g id="Frets">
-          <line id="Fret 5" x1="3" y1="680.5" x2="323" y2="680.5" stroke="black" stroke-width="3"/>
-          <line id="Fret 4" x1="3" y1="560.5" x2="323" y2="560.5" stroke="black" stroke-width="3"/>
-          <line id="Fret 3" x1="3" y1="440.5" x2="323" y2="440.5" stroke="black" stroke-width="3"/>
-          <line id="Fret 2" x1="3" y1="300.5" x2="323" y2="300.5" stroke="black" stroke-width="3"/>
-          <line id="Fret 1" x1="3" y1="160.5" x2="323" y2="160.5" stroke="black" stroke-width="3"/>
+          <line id="Fret 5" x1="3" y1="680.5" x2="323" y2="680.5" stroke="${strokeColor}" stroke-width="3"/>
+          <line id="Fret 4" x1="3" y1="560.5" x2="323" y2="560.5" stroke="${strokeColor}" stroke-width="3"/>
+          <line id="Fret 3" x1="3" y1="440.5" x2="323" y2="440.5" stroke="${strokeColor}" stroke-width="3"/>
+          <line id="Fret 2" x1="3" y1="300.5" x2="323" y2="300.5" stroke="${strokeColor}" stroke-width="3"/>
+          <line id="Fret 1" x1="3" y1="160.5" x2="323" y2="160.5" stroke="${strokeColor}" stroke-width="3"/>
         </g>
       </g>`;
     

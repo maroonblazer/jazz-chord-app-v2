@@ -1,18 +1,79 @@
-@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600&family=DM+Sans:wght@400;500;700&family=Libre+Baskerville:wght@400;700&family=Source+Sans+3:wght@400;600&family=Inter:wght@400;600;800&family=Nunito:wght@400;600;700&display=swap');
 
 :root {
+  /* Typography */
   --font-family: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  --color-text: #2c2c2c;
-  --color-border: #404040;
-  --color-bg: #fafafa;
-  --shadow-default: 0 1px 3px rgba(0, 0, 0, 0.05);
-  --border-radius: 8px;
-  --color-gray-light: #666;
-  --color-gray-lighter: #f8f8f8;
+  --font-family-heading: var(--font-family);
+  --letter-spacing: -0.01em;
+  --font-weight-normal: 400;
+  --font-weight-bold: 600;
   --font-size-small: 0.875rem;
   --font-size-medium: 1.125rem;
   --font-size-large: 1.25rem;
-  --letter-spacing: -0.01em;
+
+  /* Core palette */
+  --color-text: #2c2c2c;
+  --color-text-secondary: #666;
+  --color-bg: #fafafa;
+  --color-bg-page: #ffffff;
+  --color-surface: #ffffff;
+  --color-border: #404040;
+  --color-border-light: #e0e0e0;
+
+  /* Shadows */
+  --shadow-default: 0 1px 3px rgba(0, 0, 0, 0.05);
+  --shadow-elevated: 0 10px 25px rgba(0, 0, 0, 0.2);
+
+  /* Accent */
+  --color-accent: #4CAF50;
+  --color-accent-hover: #45a049;
+  --color-accent-text: #2E7D32;
+
+  /* Danger */
+  --color-danger: #ff6b6b;
+  --color-danger-hover: #ff5252;
+  --color-danger-text: #ff6b6b;
+
+  /* Mark wrong (separate from danger for the filled button) */
+  --color-mark-wrong: #ff4444;
+  --color-mark-wrong-hover: #cc0000;
+
+  /* Muted */
+  --color-muted: #999;
+  --color-muted-border: #ccc;
+  --color-muted-hover: #d32f2f;
+
+  /* Results/feedback */
+  --color-copy-flash: #d8d8d8;
+  --color-hover-bg: #f8f8f8;
+
+  /* Error */
+  --color-error: #b71c1c;
+
+  /* Notifications */
+  --color-success-bg: #d4edda;
+  --color-success-text: #155724;
+  --color-success-border: #c3e6cb;
+  --color-error-bg: #f8d7da;
+  --color-error-text: #721c24;
+  --color-error-border: #f5c6cb;
+
+  /* Modal */
+  --color-modal-bg: #ffffff;
+  --color-modal-overlay: rgba(0, 0, 0, 0.5);
+  --color-warning-bg: #fff3cd;
+  --color-warning-border: #ffeaa7;
+  --color-warning-text: #856404;
+
+  /* SVG Fretboard */
+  --color-fretboard-stroke: #000000;
+  --color-fretboard-dot: #000000;
+
+  /* Structural */
+  --border-radius: 8px;
+  --border-radius-small: 4px;
+  --border-width-main: 5px;
+  --color-main-border: #808080;
 }
 
 html {
@@ -33,6 +94,7 @@ html {
 body {
   margin: 0;
   padding: 0;
+  background-color: var(--color-bg-page);
 }
 
 .problem-container {
@@ -43,7 +105,7 @@ body {
   border-radius: var(--border-radius);
   margin: 1rem;
   padding: 1.25rem;
-  background-color: white;
+  background-color: var(--color-surface);
   box-shadow: var(--shadow-default);
 }
 
@@ -58,7 +120,7 @@ body {
 .main {
   display: grid;
   grid-template-rows: auto 320px auto;
-  border: 5px solid #808080;
+  border: var(--border-width-main) solid var(--color-main-border);
   border-radius: 10px;
   max-width: 360px;
   margin: 1rem auto;
@@ -86,7 +148,7 @@ body {
 #fretboard-container ul {
   display: grid;
   gap: 1px;
-  background-color: #e0e0e0;
+  background-color: var(--color-border-light);
   border-radius: var(--border-radius);
   padding: 1px;
   position: relative;
@@ -99,14 +161,15 @@ body {
   left: 50%;
   transform: translateX(-50%);
   font-size: var(--font-size-small);
-  color: var(--color-gray-light);
+  color: var(--color-text-secondary);
   opacity: 0.8;
   width: 100%;
   text-align: center;
 }
 
 #fretboard-container h3 {
-  font-weight: 600;
+  font-family: var(--font-family-heading);
+  font-weight: var(--font-weight-bold);
   font-size: var(--font-size-large);
   color: var(--color-text);
   letter-spacing: var(--letter-spacing);
@@ -119,7 +182,7 @@ body {
   grid-template-columns: 1.5rem 1fr auto;
   gap: 1rem;
   padding: 1rem;
-  background-color: white;
+  background-color: var(--color-surface);
   align-items: center;
 }
 
@@ -129,8 +192,8 @@ body {
 
 .problem-number {
   font-size: var(--font-size-small);
-  font-weight: 600;
-  color: var(--color-gray-light);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-secondary);
 }
 
 .chord-info {
@@ -141,12 +204,12 @@ body {
 
 .time-info {
   font-size: var(--font-size-small);
-  color: var(--color-gray-light);
+  color: var(--color-text-secondary);
 }
 
 #fretboard-container li:hover,
 #start-stop-button:hover {
-  background-color: var(--color-gray-lighter);
+  background-color: var(--color-hover-bg);
 }
 
 .button-container {
@@ -159,7 +222,7 @@ body {
   place-items: center;
   width: 3.5rem;
   height: 3.5rem;
-  background-color: white;
+  background-color: var(--color-surface);
   border: 3px solid var(--color-border);
   border-radius: 50%;
   cursor: pointer;
@@ -169,8 +232,8 @@ body {
 #start-stop-button.see-results {
   width: 4rem;
   height: 4rem;
-  background-color: #4CAF50;
-  border-color: #45a049;
+  background-color: var(--color-accent);
+  border-color: var(--color-accent-hover);
   box-shadow: 0 4px 8px rgba(76, 175, 80, 0.3);
 }
 
@@ -185,14 +248,14 @@ body {
 #start-stop-button-label.see-results {
   font-weight: 700;
   font-size: 1.1em;
-  color: #2E7D32;
+  color: var(--color-accent-text);
 }
 
 #stringSetTextField,
 #rootTextField,
 #keyTextField,
 #typeTextField {
-  font-weight: 600;
+  font-weight: var(--font-weight-bold);
   font-size: 1.25rem;
   letter-spacing: -0.02em;
 }
@@ -217,8 +280,8 @@ body {
 }
 
 #error-message {
-  color: #b71c1c;
-  font-weight: 600;
+  color: var(--color-error);
+  font-weight: var(--font-weight-bold);
   display: none;
 }
 
@@ -254,7 +317,7 @@ body {
   position: absolute;
   right: 0;
   top: 100%;
-  background: white;
+  background: var(--color-surface);
   border: 1px solid var(--color-border);
   border-radius: var(--border-radius);
   padding: 1rem;
@@ -275,26 +338,33 @@ body {
   margin-bottom: 0;
 }
 
+.options-group label {
+  color: var(--color-text);
+}
+
 .options-group select {
   font-family: var(--font-family);
   font-size: var(--font-size-small);
   padding: 0.25rem;
   border: 1px solid var(--color-border);
-  border-radius: 4px;
+  border-radius: var(--border-radius-small);
+  background-color: var(--color-surface);
+  color: var(--color-text);
 }
 
 .reset-button {
   width: 100%;
   padding: 8px;
   margin-top: 12px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  background-color: #f8f8f8;
+  border: 1px solid var(--color-muted-border);
+  border-radius: var(--border-radius-small);
+  background-color: var(--color-hover-bg);
+  color: var(--color-text);
   cursor: pointer;
 }
 
 .reset-button:hover {
-  background-color: #e8e8e8;
+  background-color: var(--color-border-light);
 }
 
 /* Danger Zone Styles */
@@ -307,14 +377,14 @@ body {
 .danger-divider {
   margin: 0 0 0.75rem 0;
   border: none;
-  border-top: 1px solid #ff6b6b;
+  border-top: 1px solid var(--color-danger);
   opacity: 0.3;
 }
 
 .danger-label {
   font-size: var(--font-size-small);
-  font-weight: 600;
-  color: #ff6b6b;
+  font-weight: var(--font-weight-bold);
+  color: var(--color-danger-text);
   text-transform: uppercase;
   letter-spacing: 0.5px;
   margin-bottom: 0.5rem;
@@ -324,23 +394,23 @@ body {
 .danger-button {
   width: 100%;
   padding: 8px 12px;
-  border: 1px solid #ff6b6b;
-  border-radius: 4px;
-  background-color: #fff;
-  color: #ff6b6b;
+  border: 1px solid var(--color-danger);
+  border-radius: var(--border-radius-small);
+  background-color: var(--color-surface);
+  color: var(--color-danger-text);
   cursor: pointer;
   font-size: var(--font-size-small);
   transition: all 0.2s ease;
 }
 
 .danger-button:hover {
-  background-color: #ff6b6b;
+  background-color: var(--color-danger);
   color: white;
 }
 
 .danger-button:active {
-  background-color: #ff5252;
-  border-color: #ff5252;
+  background-color: var(--color-danger-hover);
+  border-color: var(--color-danger-hover);
 }
 
 .hidden {
@@ -354,7 +424,7 @@ body {
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
+  background: var(--color-modal-overlay);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -362,12 +432,12 @@ body {
 }
 
 .modal {
-  background: white;
-  border-radius: 8px;
+  background: var(--color-modal-bg);
+  border-radius: var(--border-radius);
   padding: 2rem;
   max-width: 500px;
   width: 90%;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+  box-shadow: var(--shadow-elevated);
 }
 
 .modal-header {
@@ -377,46 +447,48 @@ body {
 }
 
 .modal-icon {
-  color: #ff6b6b;
+  color: var(--color-danger-text);
   font-size: 1.5rem;
   margin-right: 0.75rem;
 }
 
 .modal-title {
   font-size: 1.25rem;
-  font-weight: 600;
-  color: #333;
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text);
   margin: 0;
 }
 
 .modal-body {
   margin-bottom: 1.5rem;
-  color: #666;
+  color: var(--color-text-secondary);
   line-height: 1.5;
 }
 
 .modal-warning {
-  background: #fff3cd;
-  border: 1px solid #ffeaa7;
-  border-radius: 4px;
+  background: var(--color-warning-bg);
+  border: 1px solid var(--color-warning-border);
+  border-radius: var(--border-radius-small);
   padding: 0.75rem;
   margin: 1rem 0;
-  color: #856404;
+  color: var(--color-warning-text);
 }
 
 .modal-input {
   width: 100%;
   padding: 0.75rem;
-  border: 1px solid #ddd;
-  border-radius: 4px;
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--border-radius-small);
   font-family: var(--font-family);
   font-size: 1rem;
   margin: 0.5rem 0;
+  background-color: var(--color-surface);
+  color: var(--color-text);
 }
 
 .modal-input:focus {
   outline: none;
-  border-color: #ff6b6b;
+  border-color: var(--color-danger);
   box-shadow: 0 0 0 2px rgba(255, 107, 107, 0.2);
 }
 
@@ -428,8 +500,8 @@ body {
 
 .modal-button {
   padding: 0.75rem 1.5rem;
-  border: 1px solid #ddd;
-  border-radius: 4px;
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--border-radius-small);
   cursor: pointer;
   font-family: var(--font-family);
   font-size: 1rem;
@@ -437,28 +509,28 @@ body {
 }
 
 .modal-button-cancel {
-  background: white;
-  color: #666;
+  background: var(--color-surface);
+  color: var(--color-text-secondary);
 }
 
 .modal-button-cancel:hover {
-  background: #f5f5f5;
+  background: var(--color-hover-bg);
 }
 
 .modal-button-confirm {
-  background: #ff6b6b;
+  background: var(--color-danger);
   color: white;
-  border-color: #ff6b6b;
+  border-color: var(--color-danger);
 }
 
 .modal-button-confirm:hover {
-  background: #ff5252;
-  border-color: #ff5252;
+  background: var(--color-danger-hover);
+  border-color: var(--color-danger-hover);
 }
 
 .modal-button-confirm:disabled {
-  background: #ccc;
-  border-color: #ccc;
+  background: var(--color-muted-border);
+  border-color: var(--color-muted-border);
   cursor: not-allowed;
 }
 
@@ -466,37 +538,281 @@ body {
   margin-top: 10px;
   padding: 4px 12px;
   background-color: transparent;
-  color: #999;
-  border: 1px solid #ccc;
-  border-radius: 4px;
+  color: var(--color-muted);
+  border: 1px solid var(--color-muted-border);
+  border-radius: var(--border-radius-small);
   cursor: pointer;
   font-size: 0.8rem;
-  font-weight: 400;
+  font-weight: var(--font-weight-normal);
   letter-spacing: 0.02em;
   transition: all 0.2s ease;
 }
 
 #cancel-button:hover {
-  color: #d32f2f;
-  border-color: #d32f2f;
+  color: var(--color-muted-hover);
+  border-color: var(--color-muted-hover);
   background-color: rgba(211, 47, 47, 0.05);
 }
 
 #mark-wrong-button {
   margin-top: 10px;
   padding: 8px 16px;
-  background-color: #ff4444;
+  background-color: var(--color-mark-wrong);
   color: white;
   border: none;
-  border-radius: 4px;
+  border-radius: var(--border-radius-small);
   cursor: pointer;
 }
 
 #mark-wrong-button:hover {
-  background-color: #cc0000;
+  background-color: var(--color-mark-wrong-hover);
 }
 
 #fretboard-container li.copy-flash {
-  background-color: #d8d8d8 !important;
+  background-color: var(--color-copy-flash) !important;
   transition: background-color 0.1s ease;
+}
+
+/* ===== THEMES ===== */
+
+/* Jazz Club — Dark, warm amber/gold accents */
+[data-theme="jazz-club"] {
+  --font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-family-heading: 'DM Sans', sans-serif;
+  --letter-spacing: 0.01em;
+  --font-weight-normal: 400;
+  --font-weight-bold: 700;
+
+  --color-text: #e8e0d4;
+  --color-text-secondary: #a89f91;
+  --color-bg: #1a1714;
+  --color-bg-page: #0f0d0b;
+  --color-surface: #252119;
+  --color-border: #d4a843;
+  --color-border-light: #3d362b;
+
+  --shadow-default: 0 1px 4px rgba(0, 0, 0, 0.4);
+  --shadow-elevated: 0 10px 30px rgba(0, 0, 0, 0.6);
+
+  --color-accent: #d4a843;
+  --color-accent-hover: #e6bc5a;
+  --color-accent-text: #d4a843;
+
+  --color-danger: #c45e5e;
+  --color-danger-hover: #d44f4f;
+  --color-danger-text: #e07070;
+
+  --color-mark-wrong: #c45e5e;
+  --color-mark-wrong-hover: #d44f4f;
+
+  --color-muted: #7a7064;
+  --color-muted-border: #4a4238;
+  --color-muted-hover: #e07070;
+
+  --color-copy-flash: #3d362b;
+  --color-hover-bg: #2e281f;
+
+  --color-error: #e07070;
+
+  --color-success-bg: #1e2e1e;
+  --color-success-text: #7ec87e;
+  --color-success-border: #2d4a2d;
+  --color-error-bg: #2e1e1e;
+  --color-error-text: #e07070;
+  --color-error-border: #4a2d2d;
+
+  --color-modal-bg: #252119;
+  --color-modal-overlay: rgba(0, 0, 0, 0.7);
+  --color-warning-bg: #332b1a;
+  --color-warning-border: #5a4a25;
+  --color-warning-text: #d4a843;
+
+  --color-fretboard-stroke: #a89f91;
+  --color-fretboard-dot: #d4a843;
+
+  --border-width-main: 3px;
+  --color-main-border: #d4a843;
+}
+
+/* Vintage — Cream/sepia, serif typography */
+[data-theme="vintage"] {
+  --font-family: 'Source Sans 3', Georgia, 'Times New Roman', serif;
+  --font-family-heading: 'Libre Baskerville', Georgia, serif;
+  --letter-spacing: 0em;
+  --font-weight-normal: 400;
+  --font-weight-bold: 700;
+
+  --color-text: #3b2f20;
+  --color-text-secondary: #7a6b56;
+  --color-bg: #f5edd6;
+  --color-bg-page: #ede3c9;
+  --color-surface: #faf4e4;
+  --color-border: #8b7355;
+  --color-border-light: #d4c9a8;
+
+  --shadow-default: 0 1px 3px rgba(59, 47, 32, 0.1);
+  --shadow-elevated: 0 8px 20px rgba(59, 47, 32, 0.2);
+
+  --color-accent: #5b8a72;
+  --color-accent-hover: #4a7660;
+  --color-accent-text: #4a7660;
+
+  --color-danger: #b35b4a;
+  --color-danger-hover: #9c4a3b;
+  --color-danger-text: #b35b4a;
+
+  --color-mark-wrong: #b35b4a;
+  --color-mark-wrong-hover: #9c4a3b;
+
+  --color-muted: #9a8b73;
+  --color-muted-border: #c4b596;
+  --color-muted-hover: #9c4a3b;
+
+  --color-copy-flash: #d4c9a8;
+  --color-hover-bg: #f0e8d0;
+
+  --color-error: #9c4a3b;
+
+  --color-success-bg: #e8f0e4;
+  --color-success-text: #3d6b4a;
+  --color-success-border: #b5d4a8;
+  --color-error-bg: #f5e0dc;
+  --color-error-text: #8b3d30;
+  --color-error-border: #d4a89a;
+
+  --color-modal-bg: #faf4e4;
+  --color-modal-overlay: rgba(59, 47, 32, 0.5);
+  --color-warning-bg: #f5edd6;
+  --color-warning-border: #d4c070;
+  --color-warning-text: #6b5a28;
+
+  --color-fretboard-stroke: #5c4a32;
+  --color-fretboard-dot: #3b2f20;
+
+  --border-radius: 6px;
+  --border-radius-small: 3px;
+  --border-width-main: 4px;
+  --color-main-border: #8b7355;
+}
+
+/* Modern Bold — High contrast, electric blue accent */
+[data-theme="modern-bold"] {
+  --font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-family-heading: 'Inter', sans-serif;
+  --letter-spacing: -0.02em;
+  --font-weight-normal: 400;
+  --font-weight-bold: 800;
+
+  --color-text: #0a0a0a;
+  --color-text-secondary: #555555;
+  --color-bg: #f0f0f0;
+  --color-bg-page: #e5e5e5;
+  --color-surface: #ffffff;
+  --color-border: #0a0a0a;
+  --color-border-light: #cccccc;
+
+  --shadow-default: 0 2px 0 rgba(0, 0, 0, 0.08);
+  --shadow-elevated: 0 8px 0 rgba(0, 0, 0, 0.12);
+
+  --color-accent: #2563eb;
+  --color-accent-hover: #1d4ed8;
+  --color-accent-text: #1d4ed8;
+
+  --color-danger: #ef4444;
+  --color-danger-hover: #dc2626;
+  --color-danger-text: #ef4444;
+
+  --color-mark-wrong: #ef4444;
+  --color-mark-wrong-hover: #dc2626;
+
+  --color-muted: #888888;
+  --color-muted-border: #bbbbbb;
+  --color-muted-hover: #dc2626;
+
+  --color-copy-flash: #cccccc;
+  --color-hover-bg: #f5f5f5;
+
+  --color-error: #dc2626;
+
+  --color-success-bg: #dcfce7;
+  --color-success-text: #166534;
+  --color-success-border: #86efac;
+  --color-error-bg: #fef2f2;
+  --color-error-text: #991b1b;
+  --color-error-border: #fecaca;
+
+  --color-modal-bg: #ffffff;
+  --color-modal-overlay: rgba(10, 10, 10, 0.6);
+  --color-warning-bg: #fefce8;
+  --color-warning-border: #fde047;
+  --color-warning-text: #854d0e;
+
+  --color-fretboard-stroke: #0a0a0a;
+  --color-fretboard-dot: #2563eb;
+
+  --border-radius: 4px;
+  --border-radius-small: 2px;
+  --border-width-main: 4px;
+  --color-main-border: #0a0a0a;
+}
+
+/* Warm Earthy — Wood tones, forest green */
+[data-theme="warm-earthy"] {
+  --font-family: 'Nunito', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-family-heading: 'Nunito', sans-serif;
+  --letter-spacing: 0em;
+  --font-weight-normal: 400;
+  --font-weight-bold: 700;
+
+  --color-text: #2d2418;
+  --color-text-secondary: #6b5d4e;
+  --color-bg: #f7f0e6;
+  --color-bg-page: #efe7db;
+  --color-surface: #fdf9f3;
+  --color-border: #5c4a35;
+  --color-border-light: #d4c4a8;
+
+  --shadow-default: 0 1px 4px rgba(45, 36, 24, 0.1);
+  --shadow-elevated: 0 8px 24px rgba(45, 36, 24, 0.18);
+
+  --color-accent: #4a7c59;
+  --color-accent-hover: #3d6b4a;
+  --color-accent-text: #3d6b4a;
+
+  --color-danger: #b85c3a;
+  --color-danger-hover: #a04d2e;
+  --color-danger-text: #b85c3a;
+
+  --color-mark-wrong: #b85c3a;
+  --color-mark-wrong-hover: #a04d2e;
+
+  --color-muted: #8a7d6c;
+  --color-muted-border: #c4b596;
+  --color-muted-hover: #a04d2e;
+
+  --color-copy-flash: #d4c4a8;
+  --color-hover-bg: #f2ead8;
+
+  --color-error: #a04d2e;
+
+  --color-success-bg: #e4ede4;
+  --color-success-text: #2d5a38;
+  --color-success-border: #a8c8a8;
+  --color-error-bg: #f5e0d4;
+  --color-error-text: #7a3018;
+  --color-error-border: #d4a890;
+
+  --color-modal-bg: #fdf9f3;
+  --color-modal-overlay: rgba(45, 36, 24, 0.5);
+  --color-warning-bg: #f5edd4;
+  --color-warning-border: #c8b060;
+  --color-warning-text: #6b5020;
+
+  --color-fretboard-stroke: #5c4a35;
+  --color-fretboard-dot: #4a7c59;
+
+  --border-radius: 10px;
+  --border-radius-small: 6px;
+  --border-width-main: 4px;
+  --color-main-border: #8b7355;
 }
