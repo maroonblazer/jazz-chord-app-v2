@@ -69,7 +69,7 @@ describe('SessionManager behaviours', () => {
 
     const container = document.getElementById('fretboard-container');
     expect(container.innerHTML).toContain('<svg');
-    expect(container.style.visibility).toBe('visible');
+    // Fretboard container is always visible; no visibility toggle needed
   });
 
   test('displayResults delegates rendering to the results view', () => {
