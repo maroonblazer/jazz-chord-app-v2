@@ -1,9 +1,8 @@
 export class SessionManager {
-  constructor(stateManager, timerManager, chordGenerator, themeManager) {
+  constructor(stateManager, timerManager, chordGenerator) {
     this.stateManager = stateManager;
     this.timerManager = timerManager;
     this.chordGenerator = chordGenerator;
-    this.themeManager = themeManager;
     this.WRONG_ANSWER_TIME = 999999;
     this.fretboardView = null;
     this.resultsView = null;
@@ -119,13 +118,7 @@ export class SessionManager {
       currentProblem.type
     );
 
-    const colors = this.themeManager
-      ? this.themeManager.getFretboardColors()
-      : { stroke: 'black', dot: 'black' };
-    const svgString = this.chordGenerator.generateSVG(fretPositions, {
-      circleColor: colors.dot,
-      strokeColor: colors.stroke
-    });
+    const svgString = this.chordGenerator.generateSVG(fretPositions);
     if (this.fretboardView) {
       this.fretboardView.render(svgString);
     }

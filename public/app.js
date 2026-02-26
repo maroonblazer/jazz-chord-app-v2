@@ -3,24 +3,21 @@ import { TimerManager } from './components/TimerManager.js';
 import { ChordGenerator } from './components/ChordGenerator.js';
 import { SessionManager } from './components/SessionManager.js';
 import { UIController } from './components/UIController.js';
-import { ThemeManager } from './components/ThemeManager.js';
 
 // Legacy export for backwards compatibility
 export const maxIterations = 10;
 
 class JazzChordApp {
   constructor() {
-    this.themeManager = new ThemeManager();
     this.stateManager = new SessionStateManager();
     this.timerManager = new TimerManager(this.stateManager);
     this.chordGenerator = new ChordGenerator(this.stateManager);
     this.sessionManager = new SessionManager(
-      this.stateManager,
-      this.timerManager,
-      this.chordGenerator,
-      this.themeManager
+      this.stateManager, 
+      this.timerManager, 
+      this.chordGenerator
     );
-    this.uiController = new UIController(this.stateManager, this.sessionManager, this.themeManager);
+    this.uiController = new UIController(this.stateManager, this.sessionManager);
     
     // Make components globally available for debugging
     window.jazzChordApp = this;
@@ -31,11 +28,7 @@ class JazzChordApp {
   // Legacy methods for backwards compatibility
   testChordShape(stringSet, root, type) {
     const fretPositions = this.chordGenerator.getFretPositions(stringSet, root, type);
-    const colors = this.themeManager.getFretboardColors();
-    const svgString = this.chordGenerator.generateSVG(fretPositions, {
-      circleColor: colors.dot,
-      strokeColor: colors.stroke
-    });
+    const svgString = this.chordGenerator.generateSVG(fretPositions);
     
     const container = document.getElementById("fretboard-container");
     container.innerHTML = svgString;
