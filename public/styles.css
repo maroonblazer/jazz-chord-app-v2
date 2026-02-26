@@ -661,8 +661,10 @@ body {
 /* ---- Mark Wrong & Cancel ---- */
 
 #mark-wrong-button {
+  display: grid;
+  place-items: center;
   margin-top: 4px;
-  padding: 6px 14px;
+  padding: 0;
   background:
     radial-gradient(circle at 45% 40%, #cc3333 0%, #991111 100%);
   color: #ffcccc;
@@ -672,6 +674,7 @@ body {
   height: 44px;
   font-family: var(--font-led);
   font-size: 0.5rem;
+  line-height: 1.2;
   letter-spacing: 0.05em;
   text-transform: uppercase;
   cursor: pointer;
